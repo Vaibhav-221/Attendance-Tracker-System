@@ -16,57 +16,89 @@ export default function StudentDashboard() {
 
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
-  const [subjects, setSubjects] = useState([]);
+  const [allSubjects, setAllSubjects] = useState([]);
+  const [todaySubjects, setTodaySubjects] = useState([]);
   const [markedSubjects, setMarkedSubjects] = useState([]);
+  const [attendancePercent, setAttendancePercent] = useState(0);
   const [error, setError] = useState("");
 
   const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
-    const checkUser = async () => {
-      const user = auth.currentUser;
+    const initialize = async () => {
+      try {
+        const user = auth.currentUser;
 
-      if (!user) {
-        router.push("/student/login");
-        return;
+        if (!user) {
+          router.push("/student/login");
+          return;
+        }
+
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+
+        if (!userDoc.exists() || userDoc.data().role !== "student") {
+          router.push("/student/login");
+          return;
+        }
+
+        if (!userDoc.data().classId) {
+          router.push("/student/join-class");
+          return;
+        }
+
+        const classId = userDoc.data().classId;
+
+        setUserData(userDoc.data());
+
+        await fetchAllSubjects(classId);
+        await fetchTodaySchedule(classId);
+        await fetchMarkedAttendance(user.uid, classId);
+        await calculateAttendance(classId, user.uid);
+
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
       }
-
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-
-      if (!userDoc.exists() || userDoc.data().role !== "student") {
-        router.push("/student/login");
-        return;
-      }
-
-      if (!userDoc.data().classId) {
-        router.push("/student/join-class");
-        return;
-      }
-
-      setUserData(userDoc.data());
-
-      fetchSubjects(userDoc.data().classId);
-      fetchMarkedAttendance(user.uid, userDoc.data().classId);
-
-      setLoading(false);
     };
 
-    checkUser();
+    initialize();
   }, []);
 
-  const fetchSubjects = async (classId) => {
-    const querySnapshot = await getDocs(
+  // Fetch semester subjects
+  const fetchAllSubjects = async (classId) => {
+    const snapshot = await getDocs(
       collection(db, "classes", classId, "subjects")
     );
 
-    const subjectList = querySnapshot.docs.map(doc => ({
+    const subjectList = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
 
-    setSubjects(subjectList);
+    setAllSubjects(subjectList);
   };
 
+  // Fetch today's scheduled subjects
+  const fetchTodaySchedule = async (classId) => {
+    const scheduleRef = doc(
+      db,
+      "classes",
+      classId,
+      "dailySchedule",
+      today
+    );
+
+    const scheduleDoc = await getDoc(scheduleRef);
+
+    if (scheduleDoc.exists()) {
+      setTodaySubjects(scheduleDoc.data().subjects || []);
+    } else {
+      setTodaySubjects([]);
+    }
+  };
+
+  // Fetch marked attendance (CORRECTED PATH)
   const fetchMarkedAttendance = async (studentId, classId) => {
     const attendanceRef = doc(
       db,
@@ -74,9 +106,8 @@ export default function StudentDashboard() {
       classId,
       "attendance",
       today,
-      studentId,
-      "subjects",
-      "data"
+      "students",
+      studentId
     );
 
     const attendanceDoc = await getDoc(attendanceRef);
@@ -86,6 +117,7 @@ export default function StudentDashboard() {
     }
   };
 
+  // Mark attendance (CORRECTED PATH)
   const handleMarkAttendance = async (subjectId) => {
     if (markedSubjects.includes(subjectId)) return;
 
@@ -98,23 +130,71 @@ export default function StudentDashboard() {
         userData.classId,
         "attendance",
         today,
-        user.uid,
-        "subjects",
-        "data"
+        "students",
+        user.uid
       );
+
+      const updatedSubjects = [...markedSubjects, subjectId];
 
       await setDoc(
         attendanceRef,
-        {
-          subjects: [...markedSubjects, subjectId]
-        },
+        { subjects: updatedSubjects },
         { merge: true }
       );
 
-      setMarkedSubjects([...markedSubjects, subjectId]);
+      setMarkedSubjects(updatedSubjects);
+
+      await calculateAttendance(userData.classId, user.uid);
 
     } catch (err) {
       setError(err.message);
+    }
+  };
+
+  // Calculate Attendance Percentage (CORRECTED PATH)
+  const calculateAttendance = async (classId, studentId) => {
+    try {
+      let totalScheduled = 0;
+      let totalPresent = 0;
+
+      const scheduleSnapshot = await getDocs(
+        collection(db, "classes", classId, "dailySchedule")
+      );
+
+      for (const scheduleDoc of scheduleSnapshot.docs) {
+        const date = scheduleDoc.id;
+        const scheduledSubjects = scheduleDoc.data().subjects || [];
+
+        totalScheduled += scheduledSubjects.length;
+
+        const attendanceRef = doc(
+          db,
+          "classes",
+          classId,
+          "attendance",
+          date,
+          "students",
+          studentId
+        );
+
+        const attendanceDoc = await getDoc(attendanceRef);
+
+        if (attendanceDoc.exists()) {
+          const presentSubjects = attendanceDoc.data().subjects || [];
+          totalPresent += presentSubjects.length;
+        }
+      }
+
+      if (totalScheduled === 0) {
+        setAttendancePercent(0);
+        return;
+      }
+
+      const percent = (totalPresent / totalScheduled) * 100;
+      setAttendancePercent(percent.toFixed(2));
+
+    } catch (err) {
+      console.error("Attendance calculation error:", err);
     }
   };
 
@@ -126,39 +206,58 @@ export default function StudentDashboard() {
 
       <p className="mb-6">Welcome, {userData.name}</p>
 
-      {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+      {error && (
+        <p className="text-red-500 text-sm mb-3">{error}</p>
+      )}
+
+      <div className="mb-6 p-4 border rounded bg-gray-100">
+        <p className="font-semibold">
+          Attendance Percentage:
+          <span className="ml-2 text-blue-600">
+            {attendancePercent}%
+          </span>
+        </p>
+      </div>
 
       <h2 className="text-lg font-semibold mb-3">
-        Mark Attendance ({today})
+        Today's Classes ({today})
       </h2>
 
-      {subjects.length === 0 ? (
+      {todaySubjects.length === 0 ? (
         <p className="text-gray-500">
-          No subjects added by CR yet.
+          No classes scheduled today.
         </p>
       ) : (
         <ul className="space-y-3">
-          {subjects.map((sub) => (
-            <li
-              key={sub.id}
-              className="border p-3 rounded flex justify-between items-center"
-            >
-              <span>{sub.subjectName}</span>
+          {todaySubjects.map((subjectId) => {
+            const subject = allSubjects.find(
+              s => s.id === subjectId
+            );
 
-              {markedSubjects.includes(sub.id) ? (
-                <span className="text-green-600 font-semibold">
-                  Present ✓
-                </span>
-              ) : (
-                <button
-                  onClick={() => handleMarkAttendance(sub.id)}
-                  className="bg-blue-600 text-white px-3 py-1 rounded"
-                >
-                  Mark Present
-                </button>
-              )}
-            </li>
-          ))}
+            return (
+              <li
+                key={subjectId}
+                className="border p-3 rounded flex justify-between items-center"
+              >
+                <span>{subject?.subjectName}</span>
+
+                {markedSubjects.includes(subjectId) ? (
+                  <span className="text-green-600 font-semibold">
+                    Present ✓
+                  </span>
+                ) : (
+                  <button
+                    onClick={() =>
+                      handleMarkAttendance(subjectId)
+                    }
+                    className="bg-blue-600 text-white px-3 py-1 rounded"
+                  >
+                    Mark Present
+                  </button>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

@@ -21,9 +21,11 @@ export default function CRDashboard() {
   const [className, setClassName] = useState("");
   const [newSubject, setNewSubject] = useState("");
   const [subjects, setSubjects] = useState([]);
+  const [todaySubjects, setTodaySubjects] = useState([]);
   const [error, setError] = useState("");
 
-  // 🔐 AUTH + ROLE CHECK
+  const today = new Date().toISOString().split("T")[0];
+
   useEffect(() => {
     const checkUser = async () => {
       const user = auth.currentUser;
@@ -44,6 +46,7 @@ export default function CRDashboard() {
 
       if (userDoc.data().classId) {
         fetchSubjects(user.uid);
+        fetchTodaySchedule(user.uid);
       }
 
       setLoading(false);
@@ -52,81 +55,100 @@ export default function CRDashboard() {
     checkUser();
   }, []);
 
-  // 🔢 GENERATE JOIN CODE
   const generateJoinCode = () => {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   };
 
-  // 🏫 CREATE CLASS
   const handleCreateClass = async () => {
-    if (!className.trim()) {
-      setError("Class name is required");
-      return;
-    }
+    if (!className.trim()) return;
 
-    try {
-      const user = auth.currentUser;
-      const classId = user.uid;
-      const joinCode = generateJoinCode();
+    const user = auth.currentUser;
+    const classId = user.uid;
+    const joinCode = generateJoinCode();
 
-      await setDoc(doc(db, "classes", classId), {
-        className: className.trim(),
-        crId: user.uid,
-        joinCode,
-        createdAt: new Date()
-      });
+    await setDoc(doc(db, "classes", classId), {
+      className: className.trim(),
+      crId: user.uid,
+      joinCode,
+      createdAt: new Date()
+    });
 
-      await updateDoc(doc(db, "users", user.uid), {
-        classId
-      });
+    await updateDoc(doc(db, "users", user.uid), {
+      classId
+    });
 
-      setUserData((prev) => ({
-        ...prev,
-        classId
-      }));
-
-      fetchSubjects(classId);
-
-    } catch (err) {
-      setError(err.message);
-    }
+    setUserData((prev) => ({
+      ...prev,
+      classId
+    }));
   };
 
-  // 📚 FETCH SUBJECTS
   const fetchSubjects = async (classId) => {
-    const querySnapshot = await getDocs(
+    const snapshot = await getDocs(
       collection(db, "classes", classId, "subjects")
     );
 
-    const subjectList = querySnapshot.docs.map(doc => ({
+    setSubjects(snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }));
-
-    setSubjects(subjectList);
+    })));
   };
 
-  // ➕ ADD SUBJECT
+  const fetchTodaySchedule = async (classId) => {
+    const scheduleRef = doc(
+      db,
+      "classes",
+      classId,
+      "dailySchedule",
+      today
+    );
+
+    const scheduleDoc = await getDoc(scheduleRef);
+
+    if (scheduleDoc.exists()) {
+      setTodaySubjects(scheduleDoc.data().subjects || []);
+    }
+  };
+
   const handleAddSubject = async () => {
     if (!newSubject.trim()) return;
 
-    try {
-      const user = auth.currentUser;
+    const user = auth.currentUser;
 
-      await addDoc(
-        collection(db, "classes", user.uid, "subjects"),
-        {
-          subjectName: newSubject.trim(),
-          createdAt: new Date()
-        }
-      );
+    await addDoc(
+      collection(db, "classes", user.uid, "subjects"),
+      {
+        subjectName: newSubject.trim(),
+        createdAt: new Date()
+      }
+    );
 
-      setNewSubject("");
-      fetchSubjects(user.uid);
+    setNewSubject("");
+    fetchSubjects(user.uid);
+  };
 
-    } catch (err) {
-      setError(err.message);
-    }
+  const handleAddToToday = async (subjectId) => {
+    if (todaySubjects.includes(subjectId)) return;
+
+    const user = auth.currentUser;
+
+    const scheduleRef = doc(
+      db,
+      "classes",
+      user.uid,
+      "dailySchedule",
+      today
+    );
+
+    await setDoc(
+      scheduleRef,
+      {
+        subjects: [...todaySubjects, subjectId]
+      },
+      { merge: true }
+    );
+
+    setTodaySubjects([...todaySubjects, subjectId]);
   };
 
   if (loading) return <div className="p-10">Loading...</div>;
@@ -135,66 +157,80 @@ export default function CRDashboard() {
     <div className="p-10 max-w-xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">CR Dashboard</h1>
 
-      <p className="mb-4">Welcome, {userData.name}</p>
-
-      {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
-
-      {/* IF CLASS EXISTS */}
-      {userData.classId ? (
-        <div className="border p-4 rounded mb-6">
-          <p className="font-semibold mb-2">Class Created Successfully ✅</p>
-          <p className="text-sm">
-            Class ID: {userData.classId}
-          </p>
-
-          {/* SUBJECT SECTION */}
-          <div className="mt-6">
-            <h2 className="text-lg font-semibold mb-2">Subjects</h2>
-
-            <div className="flex gap-2 mb-4">
-              <input
-                type="text"
-                placeholder="Enter Subject Name"
-                className="border p-2 rounded flex-1"
-                value={newSubject}
-                onChange={(e) => setNewSubject(e.target.value)}
-              />
-
-              <button
-                onClick={handleAddSubject}
-                className="bg-blue-600 text-white px-4 rounded"
-              >
-                Add
-              </button>
-            </div>
-
-            <ul className="space-y-2">
-              {subjects.map((sub) => (
-                <li key={sub.id} className="border p-2 rounded">
-                  {sub.subjectName}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      ) : (
-        // IF NO CLASS
-        <div className="flex flex-col gap-3">
+      {!userData.classId ? (
+        <div className="flex gap-2">
           <input
             type="text"
-            placeholder="Enter Class Name"
-            className="border p-2 rounded"
+            placeholder="Class Name"
+            className="border p-2"
             value={className}
             onChange={(e) => setClassName(e.target.value)}
           />
-
           <button
             onClick={handleCreateClass}
-            className="bg-green-600 text-white p-2 rounded"
+            className="bg-green-600 text-white px-4"
           >
-            Create Class
+            Create
           </button>
         </div>
+      ) : (
+        <>
+          <h2 className="text-lg font-semibold mt-6 mb-2">
+            Semester Subjects
+          </h2>
+
+          <div className="flex gap-2 mb-4">
+            <input
+              type="text"
+              placeholder="Add Subject"
+              className="border p-2 flex-1"
+              value={newSubject}
+              onChange={(e) => setNewSubject(e.target.value)}
+            />
+            <button
+              onClick={handleAddSubject}
+              className="bg-blue-600 text-white px-4"
+            >
+              Add
+            </button>
+          </div>
+
+          <ul className="space-y-2">
+            {subjects.map((sub) => (
+              <li
+                key={sub.id}
+                className="border p-2 flex justify-between items-center"
+              >
+                <span>{sub.subjectName}</span>
+                <button
+                  onClick={() => handleAddToToday(sub.id)}
+                  className="bg-purple-600 text-white px-3 py-1 rounded"
+                >
+                  Add to Today
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <h2 className="text-lg font-semibold mt-8 mb-2">
+            Today's Schedule ({today})
+          </h2>
+
+          {todaySubjects.length === 0 ? (
+            <p>No subjects selected today.</p>
+          ) : (
+            <ul className="space-y-2">
+              {todaySubjects.map((id) => {
+                const sub = subjects.find(s => s.id === id);
+                return (
+                  <li key={id} className="border p-2">
+                    {sub?.subjectName}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </>
       )}
     </div>
   );
