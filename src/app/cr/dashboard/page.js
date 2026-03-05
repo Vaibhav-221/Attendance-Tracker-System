@@ -9,7 +9,8 @@ import {
   updateDoc,
   collection,
   addDoc,
-  getDocs
+  getDocs,
+  deleteDoc
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
@@ -19,16 +20,15 @@ export default function CRDashboard() {
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
   const [className, setClassName] = useState("");
-  const [newSubject, setNewSubject] = useState("");
   const [subjects, setSubjects] = useState([]);
+  const [newSubject, setNewSubject] = useState("");
   const [todaySubjects, setTodaySubjects] = useState([]);
   const [joinCode, setJoinCode] = useState("");
-  const [error, setError] = useState("");
 
   const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
-    const checkUser = async () => {
+    const init = async () => {
       const user = auth.currentUser;
 
       if (!user) {
@@ -54,7 +54,7 @@ export default function CRDashboard() {
       setLoading(false);
     };
 
-    checkUser();
+    init();
   }, []);
 
   const generateJoinCode = () => {
@@ -63,7 +63,6 @@ export default function CRDashboard() {
 
   const fetchJoinCode = async (classId) => {
     const classDoc = await getDoc(doc(db, "classes", classId));
-
     if (classDoc.exists()) {
       setJoinCode(classDoc.data().joinCode);
     }
@@ -74,12 +73,12 @@ export default function CRDashboard() {
 
     const user = auth.currentUser;
     const classId = user.uid;
-    const newJoinCode = generateJoinCode();
+    const code = generateJoinCode();
 
     await setDoc(doc(db, "classes", classId), {
       className: className.trim(),
       crId: user.uid,
-      joinCode: newJoinCode,
+      joinCode: code,
       createdAt: new Date()
     });
 
@@ -87,7 +86,7 @@ export default function CRDashboard() {
       classId
     });
 
-    setJoinCode(newJoinCode);
+    setJoinCode(code);
 
     setUserData((prev) => ({
       ...prev,
@@ -103,29 +102,27 @@ export default function CRDashboard() {
     setSubjects(
       snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data(),
+        ...doc.data()
       }))
     );
   };
 
   const fetchTodaySchedule = async (classId) => {
-    const scheduleRef = doc(
-      db,
-      "classes",
-      classId,
-      "dailySchedule",
-      today
-    );
+    const ref = doc(db, "classes", classId, "dailySchedule", today);
+    const data = await getDoc(ref);
 
-    const scheduleDoc = await getDoc(scheduleRef);
-
-    if (scheduleDoc.exists()) {
-      setTodaySubjects(scheduleDoc.data().subjects || []);
+    if (data.exists()) {
+      setTodaySubjects(data.data().subjects || []);
     }
   };
 
   const handleAddSubject = async () => {
     if (!newSubject.trim()) return;
+
+    if (subjects.some((s) => s.subjectName === newSubject.trim())) {
+      alert("Subject already exists");
+      return;
+    }
 
     const user = auth.currentUser;
 
@@ -141,12 +138,74 @@ export default function CRDashboard() {
     fetchSubjects(user.uid);
   };
 
+  const handleDeleteSubject = async (subjectId) => {
+    const user = auth.currentUser;
+
+    await deleteDoc(
+      doc(db, "classes", user.uid, "subjects", subjectId)
+    );
+
+    fetchSubjects(user.uid);
+  };
+
   const handleAddToToday = async (subjectId) => {
     if (todaySubjects.includes(subjectId)) return;
 
     const user = auth.currentUser;
 
-    const scheduleRef = doc(
+    const updated = [...todaySubjects, subjectId];
+
+    const ref = doc(
+      db,
+      "classes",
+      user.uid,
+      "dailySchedule",
+      today
+    );
+
+    await setDoc(ref, { subjects: updated }, { merge: true });
+
+    setTodaySubjects(updated);
+  };
+
+  const handleRemoveFromToday = async (subjectId) => {
+    const user = auth.currentUser;
+
+    const updated = todaySubjects.filter((id) => id !== subjectId);
+
+    const ref = doc(
+      db,
+      "classes",
+      user.uid,
+      "dailySchedule",
+      today
+    );
+
+    await setDoc(ref, { subjects: updated });
+
+    setTodaySubjects(updated);
+  };
+
+  const clearTodaySchedule = async () => {
+    const user = auth.currentUser;
+
+    const ref = doc(
+      db,
+      "classes",
+      user.uid,
+      "dailySchedule",
+      today
+    );
+
+    await setDoc(ref, { subjects: [] });
+
+    setTodaySubjects([]);
+  };
+
+  const publishSchedule = async () => {
+    const user = auth.currentUser;
+
+    const ref = doc(
       db,
       "classes",
       user.uid,
@@ -155,21 +214,25 @@ export default function CRDashboard() {
     );
 
     await setDoc(
-      scheduleRef,
+      ref,
       {
-        subjects: [...todaySubjects, subjectId]
+        subjects: todaySubjects,
+        published: true
       },
       { merge: true }
     );
 
-    setTodaySubjects([...todaySubjects, subjectId]);
+    alert("Schedule Published");
   };
 
   if (loading) return <div className="p-10">Loading...</div>;
 
   return (
     <div className="p-10 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">CR Dashboard</h1>
+
+      <h1 className="text-2xl font-bold mb-4">
+        CR Dashboard
+      </h1>
 
       {!userData.classId ? (
         <div className="flex gap-2">
@@ -189,17 +252,26 @@ export default function CRDashboard() {
         </div>
       ) : (
         <>
-          {/* Join Code Display */}
-          <div className="bg-gray-100 border p-4 rounded mb-6">
+          <div className="border p-4 rounded mb-6 bg-gray-100">
             <p className="text-sm text-gray-500">
               Share this code with students
             </p>
+
             <p className="text-2xl font-bold text-green-600">
               Join Code: {joinCode}
             </p>
+
+            <button
+              onClick={() =>
+                navigator.clipboard.writeText(joinCode)
+              }
+              className="bg-black text-white px-3 py-1 mt-2 rounded"
+            >
+              Copy Code
+            </button>
           </div>
 
-          <h2 className="text-lg font-semibold mt-6 mb-2">
+          <h2 className="text-lg font-semibold mb-2">
             Semester Subjects
           </h2>
 
@@ -209,7 +281,9 @@ export default function CRDashboard() {
               placeholder="Add Subject"
               className="border p-2 flex-1"
               value={newSubject}
-              onChange={(e) => setNewSubject(e.target.value)}
+              onChange={(e) =>
+                setNewSubject(e.target.value)
+              }
             />
             <button
               onClick={handleAddSubject}
@@ -226,12 +300,26 @@ export default function CRDashboard() {
                 className="border p-2 flex justify-between items-center"
               >
                 <span>{sub.subjectName}</span>
-                <button
-                  onClick={() => handleAddToToday(sub.id)}
-                  className="bg-purple-600 text-white px-3 py-1 rounded"
-                >
-                  Add to Today
-                </button>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() =>
+                      handleAddToToday(sub.id)
+                    }
+                    className="bg-purple-600 text-white px-3 py-1 rounded"
+                  >
+                    Add to Today
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      handleDeleteSubject(sub.id)
+                    }
+                    className="bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    Delete
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
@@ -245,15 +333,46 @@ export default function CRDashboard() {
           ) : (
             <ul className="space-y-2">
               {todaySubjects.map((id) => {
-                const sub = subjects.find((s) => s.id === id);
+                const sub = subjects.find(
+                  (s) => s.id === id
+                );
+
                 return (
-                  <li key={id} className="border p-2">
+                  <li
+                    key={id}
+                    className="border p-2 flex justify-between"
+                  >
                     {sub?.subjectName}
+
+                    <button
+                      onClick={() =>
+                        handleRemoveFromToday(id)
+                      }
+                      className="bg-red-500 text-white px-3 py-1 rounded"
+                    >
+                      Remove
+                    </button>
                   </li>
                 );
               })}
             </ul>
           )}
+
+          <div className="flex gap-4 mt-6">
+            <button
+              onClick={publishSchedule}
+              className="bg-green-600 text-white px-4 py-2 rounded"
+            >
+              Publish Schedule
+            </button>
+
+            <button
+              onClick={clearTodaySchedule}
+              className="bg-red-600 text-white px-4 py-2 rounded"
+            >
+              Clear Today
+            </button>
+          </div>
         </>
       )}
     </div>
