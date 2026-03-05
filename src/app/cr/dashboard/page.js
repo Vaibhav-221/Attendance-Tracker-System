@@ -22,6 +22,7 @@ export default function CRDashboard() {
   const [newSubject, setNewSubject] = useState("");
   const [subjects, setSubjects] = useState([]);
   const [todaySubjects, setTodaySubjects] = useState([]);
+  const [joinCode, setJoinCode] = useState("");
   const [error, setError] = useState("");
 
   const today = new Date().toISOString().split("T")[0];
@@ -47,6 +48,7 @@ export default function CRDashboard() {
       if (userDoc.data().classId) {
         fetchSubjects(user.uid);
         fetchTodaySchedule(user.uid);
+        fetchJoinCode(user.uid);
       }
 
       setLoading(false);
@@ -59,23 +61,33 @@ export default function CRDashboard() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   };
 
+  const fetchJoinCode = async (classId) => {
+    const classDoc = await getDoc(doc(db, "classes", classId));
+
+    if (classDoc.exists()) {
+      setJoinCode(classDoc.data().joinCode);
+    }
+  };
+
   const handleCreateClass = async () => {
     if (!className.trim()) return;
 
     const user = auth.currentUser;
     const classId = user.uid;
-    const joinCode = generateJoinCode();
+    const newJoinCode = generateJoinCode();
 
     await setDoc(doc(db, "classes", classId), {
       className: className.trim(),
       crId: user.uid,
-      joinCode,
+      joinCode: newJoinCode,
       createdAt: new Date()
     });
 
     await updateDoc(doc(db, "users", user.uid), {
       classId
     });
+
+    setJoinCode(newJoinCode);
 
     setUserData((prev) => ({
       ...prev,
@@ -88,10 +100,12 @@ export default function CRDashboard() {
       collection(db, "classes", classId, "subjects")
     );
 
-    setSubjects(snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })));
+    setSubjects(
+      snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+    );
   };
 
   const fetchTodaySchedule = async (classId) => {
@@ -170,11 +184,21 @@ export default function CRDashboard() {
             onClick={handleCreateClass}
             className="bg-green-600 text-white px-4"
           >
-            Create
+            Create Class
           </button>
         </div>
       ) : (
         <>
+          {/* Join Code Display */}
+          <div className="bg-gray-100 border p-4 rounded mb-6">
+            <p className="text-sm text-gray-500">
+              Share this code with students
+            </p>
+            <p className="text-2xl font-bold text-green-600">
+              Join Code: {joinCode}
+            </p>
+          </div>
+
           <h2 className="text-lg font-semibold mt-6 mb-2">
             Semester Subjects
           </h2>
@@ -221,7 +245,7 @@ export default function CRDashboard() {
           ) : (
             <ul className="space-y-2">
               {todaySubjects.map((id) => {
-                const sub = subjects.find(s => s.id === id);
+                const sub = subjects.find((s) => s.id === id);
                 return (
                   <li key={id} className="border p-2">
                     {sub?.subjectName}
