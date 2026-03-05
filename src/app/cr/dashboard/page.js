@@ -19,13 +19,26 @@ export default function CRDashboard() {
 
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
+
   const [className, setClassName] = useState("");
-  const [subjects, setSubjects] = useState([]);
-  const [newSubject, setNewSubject] = useState("");
-  const [todaySubjects, setTodaySubjects] = useState([]);
   const [joinCode, setJoinCode] = useState("");
 
+  const [subjects, setSubjects] = useState([]);
+  const [newSubject, setNewSubject] = useState("");
+
+  const [todaySubjects, setTodaySubjects] = useState([]);
+  const [published, setPublished] = useState(false);
+
+  const [actionLoading, setActionLoading] = useState({});
+
   const today = new Date().toISOString().split("T")[0];
+
+  const setLoadingState = (key, value) => {
+    setActionLoading((prev) => ({
+      ...prev,
+      [key]: value
+    }));
+  };
 
   useEffect(() => {
     const init = async () => {
@@ -68,8 +81,33 @@ export default function CRDashboard() {
     }
   };
 
+  const fetchSubjects = async (classId) => {
+    const snapshot = await getDocs(
+      collection(db, "classes", classId, "subjects")
+    );
+
+    setSubjects(
+      snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+    );
+  };
+
+  const fetchTodaySchedule = async (classId) => {
+    const ref = doc(db, "classes", classId, "dailySchedule", today);
+    const data = await getDoc(ref);
+
+    if (data.exists()) {
+      setTodaySubjects(data.data().subjects || []);
+      setPublished(data.data().published || false);
+    }
+  };
+
   const handleCreateClass = async () => {
     if (!className.trim()) return;
+
+    setLoadingState("createClass", true);
 
     const user = auth.currentUser;
     const classId = user.uid;
@@ -92,28 +130,8 @@ export default function CRDashboard() {
       ...prev,
       classId
     }));
-  };
 
-  const fetchSubjects = async (classId) => {
-    const snapshot = await getDocs(
-      collection(db, "classes", classId, "subjects")
-    );
-
-    setSubjects(
-      snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-    );
-  };
-
-  const fetchTodaySchedule = async (classId) => {
-    const ref = doc(db, "classes", classId, "dailySchedule", today);
-    const data = await getDoc(ref);
-
-    if (data.exists()) {
-      setTodaySubjects(data.data().subjects || []);
-    }
+    setLoadingState("createClass", false);
   };
 
   const handleAddSubject = async () => {
@@ -123,6 +141,8 @@ export default function CRDashboard() {
       alert("Subject already exists");
       return;
     }
+
+    setLoadingState("addSubject", true);
 
     const user = auth.currentUser;
 
@@ -136,9 +156,13 @@ export default function CRDashboard() {
 
     setNewSubject("");
     fetchSubjects(user.uid);
+
+    setLoadingState("addSubject", false);
   };
 
   const handleDeleteSubject = async (subjectId) => {
+    setLoadingState(`delete-${subjectId}`, true);
+
     const user = auth.currentUser;
 
     await deleteDoc(
@@ -146,10 +170,14 @@ export default function CRDashboard() {
     );
 
     fetchSubjects(user.uid);
+
+    setLoadingState(`delete-${subjectId}`, false);
   };
 
   const handleAddToToday = async (subjectId) => {
     if (todaySubjects.includes(subjectId)) return;
+
+    setLoadingState(`addToday-${subjectId}`, true);
 
     const user = auth.currentUser;
 
@@ -163,12 +191,24 @@ export default function CRDashboard() {
       today
     );
 
-    await setDoc(ref, { subjects: updated }, { merge: true });
+    await setDoc(
+      ref,
+      {
+        subjects: updated,
+        published: false
+      },
+      { merge: true }
+    );
 
     setTodaySubjects(updated);
+    setPublished(false);
+
+    setLoadingState(`addToday-${subjectId}`, false);
   };
 
   const handleRemoveFromToday = async (subjectId) => {
+    setLoadingState(`removeToday-${subjectId}`, true);
+
     const user = auth.currentUser;
 
     const updated = todaySubjects.filter((id) => id !== subjectId);
@@ -181,12 +221,17 @@ export default function CRDashboard() {
       today
     );
 
-    await setDoc(ref, { subjects: updated });
+    await setDoc(ref, { subjects: updated, published: false });
 
     setTodaySubjects(updated);
+    setPublished(false);
+
+    setLoadingState(`removeToday-${subjectId}`, false);
   };
 
   const clearTodaySchedule = async () => {
+    setLoadingState("clearToday", true);
+
     const user = auth.currentUser;
 
     const ref = doc(
@@ -197,12 +242,22 @@ export default function CRDashboard() {
       today
     );
 
-    await setDoc(ref, { subjects: [] });
+    await setDoc(ref, { subjects: [], published: false });
 
     setTodaySubjects([]);
+    setPublished(false);
+
+    setLoadingState("clearToday", false);
   };
 
   const publishSchedule = async () => {
+    if (todaySubjects.length === 0) {
+      alert("Add subjects first");
+      return;
+    }
+
+    setLoadingState("publish", true);
+
     const user = auth.currentUser;
 
     const ref = doc(
@@ -222,7 +277,9 @@ export default function CRDashboard() {
       { merge: true }
     );
 
-    alert("Schedule Published");
+    setPublished(true);
+
+    setLoadingState("publish", false);
   };
 
   if (loading) return <div className="p-10">Loading...</div>;
@@ -230,7 +287,7 @@ export default function CRDashboard() {
   return (
     <div className="p-10 max-w-xl mx-auto">
 
-      <h1 className="text-2xl font-bold mb-4">
+      <h1 className="text-2xl font-bold mb-6">
         CR Dashboard
       </h1>
 
@@ -243,11 +300,13 @@ export default function CRDashboard() {
             value={className}
             onChange={(e) => setClassName(e.target.value)}
           />
+
           <button
+            disabled={actionLoading.createClass}
             onClick={handleCreateClass}
-            className="bg-green-600 text-white px-4"
+            className="bg-green-600 text-white px-4 py-2 rounded"
           >
-            Create Class
+            {actionLoading.createClass ? "Creating..." : "Create Class"}
           </button>
         </div>
       ) : (
@@ -281,15 +340,15 @@ export default function CRDashboard() {
               placeholder="Add Subject"
               className="border p-2 flex-1"
               value={newSubject}
-              onChange={(e) =>
-                setNewSubject(e.target.value)
-              }
+              onChange={(e) => setNewSubject(e.target.value)}
             />
+
             <button
+              disabled={actionLoading.addSubject}
               onClick={handleAddSubject}
-              className="bg-blue-600 text-white px-4"
+              className="bg-blue-600 text-white px-4 py-2 rounded"
             >
-              Add
+              {actionLoading.addSubject ? "Adding..." : "Add"}
             </button>
           </div>
 
@@ -303,21 +362,23 @@ export default function CRDashboard() {
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() =>
-                      handleAddToToday(sub.id)
-                    }
+                    disabled={actionLoading[`addToday-${sub.id}`]}
+                    onClick={() => handleAddToToday(sub.id)}
                     className="bg-purple-600 text-white px-3 py-1 rounded"
                   >
-                    Add to Today
+                    {actionLoading[`addToday-${sub.id}`]
+                      ? "Adding..."
+                      : "Add to Today"}
                   </button>
 
                   <button
-                    onClick={() =>
-                      handleDeleteSubject(sub.id)
-                    }
+                    disabled={actionLoading[`delete-${sub.id}`]}
+                    onClick={() => handleDeleteSubject(sub.id)}
                     className="bg-red-600 text-white px-3 py-1 rounded"
                   >
-                    Delete
+                    {actionLoading[`delete-${sub.id}`]
+                      ? "Deleting..."
+                      : "Delete"}
                   </button>
                 </div>
               </li>
@@ -333,9 +394,7 @@ export default function CRDashboard() {
           ) : (
             <ul className="space-y-2">
               {todaySubjects.map((id) => {
-                const sub = subjects.find(
-                  (s) => s.id === id
-                );
+                const sub = subjects.find((s) => s.id === id);
 
                 return (
                   <li
@@ -345,12 +404,13 @@ export default function CRDashboard() {
                     {sub?.subjectName}
 
                     <button
-                      onClick={() =>
-                        handleRemoveFromToday(id)
-                      }
+                      disabled={actionLoading[`removeToday-${id}`]}
+                      onClick={() => handleRemoveFromToday(id)}
                       className="bg-red-500 text-white px-3 py-1 rounded"
                     >
-                      Remove
+                      {actionLoading[`removeToday-${id}`]
+                        ? "Removing..."
+                        : "Remove"}
                     </button>
                   </li>
                 );
@@ -359,20 +419,31 @@ export default function CRDashboard() {
           )}
 
           <div className="flex gap-4 mt-6">
+
             <button
+              disabled={actionLoading.publish || published}
               onClick={publishSchedule}
               className="bg-green-600 text-white px-4 py-2 rounded"
             >
-              Publish Schedule
+              {actionLoading.publish
+                ? "Publishing..."
+                : published
+                ? "Published ✓"
+                : "Publish"}
             </button>
 
             <button
+              disabled={actionLoading.clearToday}
               onClick={clearTodaySchedule}
               className="bg-red-600 text-white px-4 py-2 rounded"
             >
-              Clear Today
+              {actionLoading.clearToday
+                ? "Clearing..."
+                : "Clear Today"}
             </button>
+
           </div>
+
         </>
       )}
     </div>
