@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* -----------------------------
+   Root Theme Variables
+----------------------------- */
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -12,15 +16,101 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* -----------------------------
+   Dark Mode Support
+----------------------------- */
+
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #020617;
+    --foreground: #e2e8f0;
   }
 }
+
+/* -----------------------------
+   Base Body Styling
+----------------------------- */
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* =========================================================
+   REACT CALENDAR DARK THEME (FULL OVERRIDE)
+   ========================================================= */
+
+.react-calendar {
+  width: 100%;
+  background: #020617 !important;
+  border: none !important;
+  color: #e2e8f0 !important;
+  padding: 16px !important;
+  border-radius: 12px !important;
+  font-family: inherit;
+}
+
+/* Navigation (month switching) */
+
+.react-calendar__navigation button {
+  color: #e2e8f0 !important;
+  background: transparent !important;
+  min-width: 44px;
+  font-size: 16px;
+}
+
+.react-calendar__navigation button:hover {
+  background: #1e293b !important;
+  border-radius: 8px;
+}
+
+/* Weekday names */
+
+.react-calendar__month-view__weekdays {
+  text-align: center;
+  font-weight: 600;
+  color: #94a3b8 !important;
+}
+
+/* Individual date tiles */
+
+.react-calendar__tile {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+  border-radius: 8px;
+  padding: 10px 6px !important;
+  transition: background 0.2s ease;
+}
+
+/* Hover */
+
+.react-calendar__tile:enabled:hover {
+  background: #1e293b !important;
+}
+
+/* Today's date */
+
+.react-calendar__tile--now {
+  background: #334155 !important;
+  color: white !important;
+}
+
+/* Selected date */
+
+.react-calendar__tile--active {
+  background: #2563eb !important;
+  color: white !important;
+}
+
+/* Weekend */
+
+.react-calendar__month-view__days__day--weekend {
+  color: #f87171 !important;
+}
+
+/* Days from previous / next month */
+
+.react-calendar__month-view__days__day--neighboringMonth {
+  color: #475569 !important;
 }

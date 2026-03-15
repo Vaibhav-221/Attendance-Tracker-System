@@ -23,9 +23,9 @@ export default function StudentDashboard() {
   const [todaySubjects, setTodaySubjects] = useState([]);
 
   const [markedSubjects, setMarkedSubjects] = useState([]);
-  const [attendanceHistory, setAttendanceHistory] = useState([]);
-
   const [attendancePercent, setAttendancePercent] = useState(0);
+
+  const [subjectStats, setSubjectStats] = useState([]);
 
   const [marking, setMarking] = useState({});
   const [undoing, setUndoing] = useState({});
@@ -74,20 +74,24 @@ export default function StudentDashboard() {
 
   }, []);
 
+  /* FETCH ALL SUBJECTS */
+
   const fetchAllSubjects = async (classId) => {
 
     const snapshot = await getDocs(
       collection(db, "classes", classId, "subjects")
     );
 
-    setAllSubjects(
-      snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-    );
+    const subjects = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    setAllSubjects(subjects);
 
   };
+
+  /* LISTEN DAILY SCHEDULE */
 
   const listenToSchedule = (classId) => {
 
@@ -115,6 +119,8 @@ export default function StudentDashboard() {
 
   };
 
+  /* LISTEN TODAY ATTENDANCE */
+
   const listenToTodayAttendance = (classId, studentId) => {
 
     const ref = doc(
@@ -137,19 +143,27 @@ export default function StudentDashboard() {
 
   };
 
-  const handleMarkAttendance = (subjectId) => {
+  /* MARK ATTENDANCE */
+
+  const handleMarkAttendance = (subjectId, e) => {
+
+    e.stopPropagation();
 
     if (markedSubjects.includes(subjectId)) return;
 
     setMarking(prev => ({ ...prev, [subjectId]: true }));
 
-    setMarkedSubjects([...markedSubjects, subjectId]);
+    setMarkedSubjects(prev => [...prev, subjectId]);
 
     setMarking(prev => ({ ...prev, [subjectId]: false }));
 
   };
 
-  const handleUndoAttendance = (subjectId) => {
+  /* UNDO ATTENDANCE */
+
+  const handleUndoAttendance = (subjectId, e) => {
+
+    e.stopPropagation();
 
     setUndoing(prev => ({ ...prev, [subjectId]: true }));
 
@@ -160,6 +174,8 @@ export default function StudentDashboard() {
     setUndoing(prev => ({ ...prev, [subjectId]: false }));
 
   };
+
+  /* UPDATE FIRESTORE */
 
   const updateAttendance = async () => {
 
@@ -189,15 +205,32 @@ export default function StudentDashboard() {
 
   };
 
+  /* FETCH HISTORY */
+
   const fetchAttendanceHistory = async (classId, studentId) => {
 
     const scheduleSnapshot = await getDocs(
       collection(db, "classes", classId, "dailySchedule")
     );
 
-    let history = [];
     let totalScheduled = 0;
     let totalPresent = 0;
+
+    let stats = {};
+
+    const subjectsSnapshot = await getDocs(
+      collection(db, "classes", classId, "subjects")
+    );
+
+    subjectsSnapshot.docs.forEach(doc => {
+
+      stats[doc.id] = {
+        name: doc.data().subjectName,
+        total: 0,
+        present: 0
+      };
+
+    });
 
     for (const scheduleDoc of scheduleSnapshot.docs) {
 
@@ -205,6 +238,10 @@ export default function StudentDashboard() {
       const scheduled = scheduleDoc.data().subjects || [];
 
       totalScheduled += scheduled.length;
+
+      scheduled.forEach(id => {
+        if (stats[id]) stats[id].total++;
+      });
 
       const attendanceRef = doc(
         db,
@@ -218,187 +255,218 @@ export default function StudentDashboard() {
 
       const attendanceDoc = await getDoc(attendanceRef);
 
-      let presentSubjects = [];
-
       if (attendanceDoc.exists()) {
 
-        presentSubjects = attendanceDoc.data().subjects || [];
+        const present = attendanceDoc.data().subjects || [];
 
-        totalPresent += presentSubjects.length;
+        totalPresent += present.length;
+
+        present.forEach(id => {
+          if (stats[id]) stats[id].present++;
+        });
 
       }
 
-      history.push({
-        date,
-        scheduled,
-        present: presentSubjects
-      });
-
     }
 
-    if (totalScheduled === 0) {
-      setAttendancePercent(0);
-    } else {
-      setAttendancePercent(
-        ((totalPresent / totalScheduled) * 100).toFixed(2)
-      );
-    }
+    const percent =
+      totalScheduled === 0
+        ? 0
+        : ((totalPresent / totalScheduled) * 100).toFixed(2);
 
-    setAttendanceHistory(history);
+    setAttendancePercent(percent);
+
+    const formatted = Object.keys(stats).map(id => {
+
+      const total = stats[id].total;
+      const present = stats[id].present;
+
+      const percent =
+        total === 0
+          ? 0
+          : ((present / total) * 100).toFixed(1);
+
+      return {
+        id,
+        name: stats[id].name,
+        total,
+        present,
+        percent
+      };
+
+    });
+
+    setSubjectStats(formatted);
 
   };
 
-  if (loading) return <div className="p-10">Loading...</div>;
+  /* LOADING */
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        Loading...
+      </div>
+    );
+  }
 
   return (
 
-    <div className="p-10 max-w-xl mx-auto">
+    <div className="min-h-screen bg-slate-950 p-10">
 
-      <h1 className="text-2xl font-bold mb-4">
-        Student Dashboard
-      </h1>
+      <div className="max-w-4xl mx-auto">
 
-      <p className="mb-6">
-        Welcome, {userData.name}
-      </p>
+        <h1 className="text-3xl font-bold text-white mb-2">
+          Student Dashboard
+        </h1>
 
-      <div className="mb-6 p-4 border rounded bg-gray-100">
+        <p className="text-slate-400 mb-8">
+          Welcome, {userData.name}
+        </p>
 
-        <p className="font-semibold">
-          Attendance Percentage:
-          <span className="ml-2 text-blue-600">
+        {/* Attendance Card */}
+
+        <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 mb-6">
+
+          <p className="text-slate-400">
+            Overall Attendance
+          </p>
+
+          <p className="text-3xl font-bold text-emerald-400">
             {attendancePercent}%
-          </span>
-        </p>
+          </p>
 
-      </div>
+        </div>
 
-      <h2 className="text-lg font-semibold mb-3">
-        Today's Classes ({today})
-      </h2>
+        {/* Calendar Button */}
 
-      {todaySubjects.length === 0 ? (
+        <button
+          onClick={() => router.push("/student/calender")}
+          className="mb-8 bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-lg"
+        >
+          View Attendance Calendar
+        </button>
 
-        <p className="text-gray-500">
-          No classes scheduled today.
-        </p>
+        {/* SUBJECT OVERVIEW */}
 
-      ) : (
-
-        <ul className="space-y-3">
-
-          {todaySubjects.map(subjectId => {
-
-            const subject = allSubjects.find(
-              s => s.id === subjectId
-            );
-
-            const marked = markedSubjects.includes(subjectId);
-
-            return (
-
-              <li
-                key={subjectId}
-                className="border p-3 rounded flex justify-between"
-              >
-
-                <span>{subject?.subjectName}</span>
-
-                {marked ? (
-
-                  <button
-                    onClick={() =>
-                      handleUndoAttendance(subjectId)
-                    }
-                    disabled={undoing[subjectId]}
-                    className="bg-red-500 text-white px-3 py-1 rounded"
-                  >
-                    {undoing[subjectId]
-                      ? "Undoing..."
-                      : "Undo"}
-                  </button>
-
-                ) : (
-
-                  <button
-                    onClick={() =>
-                      handleMarkAttendance(subjectId)
-                    }
-                    disabled={marking[subjectId]}
-                    className="bg-blue-600 text-white px-3 py-1 rounded"
-                  >
-                    {marking[subjectId]
-                      ? "Adding..."
-                      : "Mark Present"}
-                  </button>
-
-                )}
-
-              </li>
-
-            );
-
-          })}
-
-        </ul>
-
-      )}
-
-      <button
-        onClick={updateAttendance}
-        disabled={updating}
-        className="mt-6 bg-green-600 text-white px-4 py-2 rounded"
-      >
-        {updating ? "Updating..." : "Update Attendance"}
-      </button>
-
-      <div className="mt-10">
-
-        <h2 className="text-lg font-semibold mb-4">
-          Attendance Overview
+        <h2 className="text-xl font-semibold text-white mb-4">
+          Subjects Overview
         </h2>
 
-        {attendanceHistory.map(day => (
+        <div className="space-y-4">
 
-          <div
-            key={day.date}
-            className="border p-3 mb-3 rounded"
-          >
+          {subjectStats.map(subject => (
 
-            <p className="font-semibold mb-2">
-              {day.date}
-            </p>
+            <div
+              key={subject.id}
+              onClick={() => router.push(`/student/subject/${subject.id}`)}
+              className="bg-slate-900 border border-slate-700 rounded-xl p-4 cursor-pointer hover:bg-slate-800"
+            >
 
-            <ul className="text-sm">
+              <div className="flex justify-between mb-2">
 
-              {day.scheduled.map(subjectId => {
+                <span className="text-white font-medium">
+                  {subject.name}
+                </span>
 
-                const subject = allSubjects.find(
-                  s => s.id === subjectId
-                );
+                <span className="text-emerald-400 font-semibold">
+                  {subject.percent}%
+                </span>
 
-                const present =
-                  day.present.includes(subjectId);
+              </div>
 
-                return (
+              <p className="text-slate-400 text-sm mb-2">
+                {subject.present} / {subject.total} Sessions
+              </p>
 
-                  <li key={subjectId}>
+              <div className="w-full bg-slate-700 h-2 rounded">
 
+                <div
+                  className="bg-emerald-500 h-2 rounded"
+                  style={{ width: `${subject.percent}%` }}
+                />
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+
+        {/* TODAY CLASSES */}
+
+        <h2 className="text-xl font-semibold text-white mt-10 mb-4">
+          Today's Classes ({today})
+        </h2>
+
+        {todaySubjects.length === 0 ? (
+
+          <p className="text-slate-400">
+            No classes scheduled today.
+          </p>
+
+        ) : (
+
+          <ul className="space-y-3">
+
+            {todaySubjects.map(subjectId => {
+
+              const subject = allSubjects.find(
+                s => s.id === subjectId
+              );
+
+              const marked = markedSubjects.includes(subjectId);
+
+              return (
+
+                <li
+                  key={subjectId}
+                  onClick={() => router.push(`/student/subject/${subjectId}`)}
+                  className="bg-slate-900 border border-slate-700 rounded-lg p-4 flex justify-between items-center hover:bg-slate-800"
+                >
+
+                  <span className="text-white">
                     {subject?.subjectName}
-                    {" — "}
-                    {present ? "Present ✓" : "Absent"}
+                  </span>
 
-                  </li>
+                  {marked ? (
 
-                );
+                    <button
+                      onClick={(e) => handleUndoAttendance(subjectId, e)}
+                      className="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded"
+                    >
+                      Undo
+                    </button>
 
-              })}
+                  ) : (
 
-            </ul>
+                    <button
+                      onClick={(e) => handleMarkAttendance(subjectId, e)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+                    >
+                      Mark Present
+                    </button>
 
-          </div>
+                  )}
 
-        ))}
+                </li>
+
+              );
+
+            })}
+
+          </ul>
+
+        )}
+
+        <button
+          onClick={updateAttendance}
+          disabled={updating}
+          className="mt-6 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg"
+        >
+          {updating ? "Updating..." : "Update Attendance"}
+        </button>
 
       </div>
 
