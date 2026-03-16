@@ -319,7 +319,7 @@ export default function StudentDashboard() {
 
   return (
 
-    <div className="min-h-screen bg-slate-950 p-10">
+    <div className="min-h-screen bg-slate-950 p-5">
 
       <div className="max-w-4xl mx-auto">
 
