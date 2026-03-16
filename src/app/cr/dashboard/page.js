@@ -322,7 +322,7 @@ export default function CRDashboard() {
 
   return (
 
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-10">
+    <div className="min-h-screen bg-slate-950 text-slate-200 p-6">
 
       <div className="max-w-3xl mx-auto">
 
@@ -524,7 +524,6 @@ export default function CRDashboard() {
               </>
 
             )}
-
           </>
 
         )}
