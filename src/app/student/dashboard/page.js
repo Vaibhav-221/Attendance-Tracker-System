@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import {
   doc,
   getDoc,
@@ -35,43 +36,49 @@ export default function StudentDashboard() {
 
   useEffect(() => {
 
-    const initialize = async () => {
-
-      const user = auth.currentUser;
-
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+  
       if (!user) {
         router.push("/student/login");
         return;
       }
-
+  
       const userDoc = await getDoc(doc(db, "users", user.uid));
-
-      if (!userDoc.exists() || userDoc.data().role !== "student") {
+  
+      if (!userDoc.exists()) {
         router.push("/student/login");
         return;
       }
-
+  
+      const role = userDoc.data().role;
+  
+      // allow both student and CR
+      if (role !== "student" && role !== "cr") {
+        router.push("/student/login");
+        return;
+      }
+  
       if (!userDoc.data().classId) {
         router.push("/student/join-class");
         return;
       }
-
+  
       const classId = userDoc.data().classId;
-
+  
       setUserData(userDoc.data());
-
+  
       await fetchAllSubjects(classId);
       await fetchAttendanceHistory(classId, user.uid);
-
+  
       listenToSchedule(classId);
       listenToTodayAttendance(classId, user.uid);
-
+  
       setLoading(false);
-
-    };
-
-    initialize();
-
+  
+    });
+  
+    return () => unsubscribe();
+  
   }, []);
 
   /* FETCH ALL SUBJECTS */
