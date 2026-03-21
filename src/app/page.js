@@ -1,204 +1,426 @@
 "use client";
 
 import Link from "next/link";
-import { User, Users } from "lucide-react";
+import { User, Users, TrendingUp, Award, Shield, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#0A0E27] text-white p-6 relative overflow-hidden">
 
-      {/* Enhanced Animated Background - Same as Dashboard */}
-      <div className="absolute top-[-100px] right-[-100px] w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] bg-[#00D9FF]/5 rounded-full blur-[100px] animate-float"></div>
-      <div className="absolute bottom-[-150px] left-[-150px] w-[350px] h-[350px] sm:w-[500px] sm:h-[500px] bg-[#7C3AED]/5 rounded-full blur-[120px] animate-float-delayed"></div>
-      <div className="absolute top-1/2 left-1/2 w-[200px] h-[200px] sm:w-[300px] sm:h-[300px] bg-[#10B981]/5 rounded-full blur-[100px] animate-pulse-slow"></div>
+      {/* Animated Grid Background */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `linear-gradient(#00D9FF 1px, transparent 1px), linear-gradient(90deg, #00D9FF 1px, transparent 1px)`,
+          backgroundSize: '50px 50px',
+          animation: 'gridMove 20s linear infinite'
+        }}></div>
+      </div>
 
-      <div className="relative z-10 max-w-6xl w-full">
+      {/* Multiple Animated Gradient Orbs */}
+      <div className="absolute top-[-200px] left-[-200px] w-[500px] h-[500px] bg-gradient-to-br from-[#00D9FF]/20 to-[#0EA5E9]/20 rounded-full blur-[120px] animate-float"></div>
+      <div className="absolute top-[-100px] right-[-150px] w-[400px] h-[400px] bg-gradient-to-br from-[#7C3AED]/20 to-[#9D7FED]/20 rounded-full blur-[100px] animate-float-delayed"></div>
+      <div className="absolute bottom-[-150px] left-[10%] w-[450px] h-[450px] bg-gradient-to-br from-[#10B981]/15 to-[#059669]/15 rounded-full blur-[110px] animate-float-slow"></div>
+      <div className="absolute bottom-[-100px] right-[-100px] w-[380px] h-[380px] bg-gradient-to-br from-[#F59E0B]/15 to-[#D97706]/15 rounded-full blur-[100px] animate-float"></div>
+      <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-gradient-to-br from-[#EC4899]/10 to-[#DB2777]/10 rounded-full blur-[90px] animate-pulse-slow"></div>
 
-        {/* Logo/Icon */}
-        <div className="flex justify-center mb-6">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg shadow-[#00D9FF]/30 hover:scale-110 hover:rotate-12 transition-all duration-300 animate-bounce-slow">
-            <svg className="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+      {/* Floating Particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {mounted && [...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full opacity-40"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `floatParticle ${5 + Math.random() * 10}s ease-in-out infinite`,
+              animationDelay: `${Math.random() * 5}s`
+            }}
+          ></div>
+        ))}
+      </div>
+
+      <div className="relative z-10 max-w-7xl w-full">
+
+        {/* Animated Logo with 3D Effect */}
+        <div className="flex justify-center mb-8 perspective-1000">
+          <div className="relative group">
+            {/* Glow rings */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#00D9FF] to-[#7C3AED] rounded-3xl blur-xl opacity-30 group-hover:opacity-60 transition-all duration-500 animate-pulse-glow"></div>
+            <div className="absolute inset-[-4px] bg-gradient-to-r from-[#00D9FF] to-[#7C3AED] rounded-3xl blur-md opacity-20 group-hover:opacity-40 transition-all duration-500"></div>
+            
+            <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#00D9FF] via-[#7C3AED] to-[#EC4899] rounded-3xl flex items-center justify-center shadow-2xl shadow-[#00D9FF]/50 hover:scale-110 hover:rotate-12 transition-all duration-500 animate-bounce-slow transform-gpu">
+              <svg className="w-10 h-10 sm:w-12 sm:h-12 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              
+              {/* Orbiting dots */}
+              <div className="absolute inset-0 animate-spin-slow">
+                <div className="absolute top-0 left-1/2 w-2 h-2 bg-[#00D9FF] rounded-full -translate-x-1/2 shadow-lg shadow-[#00D9FF]/50"></div>
+              </div>
+              <div className="absolute inset-0 animate-spin-reverse">
+                <div className="absolute bottom-0 left-1/2 w-2 h-2 bg-[#EC4899] rounded-full -translate-x-1/2 shadow-lg shadow-[#EC4899]/50"></div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Title with Gradient */}
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 text-center tracking-wide animate-fadeIn">
-          Attendance Tracker System
-          <span className="block sm:inline text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#7C3AED] animate-gradient"> (ATS)</span>
-        </h1>
+        {/* Hero Title with Advanced Animations */}
+        <div className="text-center mb-4">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 tracking-wide animate-fadeInUp">
+            <span className="inline-block animate-shimmer bg-gradient-to-r from-white via-[#00D9FF] to-white bg-[length:200%_100%] text-transparent bg-clip-text">
+              Attendance Tracker System
+            </span>
+          </h1>
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#00D9FF] animate-expand-right"></div>
+            <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] via-[#7C3AED] to-[#EC4899] animate-gradient-flow">
+              (ATS)
+            </span>
+            <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#7C3AED] animate-expand-left"></div>
+          </div>
+        </div>
 
-        <p className="text-gray-400 mb-10 text-center max-w-md mx-auto text-xs sm:text-sm">
-          Select your role to continue
+        {/* Animated Feature Pills */}
+        <div className="flex flex-wrap justify-center gap-3 mb-8 animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
+          <div className="px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 flex items-center gap-2 hover:scale-105 transition-all duration-300 hover:bg-white/10 group">
+            <Zap className="w-4 h-4 text-[#F59E0B] group-hover:animate-pulse" />
+            <span className="text-sm text-gray-300">Real-time Tracking</span>
+          </div>
+          <div className="px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 flex items-center gap-2 hover:scale-105 transition-all duration-300 hover:bg-white/10 group">
+            <Shield className="w-4 h-4 text-[#10B981] group-hover:animate-pulse" />
+            <span className="text-sm text-gray-300">Secure & Reliable</span>
+          </div>
+          <div className="px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 flex items-center gap-2 hover:scale-105 transition-all duration-300 hover:bg-white/10 group">
+            <Award className="w-4 h-4 text-[#EC4899] group-hover:animate-pulse" />
+            <span className="text-sm text-gray-300">Easy to Use</span>
+          </div>
+        </div>
+
+        <p className="text-gray-400 mb-12 text-center max-w-md mx-auto text-sm sm:text-base animate-fadeInUp" style={{ animationDelay: '0.3s' }}>
+          Select your role to continue and experience seamless attendance management
         </p>
 
-        {/* Role Selection Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 w-full max-w-2xl mx-auto px-4">
+        {/* Premium Role Selection Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 w-full max-w-4xl mx-auto px-4 mb-12">
 
-          {/* CR Card */}
+          {/* CR Card with Enhanced Effects */}
           <Link href="/cr/login">
-            <div className="group cursor-pointer bg-[#0F1629] border border-[#1A1F3A] p-6 rounded-xl shadow-xl transition-all duration-300 hover:scale-105 hover:border-[#7C3AED]/50 hover:shadow-2xl hover:shadow-[#7C3AED]/30 relative overflow-hidden">
+            <div className="group cursor-pointer relative animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
+              
+              {/* Outer glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#7C3AED] to-[#9D7FED] rounded-2xl blur-xl opacity-0 group-hover:opacity-30 transition-all duration-500"></div>
+              
+              {/* Main card */}
+              <div className="relative bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] p-8 rounded-2xl shadow-2xl transition-all duration-500 hover:scale-[1.03] hover:border-[#7C3AED]/50 hover:shadow-[#7C3AED]/30 overflow-hidden">
 
-              {/* Animated Background Glow */}
-              <div className="absolute top-0 right-0 w-24 h-24 bg-[#7C3AED]/5 rounded-full blur-2xl group-hover:bg-[#7C3AED]/10 transition-all duration-300"></div>
-              <div className="absolute bottom-0 left-0 w-20 h-20 bg-[#7C3AED]/5 rounded-full blur-xl group-hover:bg-[#7C3AED]/10 transition-all duration-300"></div>
+                {/* Animated Background Elements */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#7C3AED]/5 rounded-full blur-2xl group-hover:bg-[#7C3AED]/15 transition-all duration-500 animate-float"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#9D7FED]/5 rounded-full blur-xl group-hover:bg-[#9D7FED]/15 transition-all duration-500 animate-float-delayed"></div>
+                
+                {/* Scanning line effect */}
+                <div className="absolute inset-0 overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#7C3AED]/10 to-transparent h-full animate-scan"></div>
+                </div>
 
-              <div className="relative z-10">
-                {/* Icon */}
-                <div className="flex justify-center mb-4">
-                  <div className="bg-[#7C3AED]/10 p-4 rounded-full group-hover:bg-[#7C3AED]/20 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 border border-[#7C3AED]/20">
-                    <Users className="w-8 h-8 text-[#7C3AED] group-hover:text-[#9D7FED] transition-colors duration-300" />
+                <div className="relative z-10">
+                  {/* Icon with enhanced animation */}
+                  <div className="flex justify-center mb-6">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-[#7C3AED] rounded-2xl blur-lg opacity-40 group-hover:opacity-70 transition-all duration-500"></div>
+                      <div className="relative bg-gradient-to-br from-[#7C3AED]/20 to-[#9D7FED]/20 p-6 rounded-2xl border border-[#7C3AED]/30 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 backdrop-blur-sm">
+                        <Users className="w-10 h-10 text-[#7C3AED] group-hover:text-[#9D7FED] transition-colors duration-500 drop-shadow-lg" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Title with gradient animation */}
+                  <h2 className="text-2xl sm:text-3xl text-center font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-[#7C3AED] group-hover:via-[#9D7FED] group-hover:to-[#7C3AED] transition-all duration-500">
+                    Class Representative
+                  </h2>
+
+                  <p className="text-center text-gray-500 text-sm mb-4 group-hover:text-gray-400 transition-colors duration-300">
+                    Manage classes, subjects, and schedules
+                  </p>
+
+                  {/* Animated CTA */}
+                  <div className="flex justify-center mt-6 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
+                    <div className="bg-gradient-to-r from-[#7C3AED] to-[#9D7FED] px-6 py-2.5 rounded-full flex items-center gap-2 shadow-lg shadow-[#7C3AED]/30">
+                      <span className="text-white text-sm font-medium">Get Started</span>
+                      <svg className="w-4 h-4 text-white animate-bounce-horizontal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
 
-                {/* Title */}
-                <h2 className="text-xl sm:text-2xl text-center font-semibold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-[#7C3AED] group-hover:to-[#9D7FED] transition-all duration-300">
-                  Class Representative
-                </h2>
-
-                {/* Arrow Indicator */}
-                <div className="flex justify-center mt-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  <div className="bg-[#7C3AED]/10 px-3 py-1.5 rounded-full flex items-center gap-2 border border-[#7C3AED]/20">
-                    <span className="text-[#7C3AED] text-xs font-medium">Get Started</span>
-                    <svg className="w-3 h-3 text-[#7C3AED] group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
               </div>
-
             </div>
           </Link>
 
-          {/* Student Card */}
+          {/* Student Card with Enhanced Effects */}
           <Link href="/student/login">
-            <div className="group cursor-pointer bg-[#0F1629] border border-[#1A1F3A] p-6 rounded-xl shadow-xl transition-all duration-300 hover:scale-105 hover:border-[#00D9FF]/50 hover:shadow-2xl hover:shadow-[#00D9FF]/30 relative overflow-hidden">
+            <div className="group cursor-pointer relative animate-fadeInUp" style={{ animationDelay: '0.5s' }}>
+              
+              {/* Outer glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#00D9FF] to-[#0EA5E9] rounded-2xl blur-xl opacity-0 group-hover:opacity-30 transition-all duration-500"></div>
+              
+              {/* Main card */}
+              <div className="relative bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] p-8 rounded-2xl shadow-2xl transition-all duration-500 hover:scale-[1.03] hover:border-[#00D9FF]/50 hover:shadow-[#00D9FF]/30 overflow-hidden">
 
-              {/* Animated Background Glow */}
-              <div className="absolute top-0 right-0 w-24 h-24 bg-[#00D9FF]/5 rounded-full blur-2xl group-hover:bg-[#00D9FF]/10 transition-all duration-300"></div>
-              <div className="absolute bottom-0 left-0 w-20 h-20 bg-[#00D9FF]/5 rounded-full blur-xl group-hover:bg-[#00D9FF]/10 transition-all duration-300"></div>
+                {/* Animated Background Elements */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#00D9FF]/5 rounded-full blur-2xl group-hover:bg-[#00D9FF]/15 transition-all duration-500 animate-float"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#0EA5E9]/5 rounded-full blur-xl group-hover:bg-[#0EA5E9]/15 transition-all duration-500 animate-float-delayed"></div>
+                
+                {/* Scanning line effect */}
+                <div className="absolute inset-0 overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#00D9FF]/10 to-transparent h-full animate-scan"></div>
+                </div>
 
-              <div className="relative z-10">
-                {/* Icon */}
-                <div className="flex justify-center mb-4">
-                  <div className="bg-[#00D9FF]/10 p-4 rounded-full group-hover:bg-[#00D9FF]/20 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 border border-[#00D9FF]/20">
-                    <User className="w-8 h-8 text-[#00D9FF] group-hover:text-[#33E1FF] transition-colors duration-300" />
+                <div className="relative z-10">
+                  {/* Icon with enhanced animation */}
+                  <div className="flex justify-center mb-6">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-[#00D9FF] rounded-2xl blur-lg opacity-40 group-hover:opacity-70 transition-all duration-500"></div>
+                      <div className="relative bg-gradient-to-br from-[#00D9FF]/20 to-[#0EA5E9]/20 p-6 rounded-2xl border border-[#00D9FF]/30 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 backdrop-blur-sm">
+                        <User className="w-10 h-10 text-[#00D9FF] group-hover:text-[#33E1FF] transition-colors duration-500 drop-shadow-lg" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Title with gradient animation */}
+                  <h2 className="text-2xl sm:text-3xl text-center font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-[#00D9FF] group-hover:via-[#33E1FF] group-hover:to-[#00D9FF] transition-all duration-500">
+                    Student
+                  </h2>
+
+                  <p className="text-center text-gray-500 text-sm mb-4 group-hover:text-gray-400 transition-colors duration-300">
+                    Track attendance and view schedules
+                  </p>
+
+                  {/* Animated CTA */}
+                  <div className="flex justify-center mt-6 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
+                    <div className="bg-gradient-to-r from-[#00D9FF] to-[#0EA5E9] px-6 py-2.5 rounded-full flex items-center gap-2 shadow-lg shadow-[#00D9FF]/30">
+                      <span className="text-white text-sm font-medium">Get Started</span>
+                      <svg className="w-4 h-4 text-white animate-bounce-horizontal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
 
-                {/* Title */}
-                <h2 className="text-xl sm:text-2xl text-center font-semibold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-[#00D9FF] group-hover:to-[#33E1FF] transition-all duration-300">
-                  Student
-                </h2>
-
-                {/* Arrow Indicator */}
-                <div className="flex justify-center mt-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  <div className="bg-[#00D9FF]/10 px-3 py-1.5 rounded-full flex items-center gap-2 border border-[#00D9FF]/20">
-                    <span className="text-[#00D9FF] text-xs font-medium">Get Started</span>
-                    <svg className="w-3 h-3 text-[#00D9FF] group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
               </div>
-
             </div>
           </Link>
 
         </div>
 
-        {/* Footer Info */}
-        <div className="mt-10 text-center">
-          <p className="text-gray-600 text-xs">
-            Powered by <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#7C3AED] font-medium">ATS</span> • Secure & Reliable
+        {/* Stats Counter Animation */}
+        <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto mb-12 animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
+          <div className="text-center group">
+            <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#0EA5E9] mb-1 group-hover:scale-110 transition-transform duration-300">
+              99%
+            </div>
+            <div className="text-xs text-gray-500">Accuracy</div>
+          </div>
+          <div className="text-center group">
+            <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#7C3AED] to-[#9D7FED] mb-1 group-hover:scale-110 transition-transform duration-300">
+              24/7
+            </div>
+            <div className="text-xs text-gray-500">Available</div>
+          </div>
+          <div className="text-center group">
+            <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#10B981] to-[#059669] mb-1 group-hover:scale-110 transition-transform duration-300">
+              <TrendingUp className="w-8 h-8 inline" />
+            </div>
+            <div className="text-xs text-gray-500">Fast Track</div>
+          </div>
+        </div>
+
+        {/* Footer with Animation */}
+        <div className="text-center animate-fadeInUp" style={{ animationDelay: '0.7s' }}>
+          <p className="text-gray-600 text-xs sm:text-sm">
+            Powered by{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] via-[#7C3AED] to-[#EC4899] font-bold animate-gradient-flow">
+              ATS
+            </span>
+            {" "}• Secure & Reliable • Modern Design
           </p>
         </div>
 
       </div>
 
       <style jsx>{`
-        @keyframes fadeIn {
+        @keyframes fadeInUp {
           from {
             opacity: 0;
-            transform: translateY(-20px);
+            transform: translateY(30px);
           }
           to {
             opacity: 1;
             transform: translateY(0);
           }
         }
-        
-        .animate-fadeIn {
-          animation: fadeIn 0.8s ease-out;
+
+        .animate-fadeInUp {
+          animation: fadeInUp 0.8s ease-out forwards;
+          opacity: 0;
         }
-        
-        @keyframes float {
-          0%, 100% {
-            transform: translate(0, 0) scale(1);
-          }
-          50% {
-            transform: translate(20px, -20px) scale(1.05);
-          }
+
+        @keyframes shimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
         }
-        
-        @keyframes float-delayed {
-          0%, 100% {
-            transform: translate(0, 0) scale(1);
-          }
-          50% {
-            transform: translate(-20px, 20px) scale(1.05);
-          }
+
+        .animate-shimmer {
+          animation: shimmer 3s ease-in-out infinite;
         }
-        
-        .animate-float {
-          animation: float 8s ease-in-out infinite;
+
+        @keyframes gradientFlow {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
         }
-        
-        .animate-float-delayed {
-          animation: float-delayed 10s ease-in-out infinite;
-        }
-        
-        @keyframes pulse-slow {
-          0%, 100% {
-            opacity: 0.5;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.8;
-            transform: scale(1.05);
-          }
-        }
-        
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-        
-        @keyframes bounce-slow {
-          0%, 100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-        }
-        
-        .animate-bounce-slow {
-          animation: bounce-slow 2s ease-in-out infinite;
-        }
-        
-        @keyframes gradient {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-        
-        .animate-gradient {
+
+        .animate-gradient-flow {
           background-size: 200% 200%;
-          animation: gradient 3s ease infinite;
+          animation: gradientFlow 3s ease infinite;
+        }
+
+        @keyframes float {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(20px, -20px) scale(1.05); }
+        }
+
+        @keyframes floatDelayed {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(-20px, 20px) scale(1.05); }
+        }
+
+        @keyframes floatSlow {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(15px, 15px) scale(1.03); }
+        }
+
+        .animate-float { animation: float 8s ease-in-out infinite; }
+        .animate-float-delayed { animation: floatDelayed 10s ease-in-out infinite; }
+        .animate-float-slow { animation: floatSlow 12s ease-in-out infinite; }
+
+        @keyframes pulseSlow {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(1.05); }
+        }
+
+        .animate-pulse-slow {
+          animation: pulseSlow 4s ease-in-out infinite;
+        }
+
+        @keyframes bounceSlow {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-15px); }
+        }
+
+        .animate-bounce-slow {
+          animation: bounceSlow 3s ease-in-out infinite;
+        }
+
+        @keyframes spinSlow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        .animate-spin-slow {
+          animation: spinSlow 8s linear infinite;
+        }
+
+        @keyframes spinReverse {
+          from { transform: rotate(360deg); }
+          to { transform: rotate(0deg); }
+        }
+
+        .animate-spin-reverse {
+          animation: spinReverse 6s linear infinite;
+        }
+
+        @keyframes scan {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(100%); }
+        }
+
+        .animate-scan {
+          animation: scan 2s ease-in-out infinite;
+        }
+
+        @keyframes bounceHorizontal {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(5px); }
+        }
+
+        .animate-bounce-horizontal {
+          animation: bounceHorizontal 1s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.6; }
+        }
+
+        .animate-pulse-glow {
+          animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes expandRight {
+          from { width: 0; }
+          to { width: 3rem; }
+        }
+
+        .animate-expand-right {
+          animation: expandRight 1s ease-out forwards;
+          animation-delay: 0.5s;
+          width: 0;
+        }
+
+        @keyframes expandLeft {
+          from { width: 0; }
+          to { width: 3rem; }
+        }
+
+        .animate-expand-left {
+          animation: expandLeft 1s ease-out forwards;
+          animation-delay: 0.5s;
+          width: 0;
+        }
+
+        @keyframes floatParticle {
+          0%, 100% { 
+            transform: translate(0, 0) scale(1);
+            opacity: 0.4;
+          }
+          25% { 
+            transform: translate(20px, -30px) scale(1.2);
+            opacity: 0.6;
+          }
+          50% { 
+            transform: translate(-15px, -60px) scale(0.8);
+            opacity: 0.3;
+          }
+          75% { 
+            transform: translate(25px, -40px) scale(1.1);
+            opacity: 0.5;
+          }
+        }
+
+        @keyframes gridMove {
+          0% { transform: translate(0, 0); }
+          100% { transform: translate(50px, 50px); }
+        }
+
+        .perspective-1000 {
+          perspective: 1000px;
         }
       `}</style>
 
