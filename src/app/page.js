@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { User, Users, TrendingUp, Award, Shield, Zap } from "lucide-react";
+import { User, Users, Award, Shield, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -30,21 +30,23 @@ export default function Home() {
       <div className="absolute bottom-[-100px] right-[-100px] w-[380px] h-[380px] bg-gradient-to-br from-[#F59E0B]/15 to-[#D97706]/15 rounded-full blur-[100px] animate-float"></div>
       <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-gradient-to-br from-[#EC4899]/10 to-[#DB2777]/10 rounded-full blur-[90px] animate-pulse-slow"></div>
 
-      {/* Floating Particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {mounted && [...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full opacity-40"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `floatParticle ${5 + Math.random() * 10}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 5}s`
-            }}
-          ></div>
-        ))}
-      </div>
+      {/* Floating Particles - Client side only */}
+      {mounted && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full opacity-40"
+              style={{
+                left: `${(i * 7 + 13) % 100}%`,
+                top: `${(i * 11 + 17) % 100}%`,
+                animation: `floatParticle ${5 + (i % 5)}s ease-in-out infinite`,
+                animationDelay: `${(i % 5) * 0.5}s`
+              }}
+            ></div>
+          ))}
+        </div>
+      )}
 
       <div className="relative z-10 max-w-7xl w-full">
 
@@ -72,8 +74,8 @@ export default function Home() {
         </div>
 
         {/* Hero Title with Advanced Animations */}
-        <div className="text-center mb-4">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 tracking-wide animate-fadeInUp">
+        <div className="text-center mb-3">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 tracking-wide animate-fadeInUp">
             <span className="inline-block animate-shimmer bg-gradient-to-r from-white via-[#00D9FF] to-white bg-[length:200%_100%] text-transparent bg-clip-text">
               Attendance Tracker System
             </span>
@@ -88,7 +90,7 @@ export default function Home() {
         </div>
 
         {/* Animated Feature Pills */}
-        <div className="flex flex-wrap justify-center gap-3 mb-8 animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
+        <div className="flex flex-wrap justify-center gap-3 mb-5 animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
           <div className="px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 flex items-center gap-2 hover:scale-105 transition-all duration-300 hover:bg-white/10 group">
             <Zap className="w-4 h-4 text-[#F59E0B] group-hover:animate-pulse" />
             <span className="text-sm text-gray-300">Real-time Tracking</span>
@@ -103,12 +105,12 @@ export default function Home() {
           </div>
         </div>
 
-        <p className="text-gray-400 mb-12 text-center max-w-md mx-auto text-sm sm:text-base animate-fadeInUp" style={{ animationDelay: '0.3s' }}>
-          Select your role to continue and experience seamless attendance management
+        <p className="text-gray-400 mb-5 text-center max-w-md mx-auto text-sm sm:text-base animate-fadeInUp" style={{ animationDelay: '0.3s' }}>
+          Select your role to continue
         </p>
 
         {/* Premium Role Selection Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 w-full max-w-4xl mx-auto px-4 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 w-full max-w-4xl mx-auto px-4 mb-8">
 
           {/* CR Card with Enhanced Effects */}
           <Link href="/cr/login">
@@ -129,12 +131,15 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#7C3AED]/10 to-transparent h-full animate-scan"></div>
                 </div>
 
+                {/* Mobile pulsing effect - always visible on mobile */}
+                <div className="md:hidden absolute inset-0 bg-gradient-to-br from-[#7C3AED]/5 to-transparent animate-pulse-mobile pointer-events-none"></div>
+
                 <div className="relative z-10">
-                  {/* Icon with enhanced animation */}
+                  {/* Icon with ZOOM ONLY (no rotation) */}
                   <div className="flex justify-center mb-6">
                     <div className="relative">
-                      <div className="absolute inset-0 bg-[#7C3AED] rounded-2xl blur-lg opacity-40 group-hover:opacity-70 transition-all duration-500"></div>
-                      <div className="relative bg-gradient-to-br from-[#7C3AED]/20 to-[#9D7FED]/20 p-6 rounded-2xl border border-[#7C3AED]/30 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 backdrop-blur-sm">
+                      <div className="absolute inset-0 bg-[#7C3AED] rounded-2xl blur-lg opacity-40 group-hover:opacity-70 transition-all duration-500 animate-pulse-slow"></div>
+                      <div className="relative bg-gradient-to-br from-[#7C3AED]/20 to-[#9D7FED]/20 p-6 rounded-2xl border border-[#7C3AED]/30 group-hover:scale-125 transition-all duration-500 backdrop-blur-sm">
                         <Users className="w-10 h-10 text-[#7C3AED] group-hover:text-[#9D7FED] transition-colors duration-500 drop-shadow-lg" />
                       </div>
                     </div>
@@ -183,12 +188,15 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#00D9FF]/10 to-transparent h-full animate-scan"></div>
                 </div>
 
+                {/* Mobile pulsing effect - always visible on mobile */}
+                <div className="md:hidden absolute inset-0 bg-gradient-to-br from-[#00D9FF]/5 to-transparent animate-pulse-mobile pointer-events-none"></div>
+
                 <div className="relative z-10">
-                  {/* Icon with enhanced animation */}
+                  {/* Icon with ZOOM ONLY (no rotation) */}
                   <div className="flex justify-center mb-6">
                     <div className="relative">
-                      <div className="absolute inset-0 bg-[#00D9FF] rounded-2xl blur-lg opacity-40 group-hover:opacity-70 transition-all duration-500"></div>
-                      <div className="relative bg-gradient-to-br from-[#00D9FF]/20 to-[#0EA5E9]/20 p-6 rounded-2xl border border-[#00D9FF]/30 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 backdrop-blur-sm">
+                      <div className="absolute inset-0 bg-[#00D9FF] rounded-2xl blur-lg opacity-40 group-hover:opacity-70 transition-all duration-500 animate-pulse-slow"></div>
+                      <div className="relative bg-gradient-to-br from-[#00D9FF]/20 to-[#0EA5E9]/20 p-6 rounded-2xl border border-[#00D9FF]/30 group-hover:scale-125 transition-all duration-500 backdrop-blur-sm">
                         <User className="w-10 h-10 text-[#00D9FF] group-hover:text-[#33E1FF] transition-colors duration-500 drop-shadow-lg" />
                       </div>
                     </div>
@@ -220,36 +228,13 @@ export default function Home() {
 
         </div>
 
-        {/* Stats Counter Animation */}
-        <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto mb-12 animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
-          <div className="text-center group">
-            <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#0EA5E9] mb-1 group-hover:scale-110 transition-transform duration-300">
-              99%
-            </div>
-            <div className="text-xs text-gray-500">Accuracy</div>
-          </div>
-          <div className="text-center group">
-            <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#7C3AED] to-[#9D7FED] mb-1 group-hover:scale-110 transition-transform duration-300">
-              24/7
-            </div>
-            <div className="text-xs text-gray-500">Available</div>
-          </div>
-          <div className="text-center group">
-            <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#10B981] to-[#059669] mb-1 group-hover:scale-110 transition-transform duration-300">
-              <TrendingUp className="w-8 h-8 inline" />
-            </div>
-            <div className="text-xs text-gray-500">Fast Track</div>
-          </div>
-        </div>
-
         {/* Footer with Animation */}
-        <div className="text-center animate-fadeInUp" style={{ animationDelay: '0.7s' }}>
+        <div className="text-center animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
           <p className="text-gray-600 text-xs sm:text-sm">
             Powered by{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] via-[#7C3AED] to-[#EC4899] font-bold animate-gradient-flow">
               ATS
             </span>
-            {" "}• Secure & Reliable • Modern Design
           </p>
         </div>
 
@@ -317,6 +302,15 @@ export default function Home() {
 
         .animate-pulse-slow {
           animation: pulseSlow 4s ease-in-out infinite;
+        }
+
+        @keyframes pulseMobile {
+          0%, 100% { opacity: 0.05; }
+          50% { opacity: 0.15; }
+        }
+
+        .animate-pulse-mobile {
+          animation: pulseMobile 3s ease-in-out infinite;
         }
 
         @keyframes bounceSlow {
