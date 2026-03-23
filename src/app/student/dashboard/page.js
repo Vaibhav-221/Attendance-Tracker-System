@@ -1388,120 +1388,132 @@ export default function StudentDashboard() {
                   weeks.push(allDays.slice(i, i + 7));
                 }
                 
+                // Reverse to show newest week first
+                weeks.reverse();
+                
                 return (
                   <div className="space-y-6">
-                    {weeks.map((week, weekIndex) => (
-                      <div key={weekIndex} className="bg-gradient-to-r from-[#0A0E27] to-[#0F1629] border border-[#1A1F3A] rounded-xl p-4 sm:p-5">
-                        {/* Week Header */}
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-8 h-8 bg-[#7C3AED]/20 rounded-lg flex items-center justify-center">
-                            <span className="text-sm font-bold text-[#7C3AED]">W{weekIndex + 1}</span>
+                    {weeks.map((week, weekIndex) => {
+                      const actualWeekNumber = weeks.length - weekIndex;
+                      
+                      return (
+                        <div key={weekIndex} className="bg-gradient-to-r from-[#0A0E27] to-[#0F1629] border border-[#1A1F3A] rounded-xl p-4 sm:p-5">
+                          {/* Week Header */}
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-8 h-8 bg-[#7C3AED]/20 rounded-lg flex items-center justify-center">
+                              <span className="text-sm font-bold text-[#7C3AED]">W{actualWeekNumber}</span>
+                            </div>
+                            <h3 className="text-base font-medium text-white">
+                              Week {actualWeekNumber}
+                            </h3>
+                            <span className="text-xs text-gray-500">
+                              {week[0].day} - {week[week.length - 1].day}
+                            </span>
+                            {weekIndex === 0 && (
+                              <span className="ml-auto text-xs bg-[#00D9FF]/20 text-[#00D9FF] px-2 py-1 rounded-full">
+                                Current Week
+                              </span>
+                            )}
                           </div>
-                          <h3 className="text-base font-medium text-white">
-                            Week {weekIndex + 1}
-                          </h3>
-                          <span className="text-xs text-gray-500">
-                            {week[0].day} - {week[week.length - 1].day}
-                          </span>
-                        </div>
 
-                        {/* Week Chart - 7 columns for 7 days */}
-                        <div className="grid grid-cols-7 gap-1 sm:gap-2">
-                          {week.map((day, dayIndex) => {
-                            const percentage = parseFloat(day.percentage);
-                            const hasClasses = day.scheduled > 0;
-                            const maxClasses = Math.max(...week.map(d => d.scheduled), 1);
-                            const height = hasClasses ? (day.attended / maxClasses) * 100 : 0;
+                          {/* Week Chart - 7 columns for 7 days */}
+                          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+                            {week.map((day, dayIndex) => {
+                              const percentage = parseFloat(day.percentage);
+                              const hasClasses = day.scheduled > 0;
+                              const maxClasses = Math.max(...week.map(d => d.scheduled), 1);
+                              const height = hasClasses ? (day.attended / maxClasses) * 100 : 0;
 
-                            return (
-                              <div key={dayIndex} className="flex flex-col items-center group">
-                                {/* Bar */}
-                                <div className="w-full h-24 sm:h-32 mb-2 relative">
-                                  <div className="absolute inset-0 bg-[#1A1F3A] rounded-t-lg overflow-hidden">
-                                    {hasClasses ? (
-                                      <>
-                                        {/* Background (scheduled) */}
-                                        <div className="absolute inset-0 bg-gray-700/20"></div>
-                                        
-                                        {/* Foreground (attended) */}
-                                        <div
-                                          className={`absolute bottom-0 inset-x-0 rounded-t-lg transition-all duration-500 ${
-                                            percentage >= 75 ? 'bg-gradient-to-t from-[#10B981] to-[#059669]' :
-                                            percentage >= 50 ? 'bg-gradient-to-t from-[#F59E0B] to-[#D97706]' :
-                                            percentage > 0 ? 'bg-gradient-to-t from-[#EF4444] to-[#DC2626]' :
-                                            'bg-gray-700/30'
-                                          } group-hover:shadow-lg`}
-                                          style={{ height: `${height}%` }}
-                                        ></div>
+                              return (
+                                <div key={dayIndex} className="flex flex-col items-center group">
+                                  {/* Bar */}
+                                  <div className="w-full h-24 sm:h-32 mb-2 relative">
+                                    <div className="absolute inset-0 bg-[#1A1F3A] rounded-t-lg overflow-hidden">
+                                      {hasClasses ? (
+                                        <>
+                                          {/* Background (scheduled) */}
+                                          <div className="absolute inset-0 bg-gray-700/20"></div>
+                                          
+                                          {/* Foreground (attended) */}
+                                          <div
+                                            className={`absolute bottom-0 inset-x-0 rounded-t-lg transition-all duration-500 ${
+                                              percentage >= 75 ? 'bg-gradient-to-t from-[#10B981] to-[#059669]' :
+                                              percentage >= 50 ? 'bg-gradient-to-t from-[#F59E0B] to-[#D97706]' :
+                                              percentage > 0 ? 'bg-gradient-to-t from-[#EF4444] to-[#DC2626]' :
+                                              'bg-gray-700/30'
+                                            } group-hover:shadow-lg`}
+                                            style={{ height: `${height}%` }}
+                                          ></div>
 
-                                        {/* Hover tooltip */}
-                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-t-lg">
-                                          <div className="text-center">
-                                            <p className="text-xs font-bold text-white">{day.attended}/{day.scheduled}</p>
-                                            <p className="text-[10px] text-gray-300">{percentage}%</p>
+                                          {/* Hover tooltip */}
+                                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-t-lg">
+                                            <div className="text-center">
+                                              <p className="text-xs font-bold text-white">{day.attended}/{day.scheduled}</p>
+                                              <p className="text-[10px] text-gray-300">{percentage}%</p>
+                                            </div>
+                                          </div>
+                                        </>
+                                      ) : (
+                                        // No classes - show empty state
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                          <div className="text-center opacity-30">
+                                            <div className="w-1 h-1 bg-gray-600 rounded-full mx-auto"></div>
                                           </div>
                                         </div>
-                                      </>
-                                    ) : (
-                                      // No classes - show empty state
-                                      <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="text-center opacity-30">
-                                          <div className="w-1 h-1 bg-gray-600 rounded-full mx-auto"></div>
-                                        </div>
-                                      </div>
-                                    )}
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Day label */}
+                                  <div className="text-center">
+                                    <p className="text-[10px] sm:text-xs font-medium text-gray-400">
+                                      {day.dayOfWeek}
+                                    </p>
+                                    <p className="text-[9px] sm:text-[10px] text-gray-600">
+                                      {day.day.split(' ')[1]}
+                                    </p>
                                   </div>
                                 </div>
-
-                                {/* Day label */}
-                                <div className="text-center">
-                                  <p className="text-[10px] sm:text-xs font-medium text-gray-400">
-                                    {day.dayOfWeek}
-                                  </p>
-                                  <p className="text-[9px] sm:text-[10px] text-gray-600">
-                                    {day.day.split(' ')[1]}
-                                  </p>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        {/* Week Summary */}
-                        <div className="mt-4 pt-3 border-t border-[#1A1F3A] grid grid-cols-3 gap-2 text-center">
-                          <div>
-                            <p className="text-[10px] text-gray-500">Scheduled</p>
-                            <p className="text-sm font-bold text-gray-300">
-                              {week.reduce((sum, d) => sum + d.scheduled, 0)}
-                            </p>
+                              );
+                            })}
                           </div>
-                          <div>
-                            <p className="text-[10px] text-gray-500">Attended</p>
-                            <p className="text-sm font-bold text-[#00D9FF]">
-                              {week.reduce((sum, d) => sum + d.attended, 0)}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] text-gray-500">Rate</p>
-                            <p className={`text-sm font-bold ${
-                              (() => {
-                                const totalScheduled = week.reduce((sum, d) => sum + d.scheduled, 0);
-                                const totalAttended = week.reduce((sum, d) => sum + d.attended, 0);
-                                const weekPercent = totalScheduled > 0 ? (totalAttended / totalScheduled) * 100 : 0;
-                                return weekPercent >= 75 ? 'text-[#10B981]' :
-                                       weekPercent >= 50 ? 'text-[#F59E0B]' : 'text-[#EF4444]';
-                              })()
-                            }`}>
-                              {(() => {
-                                const totalScheduled = week.reduce((sum, d) => sum + d.scheduled, 0);
-                                const totalAttended = week.reduce((sum, d) => sum + d.attended, 0);
-                                return totalScheduled > 0 ? ((totalAttended / totalScheduled) * 100).toFixed(0) : 0;
-                              })()}%
-                            </p>
+
+                          {/* Week Summary */}
+                          <div className="mt-4 pt-3 border-t border-[#1A1F3A] grid grid-cols-3 gap-2 text-center">
+                            <div>
+                              <p className="text-[10px] text-gray-500">Scheduled</p>
+                              <p className="text-sm font-bold text-gray-300">
+                                {week.reduce((sum, d) => sum + d.scheduled, 0)}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-gray-500">Attended</p>
+                              <p className="text-sm font-bold text-[#00D9FF]">
+                                {week.reduce((sum, d) => sum + d.attended, 0)}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-gray-500">Rate</p>
+                              <p className={`text-sm font-bold ${
+                                (() => {
+                                  const totalScheduled = week.reduce((sum, d) => sum + d.scheduled, 0);
+                                  const totalAttended = week.reduce((sum, d) => sum + d.attended, 0);
+                                  const weekPercent = totalScheduled > 0 ? (totalAttended / totalScheduled) * 100 : 0;
+                                  return weekPercent >= 75 ? 'text-[#10B981]' :
+                                         weekPercent >= 50 ? 'text-[#F59E0B]' : 'text-[#EF4444]';
+                                })()
+                              }`}>
+                                {(() => {
+                                  const totalScheduled = week.reduce((sum, d) => sum + d.scheduled, 0);
+                                  const totalAttended = week.reduce((sum, d) => sum + d.attended, 0);
+                                  return totalScheduled > 0 ? ((totalAttended / totalScheduled) * 100).toFixed(0) : 0;
+                                })()}%
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 );
               })()}
