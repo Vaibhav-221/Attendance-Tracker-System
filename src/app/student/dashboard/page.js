@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import {
   doc,
   getDoc,
@@ -12,7 +12,7 @@ import {
   onSnapshot
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { Calendar, TrendingUp, Book, CheckCircle, Clock, Award, BarChart3, User } from "lucide-react";
+import { Calendar, TrendingUp, Book, CheckCircle, Clock, Award, BarChart3, User, LogOut, Menu, X } from "lucide-react";
 
 export default function StudentDashboard() {
 
@@ -28,10 +28,19 @@ export default function StudentDashboard() {
   const [attendancePercent, setAttendancePercent] = useState(0);
 
   const [subjectStats, setSubjectStats] = useState([]);
+  const [weeklyData, setWeeklyData] = useState([]);
 
   const [marking, setMarking] = useState({});
   const [undoing, setUndoing] = useState({});
   const [updating, setUpdating] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showSafeBunkModal, setShowSafeBunkModal] = useState(false);
+  const [showJoinCodeModal, setShowJoinCodeModal] = useState(false);
+  const [newJoinCode, setNewJoinCode] = useState("");
+  const [changingClass, setChangingClass] = useState(false);
+  const [joinCode, setJoinCode] = useState("");
+  const [safeBunkData, setSafeBunkData] = useState([]);
+  const [mounted, setMounted] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -42,6 +51,141 @@ export default function StudentDashboard() {
     if (hour < 18) return "Good afternoon";
     return "Good evening";
   };
+
+  // Get attendance color and status
+  const getAttendanceStatus = (percent) => {
+    if (percent >= 75) return { 
+      color: 'text-[#10B981]', 
+      bgGradient: 'from-[#10B981]/20 to-[#059669]/20',
+      borderColor: 'border-[#10B981]/50',
+      glowColor: 'shadow-[#10B981]/30',
+      status: 'Excellent',
+      icon: '🎯'
+    };
+    if (percent >= 50) return { 
+      color: 'text-[#F59E0B]', 
+      bgGradient: 'from-[#F59E0B]/20 to-[#D97706]/20',
+      borderColor: 'border-[#F59E0B]/50',
+      glowColor: 'shadow-[#F59E0B]/30',
+      status: 'Good',
+      icon: '⚠️'
+    };
+    return { 
+      color: 'text-[#EF4444]', 
+      bgGradient: 'from-[#EF4444]/20 to-[#DC2626]/20',
+      borderColor: 'border-[#EF4444]/50',
+      glowColor: 'shadow-[#EF4444]/30',
+      status: 'Needs Improvement',
+      icon: '📉'
+    };
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.push("/student/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
+  const fetchJoinCode = async (classId) => {
+    const classDoc = await getDoc(doc(db, "classes", classId));
+    if (classDoc.exists()) {
+      setJoinCode(classDoc.data().joinCode || "N/A");
+    }
+  };
+
+  const calculateSafeBunk = () => {
+    const targetPercent = 75;
+    const bunkData = subjectStats.map(subject => {
+      const { total, present, name, id } = subject;
+      const currentPercent = total === 0 ? 0 : (present / total) * 100;
+
+      if (currentPercent >= targetPercent) {
+        // Calculate how many classes can be bunked
+        // (present / (total + x)) * 100 = 75
+        // present / (total + x) = 0.75
+        // present = 0.75 * (total + x)
+        // present = 0.75*total + 0.75*x
+        // present - 0.75*total = 0.75*x
+        // x = (present - 0.75*total) / 0.75
+        const canBunk = Math.floor((present - 0.75 * total) / 0.75);
+        return {
+          id,
+          name,
+          total,
+          present,
+          currentPercent: currentPercent.toFixed(1),
+          canBunk: canBunk > 0 ? canBunk : 0,
+          needToAttend: 0,
+          status: 'safe'
+        };
+      } else {
+        // Calculate how many classes need to attend
+        // (present + x) / (total + x) = 0.75
+        // present + x = 0.75 * (total + x)
+        // present + x = 0.75*total + 0.75*x
+        // x - 0.75*x = 0.75*total - present
+        // 0.25*x = 0.75*total - present
+        // x = (0.75*total - present) / 0.25
+        const needToAttend = Math.ceil((0.75 * total - present) / 0.25);
+        return {
+          id,
+          name,
+          total,
+          present,
+          currentPercent: currentPercent.toFixed(1),
+          canBunk: 0,
+          needToAttend: needToAttend > 0 ? needToAttend : 0,
+          status: 'danger'
+        };
+      }
+    });
+
+    setSafeBunkData(bunkData);
+    setShowSafeBunkModal(true);
+  };
+
+  const handleChangeClass = async () => {
+    if (!newJoinCode.trim()) return;
+    
+    setChangingClass(true);
+    try {
+      // Find class with this join code
+      const classesSnapshot = await getDocs(collection(db, "classes"));
+      let foundClassId = null;
+
+      classesSnapshot.docs.forEach(doc => {
+        if (doc.data().joinCode === newJoinCode.trim()) {
+          foundClassId = doc.id;
+        }
+      });
+
+      if (!foundClassId) {
+        alert("Invalid join code");
+        setChangingClass(false);
+        return;
+      }
+
+      // Update user's classId
+      const user = auth.currentUser;
+      await setDoc(doc(db, "users", user.uid), {
+        classId: foundClassId
+      }, { merge: true });
+
+      // Refresh page
+      window.location.reload();
+    } catch (error) {
+      console.error("Error changing class:", error);
+      alert("Failed to change class");
+      setChangingClass(false);
+    }
+  };
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
 
@@ -77,6 +221,8 @@ export default function StudentDashboard() {
   
       await fetchAllSubjects(classId);
       await fetchAttendanceHistory(classId, user.uid);
+      await fetchWeeklyAttendance(classId, user.uid);
+      await fetchJoinCode(classId);
   
       listenToSchedule(classId);
       listenToTodayAttendance(classId, user.uid);
@@ -102,6 +248,41 @@ export default function StudentDashboard() {
 
     setAllSubjects(subjects);
 
+  };
+
+  const fetchWeeklyAttendance = async (classId, studentId) => {
+    const scheduleSnapshot = await getDocs(
+      collection(db, "classes", classId, "dailySchedule")
+    );
+
+    const sortedDates = scheduleSnapshot.docs
+      .map(doc => doc.id)
+      .sort()
+      .slice(-7); // Last 7 days
+
+    const weeklyStats = [];
+
+    for (const date of sortedDates) {
+      const scheduleDoc = await getDoc(doc(db, "classes", classId, "dailySchedule", date));
+      const scheduled = scheduleDoc.data()?.subjects || [];
+
+      const attendanceDoc = await getDoc(
+        doc(db, "classes", classId, "attendance", date, "students", studentId)
+      );
+      const attended = attendanceDoc.data()?.subjects || [];
+
+      const dateObj = new Date(date);
+      const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+      const dayDate = dateObj.getDate();
+
+      weeklyStats.push({
+        day: dayName,
+        date: dayDate,
+        classes: attended.length
+      });
+    }
+
+    setWeeklyData(weeklyStats);
   };
 
   const listenToSchedule = (classId) => {
@@ -203,6 +384,7 @@ export default function StudentDashboard() {
     );
 
     await fetchAttendanceHistory(userData.classId, user.uid);
+    await fetchWeeklyAttendance(userData.classId, user.uid);
 
     setUpdating(false);
 
@@ -299,6 +481,41 @@ export default function StudentDashboard() {
 
     setSubjectStats(formatted);
 
+    // Auto-calculate safe bunk data
+    const targetPercent = 75;
+    const bunkData = formatted.map(subject => {
+      const { total, present, name, id, percent } = subject;
+      const currentPercent = parseFloat(percent);
+
+      if (currentPercent >= targetPercent) {
+        const canBunk = Math.floor((present - 0.75 * total) / 0.75);
+        return {
+          id,
+          name,
+          total,
+          present,
+          currentPercent: currentPercent.toFixed(1),
+          canBunk: canBunk > 0 ? canBunk : 0,
+          needToAttend: 0,
+          status: 'safe'
+        };
+      } else {
+        const needToAttend = Math.ceil((0.75 * total - present) / 0.25);
+        return {
+          id,
+          name,
+          total,
+          present,
+          currentPercent: currentPercent.toFixed(1),
+          canBunk: 0,
+          needToAttend: needToAttend > 0 ? needToAttend : 0,
+          status: 'danger'
+        };
+      }
+    });
+
+    setSafeBunkData(bunkData);
+
   };
 
   if (loading) {
@@ -333,6 +550,8 @@ export default function StudentDashboard() {
   ];
 
   const getSubjectColor = (index) => subjectColors[index % subjectColors.length];
+  const attendanceStatus = getAttendanceStatus(parseFloat(attendancePercent));
+  const maxClasses = Math.max(...weeklyData.map(d => d.classes), 1);
 
   return (
 
@@ -346,66 +565,186 @@ export default function StudentDashboard() {
       <div className="max-w-7xl mx-auto relative z-10">
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 sm:mb-12">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg shadow-[#00D9FF]/30 hover:scale-110 hover:rotate-12 transition-all duration-300">
-                <User className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-semibold text-white">Student Dashboard</h1>
-                <p className="text-sm sm:text-base text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#7C3AED] font-medium">
+        <div className="flex flex-row justify-between items-center gap-3 mb-8 sm:mb-12">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg shadow-[#00D9FF]/30 hover:scale-110 hover:rotate-12 transition-all duration-300 flex-shrink-0">
+              <User className="w-5 h-5 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white truncate">Student Dashboard</h1>
+              {mounted && (
+                <p className="text-xs sm:text-sm text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#7C3AED] font-medium truncate">
                   {getGreeting()}, {userData?.name}!
                 </p>
-              </div>
+              )}
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full flex items-center justify-center text-white font-semibold text-lg border-2 border-[#1A1F3A] shadow-lg shadow-[#00D9FF]/30 hover:scale-110 transition-all duration-300">
+
+          {/* User Menu */}
+          <div className="relative flex-shrink-0">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full flex items-center justify-center text-white font-semibold text-base sm:text-lg border-2 border-[#1A1F3A] shadow-lg shadow-[#00D9FF]/30 hover:scale-110 transition-all duration-300"
+            >
               {userData?.name?.charAt(0)}
-            </div>
+            </button>
+
+            {/* Dropdown Menu */}
+            {showUserMenu && (
+              <div className="absolute right-0 mt-2 w-64 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50 animate-fadeIn">
+                <div className="p-3 border-b border-[#1A1F3A]">
+                  <p className="text-white font-medium truncate">{userData?.name}</p>
+                  <p className="text-gray-500 text-xs truncate">{userData?.email}</p>
+                </div>
+
+                {/* Join Code Display */}
+                <div className="p-3 border-b border-[#1A1F3A]">
+                  <p className="text-gray-500 text-xs mb-1">Class Join Code</p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 bg-[#00D9FF]/10 text-[#00D9FF] px-3 py-2 rounded-lg font-mono text-sm">
+                      {joinCode}
+                    </code>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(joinCode);
+                        alert("Join code copied!");
+                      }}
+                      className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+                      title="Copy"
+                    >
+                      📋
+                    </button>
+                  </div>
+                </div>
+
+                {/* Change Class Button */}
+                <button
+                  onClick={() => {
+                    setShowJoinCodeModal(true);
+                    setShowUserMenu(false);
+                  }}
+                  className="w-full px-4 py-3 text-left text-[#00D9FF] hover:bg-[#00D9FF]/10 transition-colors duration-200 flex items-center gap-2 border-b border-[#1A1F3A]"
+                >
+                  <Book className="w-4 h-4" />
+                  <span>Change Class</span>
+                </button>
+
+                {/* Logout Button */}
+                <button
+                  onClick={handleLogout}
+                  className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-500/10 transition-colors duration-200 flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 mb-8">
           
-          {/* Overall Attendance Card */}
-          <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl p-6 relative overflow-hidden hover:border-[#00D9FF]/50 transition-all duration-300 hover:scale-105 group col-span-1 sm:col-span-2 lg:col-span-2">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#00D9FF]/5 rounded-full blur-2xl group-hover:bg-[#00D9FF]/10 transition-all duration-300"></div>
+          {/* Overall Attendance Card - ENHANCED */}
+          <div className={`lg:col-span-6 bg-gradient-to-br ${attendanceStatus.bgGradient} border ${attendanceStatus.borderColor} rounded-2xl p-6 relative overflow-hidden hover:border-opacity-80 transition-all duration-300 hover:scale-[1.02] group shadow-lg ${attendanceStatus.glowColor}`}>
+            
+            {/* Animated background orbs */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-all duration-500 animate-float"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full blur-xl group-hover:bg-white/10 transition-all duration-500 animate-float-delayed"></div>
+
+            {/* Pulsing border effect */}
+            <div className="absolute inset-0 border-2 border-white/10 rounded-2xl animate-pulse-border"></div>
+
             <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-[#00D9FF]/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Award className="w-6 h-6 text-[#00D9FF]" />
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform backdrop-blur-sm">
+                    <Award className={`w-6 h-6 ${attendanceStatus.color}`} />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Overall Attendance</p>
+                    <p className="text-xs text-gray-500">{attendanceStatus.status}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500">Overall Attendance</p>
-                  <p className="text-4xl font-bold text-[#00D9FF] group-hover:scale-110 transition-transform inline-block">{attendancePercent}%</p>
-                </div>
+                <span className="text-3xl">{attendanceStatus.icon}</span>
               </div>
-              <div className="w-full bg-[#1A1F3A] h-3 rounded-full overflow-hidden">
+
+              <p className={`text-5xl sm:text-6xl font-bold ${attendanceStatus.color} mb-4 group-hover:scale-105 transition-transform inline-block`}>
+                {attendancePercent}%
+              </p>
+
+              <div className="w-full bg-[#1A1F3A] h-3 rounded-full overflow-hidden mb-2">
                 <div 
-                  className="h-full bg-gradient-to-r from-[#00D9FF] to-[#0EA5E9] rounded-full transition-all duration-1000 ease-out"
+                  className={`h-full rounded-full transition-all duration-1000 ease-out animate-progress-fill ${
+                    parseFloat(attendancePercent) >= 75 
+                      ? 'bg-[#10B981]' 
+                      : parseFloat(attendancePercent) >= 50 
+                        ? 'bg-[#F59E0B]' 
+                        : 'bg-[#EF4444]'
+                  }`}
                   style={{ width: `${attendancePercent}%` }}
                 ></div>
               </div>
+              <p className="text-xs text-gray-500 text-right">Target: 75%</p>
             </div>
           </div>
 
-          {/* Total Subjects */}
-          <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl p-6 relative overflow-hidden hover:border-[#7C3AED]/50 transition-all duration-300 hover:scale-105 group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-[#7C3AED]/5 rounded-full blur-2xl group-hover:bg-[#7C3AED]/10 transition-all duration-300"></div>
-            <div className="relative z-10">
-              <div className="w-10 h-10 bg-[#7C3AED]/10 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <Book className="w-5 h-5 text-[#7C3AED]" />
+          {/* Weekly Chart Card */}
+          <div className="lg:col-span-6 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl p-6 relative overflow-hidden hover:border-[#7C3AED]/50 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-4">
+              <BarChart3 className="w-5 h-5 text-[#7C3AED]" />
+              <h3 className="text-base font-medium text-white">Last 7 Days</h3>
+            </div>
+            
+            {mounted && (
+              <div className="flex items-end justify-between gap-2 h-32">
+                {weeklyData.map((day, index) => (
+                  <div key={index} className="flex flex-col items-center flex-1 group">
+                    <div className="w-full flex items-end justify-center mb-2 h-20">
+                      <div 
+                        className="w-full bg-gradient-to-t from-[#00D9FF] to-[#7C3AED] rounded-t-lg transition-all duration-500 hover:opacity-80 relative group-hover:shadow-lg group-hover:shadow-[#00D9FF]/50"
+                        style={{ 
+                          height: `${(day.classes / maxClasses) * 100}%`,
+                          minHeight: day.classes > 0 ? '8px' : '0px'
+                        }}
+                      >
+                        {day.classes > 0 && (
+                          <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-medium text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                            {day.classes}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs font-medium text-gray-400">{day.day}</div>
+                      <div className="text-[10px] text-gray-600">{day.date}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <p className="text-sm text-gray-500 mb-1">Total Subjects</p>
-              <p className="text-3xl font-bold text-[#7C3AED]">{allSubjects.length}</p>
+            )}
+          </div>
+
+          {/* Safe Bunk Calculator */}
+          <div 
+            onClick={calculateSafeBunk}
+            className="lg:col-span-3 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl p-6 relative overflow-hidden hover:border-[#F59E0B]/50 transition-all duration-300 hover:scale-105 group cursor-pointer"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-[#F59E0B]/5 rounded-full blur-2xl group-hover:bg-[#F59E0B]/10 transition-all duration-300"></div>
+            <div className="relative z-10">
+              <div className="w-10 h-10 bg-[#F59E0B]/10 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <TrendingUp className="w-5 h-5 text-[#F59E0B]" />
+              </div>
+              <p className="text-sm text-gray-500 mb-1">Safe Bunk</p>
+              <p className="text-xl font-bold text-[#F59E0B]">
+                {safeBunkData.filter(s => s.status === 'safe').reduce((sum, s) => sum + s.canBunk, 0)}
+              </p>
+              <p className="text-xs text-gray-600 mt-1">Click to see details</p>
             </div>
           </div>
 
           {/* Today's Classes */}
-          <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl p-6 relative overflow-hidden hover:border-[#10B981]/50 transition-all duration-300 hover:scale-105 group">
+          <div className="lg:col-span-3 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl p-6 relative overflow-hidden hover:border-[#10B981]/50 transition-all duration-300 hover:scale-105 group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-[#10B981]/5 rounded-full blur-2xl group-hover:bg-[#10B981]/10 transition-all duration-300"></div>
             <div className="relative z-10">
               <div className="w-10 h-10 bg-[#10B981]/10 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
@@ -470,10 +809,14 @@ export default function StudentDashboard() {
 
         {/* Today's Classes */}
         <div>
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex flex-wrap items-center gap-3 mb-6">
             <CheckCircle className="w-6 h-6 text-[#10B981]" />
             <h2 className="text-xl sm:text-2xl font-semibold text-white">Today's Classes</h2>
-            <span className="text-sm text-gray-500">({new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})</span>
+            {mounted && (
+              <span className="text-xs sm:text-sm text-gray-500">
+                ({new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})
+              </span>
+            )}
           </div>
 
           {todaySubjects.length === 0 ? (
@@ -494,19 +837,24 @@ export default function StudentDashboard() {
                 return (
                   <div
                     key={subjectId}
-                    onClick={() => router.push(`/student/subject/${subjectId}`)}
-                    className={`bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border ${colors.border} border-l-4 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 hover:bg-[#131829] transition-all duration-300 cursor-pointer group`}
+                    className={`bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border ${colors.border} border-l-4 rounded-xl p-4 sm:p-5 flex flex-row justify-between items-center gap-3 hover:bg-[#131829] transition-all duration-300 cursor-pointer group`}
                   >
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className={`w-3 h-3 rounded-full ${colors.bg} ${colors.glow} shadow-lg animate-pulse-slow`}></div>
-                      <span className="text-white font-medium text-base sm:text-lg">{subject?.subjectName}</span>
+                    <div 
+                      className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0"
+                      onClick={() => router.push(`/student/subject/${subjectId}`)}
+                    >
+                      <div className={`w-3 h-3 flex-shrink-0 rounded-full ${colors.bg} ${colors.glow} shadow-lg animate-pulse-slow`}></div>
+                      <span className="text-white font-medium text-sm sm:text-base lg:text-lg truncate">{subject?.subjectName}</span>
                     </div>
 
                     {marked ? (
                       <button
-                        onClick={(e) => handleUndoAttendance(subjectId, e)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUndoAttendance(subjectId, e);
+                        }}
                         disabled={isUndoing}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 ${
+                        className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 text-sm flex-shrink-0 ${
                           isUndoing
                             ? "bg-red-500/20 text-red-400/50 cursor-not-allowed"
                             : "bg-red-500/10 text-red-400 border border-red-400/20 hover:bg-red-500/20 hover:scale-105"
@@ -515,7 +863,7 @@ export default function StudentDashboard() {
                         {isUndoing ? (
                           <>
                             <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></div>
-                            Undoing...
+                            <span className="hidden sm:inline">Undoing...</span>
                           </>
                         ) : (
                           'Undo'
@@ -523,9 +871,12 @@ export default function StudentDashboard() {
                       </button>
                     ) : (
                       <button
-                        onClick={(e) => handleMarkAttendance(subjectId, e)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMarkAttendance(subjectId, e);
+                        }}
                         disabled={isMarking}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 ${
+                        className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 text-sm flex-shrink-0 whitespace-nowrap ${
                           isMarking
                             ? "bg-[#00D9FF]/20 text-[#00D9FF]/50 cursor-not-allowed"
                             : "bg-[#00D9FF]/10 text-[#00D9FF] border border-[#00D9FF]/20 hover:bg-[#00D9FF]/20 hover:scale-105"
@@ -534,12 +885,13 @@ export default function StudentDashboard() {
                         {isMarking ? (
                           <>
                             <div className="w-4 h-4 border-2 border-[#00D9FF] border-t-transparent rounded-full animate-spin"></div>
-                            Marking...
+                            <span className="hidden sm:inline">Marking...</span>
                           </>
                         ) : (
                           <>
                             <CheckCircle className="w-4 h-4" />
-                            Mark Present
+                            <span className="hidden xs:inline">Mark</span>
+                            <span className="hidden sm:inline">Present</span>
                           </>
                         )}
                       </button>
@@ -562,7 +914,10 @@ export default function StudentDashboard() {
             >
               {updating ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                  <div className="relative w-5 h-5">
+                    <div className="absolute inset-0 border-2 border-white/20 rounded-full"></div>
+                    <div className="absolute inset-0 border-2 border-transparent border-t-white rounded-full animate-spin"></div>
+                  </div>
                   Updating Attendance...
                 </>
               ) : (
@@ -576,6 +931,198 @@ export default function StudentDashboard() {
         </div>
 
       </div>
+
+      {/* Safe Bunk Modal */}
+      {showSafeBunkModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn" onClick={() => setShowSafeBunkModal(false)}>
+          <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            
+            {/* Header */}
+            <div className="p-6 border-b border-[#1A1F3A] bg-gradient-to-r from-[#F59E0B]/10 to-transparent">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-[#F59E0B]/20 rounded-xl flex items-center justify-center">
+                    <TrendingUp className="w-6 h-6 text-[#F59E0B]" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">Safe Bunk Calculator</h2>
+                    <p className="text-sm text-gray-400">Maintain 75% attendance target</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowSafeBunkModal(false)}
+                  className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+
+              {/* Summary Cards */}
+              <div className="grid grid-cols-2 gap-4 mt-6">
+                <div className="bg-[#10B981]/10 border border-[#10B981]/20 rounded-xl p-4">
+                  <p className="text-sm text-gray-400 mb-1">Total Safe Bunks</p>
+                  <p className="text-3xl font-bold text-[#10B981]">
+                    {safeBunkData.filter(s => s.status === 'safe').reduce((sum, s) => sum + s.canBunk, 0)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">Classes you can skip</p>
+                </div>
+                <div className="bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-xl p-4">
+                  <p className="text-sm text-gray-400 mb-1">Need to Attend</p>
+                  <p className="text-3xl font-bold text-[#EF4444]">
+                    {safeBunkData.filter(s => s.status === 'danger').reduce((sum, s) => sum + s.needToAttend, 0)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">To reach 75%</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Subject List */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-280px)]">
+              <div className="space-y-3">
+                {safeBunkData.map((subject, index) => {
+                  const colors = getSubjectColor(index);
+                  const isSafe = subject.status === 'safe';
+
+                  return (
+                    <div
+                      key={subject.id}
+                      className={`bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border ${colors.border} border-l-4 rounded-xl p-5 hover:scale-[1.02] transition-all duration-300`}
+                    >
+                      <div className="flex items-start justify-between gap-4 mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className={`w-2.5 h-2.5 rounded-full ${colors.bg} animate-pulse-slow`}></div>
+                            <h3 className="text-white font-medium text-lg">{subject.name}</h3>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-gray-400">
+                            <span>Attendance: <span className={colors.text}>{subject.currentPercent}%</span></span>
+                            <span>•</span>
+                            <span>{subject.present}/{subject.total} attended</span>
+                          </div>
+                        </div>
+
+                        {isSafe ? (
+                          <div className="bg-[#10B981]/10 border border-[#10B981]/20 rounded-lg px-4 py-2 text-center">
+                            <p className="text-2xl font-bold text-[#10B981]">{subject.canBunk}</p>
+                            <p className="text-xs text-gray-400">can bunk</p>
+                          </div>
+                        ) : (
+                          <div className="bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-lg px-4 py-2 text-center">
+                            <p className="text-2xl font-bold text-[#EF4444]">+{subject.needToAttend}</p>
+                            <p className="text-xs text-gray-400">need to attend</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="relative w-full bg-[#1A1F3A] h-2 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${colors.bg} rounded-full transition-all duration-1000`}
+                          style={{ width: `${subject.currentPercent}%` }}
+                        ></div>
+                        {/* 75% marker */}
+                        <div className="absolute top-0 left-[75%] w-0.5 h-full bg-white/50"></div>
+                      </div>
+
+                      {!isSafe && (
+                        <p className="text-xs text-[#EF4444] mt-2">
+                          ⚠️ Attend next {subject.needToAttend} classes consecutively to reach 75%
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/5 to-transparent">
+              <p className="text-sm text-gray-400 text-center">
+                💡 <span className="text-[#00D9FF]">Tip:</span> This calculation assumes you attend all remaining classes for subjects below 75%
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Join Code Change Modal */}
+      {showJoinCodeModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn" onClick={() => setShowJoinCodeModal(false)}>
+          <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            
+            {/* Header */}
+            <div className="p-6 border-b border-[#1A1F3A]">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-[#00D9FF]/20 rounded-xl flex items-center justify-center">
+                    <Book className="w-6 h-6 text-[#00D9FF]" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Change Class</h2>
+                    <p className="text-sm text-gray-400">Enter new join code</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowJoinCodeModal(false)}
+                  className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+
+              {/* Current Class Info */}
+              <div className="bg-[#00D9FF]/10 border border-[#00D9FF]/20 rounded-lg p-4">
+                <p className="text-sm text-gray-400 mb-1">Current Join Code</p>
+                <code className="text-[#00D9FF] font-mono text-lg">{joinCode}</code>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="p-6">
+              <label className="block text-sm text-gray-400 mb-2">New Join Code</label>
+              <input
+                type="text"
+                value={newJoinCode}
+                onChange={(e) => setNewJoinCode(e.target.value)}
+                placeholder="Enter 6-digit code"
+                maxLength={6}
+                className="w-full bg-transparent border border-[#1A1F3A] rounded-xl px-4 py-3 text-white focus:border-[#00D9FF] focus:outline-none transition-colors font-mono text-lg tracking-wider"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                ⚠️ Changing class will reset your attendance data
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-[#1A1F3A] flex gap-3">
+              <button
+                onClick={() => setShowJoinCodeModal(false)}
+                className="flex-1 px-4 py-3 rounded-xl border border-[#1A1F3A] text-gray-400 hover:bg-white/5 transition-all duration-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleChangeClass}
+                disabled={changingClass || newJoinCode.length !== 6}
+                className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
+                  changingClass || newJoinCode.length !== 6
+                    ? "bg-[#00D9FF]/20 text-[#00D9FF]/50 cursor-not-allowed"
+                    : "bg-gradient-to-r from-[#00D9FF] to-[#0EA5E9] text-white hover:scale-105"
+                }`}
+              >
+                {changingClass ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                    Changing...
+                  </>
+                ) : (
+                  "Change Class"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         @keyframes float {
@@ -630,6 +1177,44 @@ export default function StudentDashboard() {
         
         .animate-spin-slow {
           animation: spin-slow 2s linear infinite;
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes pulseBorder {
+          0%, 100% {
+            opacity: 0.3;
+          }
+          50% {
+            opacity: 0.6;
+          }
+        }
+        
+        .animate-pulse-border {
+          animation: pulseBorder 3s ease-in-out infinite;
+        }
+
+        @keyframes progressFill {
+          from {
+            width: 0%;
+          }
+        }
+        
+        .animate-progress-fill {
+          animation: progressFill 1.5s ease-out;
         }
       `}</style>
 
