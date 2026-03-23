@@ -36,11 +36,15 @@ export default function StudentDashboard() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSafeBunkModal, setShowSafeBunkModal] = useState(false);
   const [showJoinCodeModal, setShowJoinCodeModal] = useState(false);
+  const [showSubjectAttendanceModal, setShowSubjectAttendanceModal] = useState(false);
+  const [showTodayClassesModal, setShowTodayClassesModal] = useState(false);
+  const [showMonthlyChartModal, setShowMonthlyChartModal] = useState(false);
   const [newJoinCode, setNewJoinCode] = useState("");
   const [changingClass, setChangingClass] = useState(false);
   const [joinCode, setJoinCode] = useState("");
   const [safeBunkData, setSafeBunkData] = useState([]);
   const [mounted, setMounted] = useState(false);
+  const [monthlyData, setMonthlyData] = useState([]);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -222,6 +226,7 @@ export default function StudentDashboard() {
       await fetchAllSubjects(classId);
       await fetchAttendanceHistory(classId, user.uid);
       await fetchWeeklyAttendance(classId, user.uid);
+      await fetchMonthlyAttendance(classId, user.uid);
       await fetchJoinCode(classId);
   
       listenToSchedule(classId);
@@ -283,6 +288,41 @@ export default function StudentDashboard() {
     }
 
     setWeeklyData(weeklyStats);
+  };
+
+  const fetchMonthlyAttendance = async (classId, studentId) => {
+    const scheduleSnapshot = await getDocs(
+      collection(db, "classes", classId, "dailySchedule")
+    );
+
+    const sortedDates = scheduleSnapshot.docs
+      .map(doc => doc.id)
+      .sort()
+      .slice(-30); // Last 30 days
+
+    const monthlyStats = [];
+
+    for (const date of sortedDates) {
+      const scheduleDoc = await getDoc(doc(db, "classes", classId, "dailySchedule", date));
+      const scheduled = scheduleDoc.data()?.subjects || [];
+
+      const attendanceDoc = await getDoc(
+        doc(db, "classes", classId, "attendance", date, "students", studentId)
+      );
+      const attended = attendanceDoc.data()?.subjects || [];
+
+      const dateObj = new Date(date);
+      const dayName = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+      monthlyStats.push({
+        day: dayName,
+        scheduled: scheduled.length,
+        attended: attended.length,
+        percentage: scheduled.length > 0 ? ((attended.length / scheduled.length) * 100).toFixed(0) : 0
+      });
+    }
+
+    setMonthlyData(monthlyStats);
   };
 
   const listenToSchedule = (classId) => {
@@ -646,7 +686,10 @@ export default function StudentDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 mb-8">
           
           {/* Overall Attendance Card - ENHANCED */}
-          <div className={`lg:col-span-6 bg-gradient-to-br ${attendanceStatus.bgGradient} border ${attendanceStatus.borderColor} rounded-2xl p-6 relative overflow-hidden hover:border-opacity-80 transition-all duration-300 hover:scale-[1.02] group shadow-lg ${attendanceStatus.glowColor}`}>
+          <div 
+            onClick={() => setShowSubjectAttendanceModal(true)}
+            className={`lg:col-span-6 bg-gradient-to-br ${attendanceStatus.bgGradient} border ${attendanceStatus.borderColor} rounded-2xl p-6 relative overflow-hidden hover:border-opacity-80 transition-all duration-300 hover:scale-[1.02] group shadow-lg ${attendanceStatus.glowColor} cursor-pointer`}
+          >
             
             {/* Animated background orbs */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-all duration-500 animate-float"></div>
@@ -685,15 +728,24 @@ export default function StudentDashboard() {
                   style={{ width: `${attendancePercent}%` }}
                 ></div>
               </div>
-              <p className="text-xs text-gray-500 text-right">Target: 75%</p>
+              <div className="flex justify-between items-center">
+                <p className="text-xs text-gray-500">Target: 75%</p>
+                <p className="text-xs text-gray-400 group-hover:text-[#00D9FF] transition-colors">Click for details →</p>
+              </div>
             </div>
           </div>
 
           {/* Weekly Chart Card */}
-          <div className="lg:col-span-6 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl p-6 relative overflow-hidden hover:border-[#7C3AED]/50 transition-all duration-300">
-            <div className="flex items-center gap-3 mb-4">
-              <BarChart3 className="w-5 h-5 text-[#7C3AED]" />
-              <h3 className="text-base font-medium text-white">Last 7 Days</h3>
+          <div 
+            onClick={() => setShowMonthlyChartModal(true)}
+            className="lg:col-span-6 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl p-6 relative overflow-hidden hover:border-[#7C3AED]/50 transition-all duration-300 hover:scale-[1.02] cursor-pointer group"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <BarChart3 className="w-5 h-5 text-[#7C3AED]" />
+                <h3 className="text-base font-medium text-white">Last 7 Days</h3>
+              </div>
+              <p className="text-xs text-gray-400 group-hover:text-[#7C3AED] transition-colors">View monthly →</p>
             </div>
             
             {mounted && (
@@ -736,15 +788,18 @@ export default function StudentDashboard() {
                 <TrendingUp className="w-5 h-5 text-[#F59E0B]" />
               </div>
               <p className="text-sm text-gray-500 mb-1">Safe Bunk</p>
-              <p className="text-xl font-bold text-[#F59E0B]">
+              <p className="text-3xl font-bold text-[#F59E0B]">
                 {safeBunkData.filter(s => s.status === 'safe').reduce((sum, s) => sum + s.canBunk, 0)}
               </p>
-              <p className="text-xs text-gray-600 mt-1">Click to see details</p>
+              <p className="text-xs text-gray-400 mt-2 group-hover:text-[#F59E0B] transition-colors">View details →</p>
             </div>
           </div>
 
           {/* Today's Classes */}
-          <div className="lg:col-span-3 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl p-6 relative overflow-hidden hover:border-[#10B981]/50 transition-all duration-300 hover:scale-105 group">
+          <div 
+            onClick={() => setShowTodayClassesModal(true)}
+            className="lg:col-span-3 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl p-6 relative overflow-hidden hover:border-[#10B981]/50 transition-all duration-300 hover:scale-105 group cursor-pointer"
+          >
             <div className="absolute top-0 right-0 w-24 h-24 bg-[#10B981]/5 rounded-full blur-2xl group-hover:bg-[#10B981]/10 transition-all duration-300"></div>
             <div className="relative z-10">
               <div className="w-10 h-10 bg-[#10B981]/10 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
@@ -752,6 +807,7 @@ export default function StudentDashboard() {
               </div>
               <p className="text-sm text-gray-500 mb-1">Today's Classes</p>
               <p className="text-3xl font-bold text-[#10B981]">{todaySubjects.length}</p>
+              <p className="text-xs text-gray-400 mt-2 group-hover:text-[#10B981] transition-colors">View list →</p>
             </div>
           </div>
 
@@ -1041,6 +1097,444 @@ export default function StudentDashboard() {
                 💡 <span className="text-[#00D9FF]">Tip:</span> This calculation assumes you attend all remaining classes for subjects below 75%
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Subject-wise Attendance Modal */}
+      {showSubjectAttendanceModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn" onClick={() => setShowSubjectAttendanceModal(false)}>
+          <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            
+            {/* Header */}
+            <div className="p-6 border-b border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/10 to-transparent">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    parseFloat(attendancePercent) >= 75 ? 'bg-[#10B981]/20' :
+                    parseFloat(attendancePercent) >= 50 ? 'bg-[#F59E0B]/20' : 'bg-[#EF4444]/20'
+                  }`}>
+                    <Award className={`w-6 h-6 ${attendanceStatus.color}`} />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">Subject-wise Attendance</h2>
+                    <p className="text-sm text-gray-400">Detailed breakdown by subject</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowSubjectAttendanceModal(false)}
+                  className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+
+              {/* Overall Summary */}
+              <div className="mt-6 bg-white/5 backdrop-blur-sm rounded-xl p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-400 mb-1">Overall Attendance</p>
+                    <p className={`text-4xl font-bold ${attendanceStatus.color}`}>{attendancePercent}%</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-400 mb-1">Status</p>
+                    <div className={`px-4 py-2 rounded-full ${
+                      parseFloat(attendancePercent) >= 75 ? 'bg-[#10B981]/20 text-[#10B981]' :
+                      parseFloat(attendancePercent) >= 50 ? 'bg-[#F59E0B]/20 text-[#F59E0B]' : 'bg-[#EF4444]/20 text-[#EF4444]'
+                    } font-medium`}>
+                      {attendanceStatus.status}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Subject List */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-250px)]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {subjectStats.map((subject, index) => {
+                  const colors = getSubjectColor(index);
+                  const subjectPercent = parseFloat(subject.percent);
+
+                  return (
+                    <div
+                      key={subject.id}
+                      className={`bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border ${colors.border} rounded-xl p-5 hover:scale-[1.02] transition-all duration-300`}
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-2 flex-1">
+                          <div className={`w-3 h-3 rounded-full ${colors.bg} animate-pulse-slow flex-shrink-0`}></div>
+                          <h3 className="text-white font-medium text-lg">{subject.name}</h3>
+                        </div>
+                        <div className="text-right">
+                          <p className={`text-3xl font-bold ${colors.text}`}>{subject.percent}%</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 mb-3">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Classes Attended</span>
+                          <span className={colors.text}>{subject.present}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Total Classes</span>
+                          <span className="text-gray-300">{subject.total}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Classes Missed</span>
+                          <span className="text-red-400">{subject.total - subject.present}</span>
+                        </div>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="relative w-full bg-[#1A1F3A] h-2.5 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${colors.bg} rounded-full transition-all duration-1000`}
+                          style={{ width: `${subject.percent}%` }}
+                        ></div>
+                        {/* 75% marker */}
+                        <div className="absolute top-0 left-[75%] w-0.5 h-full bg-white/50"></div>
+                      </div>
+
+                      {/* Status Badge */}
+                      <div className="mt-3">
+                        {subjectPercent >= 75 ? (
+                          <span className="text-xs bg-[#10B981]/20 text-[#10B981] px-3 py-1 rounded-full">
+                            ✓ Above target
+                          </span>
+                        ) : (
+                          <span className="text-xs bg-[#EF4444]/20 text-[#EF4444] px-3 py-1 rounded-full">
+                            ⚠ Below 75%
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Today's Classes Modal */}
+      {showTodayClassesModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn" onClick={() => setShowTodayClassesModal(false)}>
+          <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            
+            {/* Header */}
+            <div className="p-6 border-b border-[#1A1F3A] bg-gradient-to-r from-[#10B981]/10 to-transparent">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-[#10B981]/20 rounded-xl flex items-center justify-center">
+                    <CheckCircle className="w-6 h-6 text-[#10B981]" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">Today's Classes</h2>
+                    {mounted && (
+                      <p className="text-sm text-gray-400">
+                        {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowTodayClassesModal(false)}
+                  className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+
+              {/* Summary */}
+              <div className="mt-6 grid grid-cols-2 gap-4">
+                <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
+                  <p className="text-sm text-gray-400 mb-1">Total Classes</p>
+                  <p className="text-3xl font-bold text-[#10B981]">{todaySubjects.length}</p>
+                </div>
+                <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
+                  <p className="text-sm text-gray-400 mb-1">Marked Present</p>
+                  <p className="text-3xl font-bold text-[#00D9FF]">{markedSubjects.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Classes List */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-300px)]">
+              {todaySubjects.length === 0 ? (
+                <div className="text-center py-12">
+                  <Clock className="w-16 h-16 text-gray-700 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">No classes scheduled today</p>
+                  <p className="text-gray-600 text-sm mt-2">Enjoy your day off!</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {todaySubjects.map((subjectId, index) => {
+                    const subject = allSubjects.find(s => s.id === subjectId);
+                    const marked = markedSubjects.includes(subjectId);
+                    const colors = getSubjectColor(index);
+
+                    return (
+                      <div
+                        key={subjectId}
+                        className={`bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border ${colors.border} border-l-4 rounded-xl p-5 flex items-center justify-between gap-4`}
+                      >
+                        <div className="flex items-center gap-4 flex-1">
+                          <div className={`w-10 h-10 rounded-xl ${colors.bg} bg-opacity-20 flex items-center justify-center`}>
+                            <Book className={`w-5 h-5 ${colors.text}`} />
+                          </div>
+                          <div>
+                            <h3 className="text-white font-medium text-lg">{subject?.subjectName}</h3>
+                            <p className="text-sm text-gray-500">Class {index + 1} of {todaySubjects.length}</p>
+                          </div>
+                        </div>
+
+                        {marked ? (
+                          <div className="flex items-center gap-2 bg-[#10B981]/20 px-4 py-2 rounded-full">
+                            <CheckCircle className="w-5 h-5 text-[#10B981]" />
+                            <span className="text-[#10B981] font-medium">Present</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 bg-gray-500/20 px-4 py-2 rounded-full">
+                            <Clock className="w-5 h-5 text-gray-400" />
+                            <span className="text-gray-400 font-medium">Pending</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Monthly Chart Modal */}
+      {showMonthlyChartModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn" onClick={() => setShowMonthlyChartModal(false)}>
+          <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            
+            {/* Header */}
+            <div className="p-6 border-b border-[#1A1F3A] bg-gradient-to-r from-[#7C3AED]/10 to-transparent">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-[#7C3AED]/20 rounded-xl flex items-center justify-center">
+                    <BarChart3 className="w-6 h-6 text-[#7C3AED]" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-white">Monthly Attendance Overview</h2>
+                    <p className="text-sm text-gray-400">Last 30 days - Week by week</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowMonthlyChartModal(false)}
+                  className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+
+              {/* Legend */}
+              <div className="mt-6 flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-[#10B981] rounded"></div>
+                  <span className="text-xs text-gray-400">≥75%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-[#F59E0B] rounded"></div>
+                  <span className="text-xs text-gray-400">50-74%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-[#EF4444] rounded"></div>
+                  <span className="text-xs text-gray-400">&lt;50%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-[#1A1F3A] border border-[#2A2F4A] rounded"></div>
+                  <span className="text-xs text-gray-400">No classes</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Weekly Chart Grid */}
+            <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-220px)]">
+              {mounted && (() => {
+                // Generate all 30 days with data
+                const today = new Date();
+                const allDays = [];
+                
+                for (let i = 29; i >= 0; i--) {
+                  const date = new Date(today);
+                  date.setDate(date.getDate() - i);
+                  const dateStr = date.toISOString().split('T')[0];
+                  const dayName = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                  
+                  // Find matching data from monthlyData
+                  const dataPoint = monthlyData.find(d => d.day === dayName);
+                  
+                  allDays.push({
+                    date: dateStr,
+                    day: dayName,
+                    dayOfWeek: date.toLocaleDateString('en-US', { weekday: 'short' }),
+                    scheduled: dataPoint?.scheduled || 0,
+                    attended: dataPoint?.attended || 0,
+                    percentage: dataPoint?.percentage || 0
+                  });
+                }
+                
+                // Group into weeks (7 days each)
+                const weeks = [];
+                for (let i = 0; i < allDays.length; i += 7) {
+                  weeks.push(allDays.slice(i, i + 7));
+                }
+                
+                return (
+                  <div className="space-y-6">
+                    {weeks.map((week, weekIndex) => (
+                      <div key={weekIndex} className="bg-gradient-to-r from-[#0A0E27] to-[#0F1629] border border-[#1A1F3A] rounded-xl p-4 sm:p-5">
+                        {/* Week Header */}
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-8 h-8 bg-[#7C3AED]/20 rounded-lg flex items-center justify-center">
+                            <span className="text-sm font-bold text-[#7C3AED]">W{weekIndex + 1}</span>
+                          </div>
+                          <h3 className="text-base font-medium text-white">
+                            Week {weekIndex + 1}
+                          </h3>
+                          <span className="text-xs text-gray-500">
+                            {week[0].day} - {week[week.length - 1].day}
+                          </span>
+                        </div>
+
+                        {/* Week Chart - 7 columns for 7 days */}
+                        <div className="grid grid-cols-7 gap-1 sm:gap-2">
+                          {week.map((day, dayIndex) => {
+                            const percentage = parseFloat(day.percentage);
+                            const hasClasses = day.scheduled > 0;
+                            const maxClasses = Math.max(...week.map(d => d.scheduled), 1);
+                            const height = hasClasses ? (day.attended / maxClasses) * 100 : 0;
+
+                            return (
+                              <div key={dayIndex} className="flex flex-col items-center group">
+                                {/* Bar */}
+                                <div className="w-full h-24 sm:h-32 mb-2 relative">
+                                  <div className="absolute inset-0 bg-[#1A1F3A] rounded-t-lg overflow-hidden">
+                                    {hasClasses ? (
+                                      <>
+                                        {/* Background (scheduled) */}
+                                        <div className="absolute inset-0 bg-gray-700/20"></div>
+                                        
+                                        {/* Foreground (attended) */}
+                                        <div
+                                          className={`absolute bottom-0 inset-x-0 rounded-t-lg transition-all duration-500 ${
+                                            percentage >= 75 ? 'bg-gradient-to-t from-[#10B981] to-[#059669]' :
+                                            percentage >= 50 ? 'bg-gradient-to-t from-[#F59E0B] to-[#D97706]' :
+                                            percentage > 0 ? 'bg-gradient-to-t from-[#EF4444] to-[#DC2626]' :
+                                            'bg-gray-700/30'
+                                          } group-hover:shadow-lg`}
+                                          style={{ height: `${height}%` }}
+                                        ></div>
+
+                                        {/* Hover tooltip */}
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-t-lg">
+                                          <div className="text-center">
+                                            <p className="text-xs font-bold text-white">{day.attended}/{day.scheduled}</p>
+                                            <p className="text-[10px] text-gray-300">{percentage}%</p>
+                                          </div>
+                                        </div>
+                                      </>
+                                    ) : (
+                                      // No classes - show empty state
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="text-center opacity-30">
+                                          <div className="w-1 h-1 bg-gray-600 rounded-full mx-auto"></div>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Day label */}
+                                <div className="text-center">
+                                  <p className="text-[10px] sm:text-xs font-medium text-gray-400">
+                                    {day.dayOfWeek}
+                                  </p>
+                                  <p className="text-[9px] sm:text-[10px] text-gray-600">
+                                    {day.day.split(' ')[1]}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Week Summary */}
+                        <div className="mt-4 pt-3 border-t border-[#1A1F3A] grid grid-cols-3 gap-2 text-center">
+                          <div>
+                            <p className="text-[10px] text-gray-500">Scheduled</p>
+                            <p className="text-sm font-bold text-gray-300">
+                              {week.reduce((sum, d) => sum + d.scheduled, 0)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-gray-500">Attended</p>
+                            <p className="text-sm font-bold text-[#00D9FF]">
+                              {week.reduce((sum, d) => sum + d.attended, 0)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-gray-500">Rate</p>
+                            <p className={`text-sm font-bold ${
+                              (() => {
+                                const totalScheduled = week.reduce((sum, d) => sum + d.scheduled, 0);
+                                const totalAttended = week.reduce((sum, d) => sum + d.attended, 0);
+                                const weekPercent = totalScheduled > 0 ? (totalAttended / totalScheduled) * 100 : 0;
+                                return weekPercent >= 75 ? 'text-[#10B981]' :
+                                       weekPercent >= 50 ? 'text-[#F59E0B]' : 'text-[#EF4444]';
+                              })()
+                            }`}>
+                              {(() => {
+                                const totalScheduled = week.reduce((sum, d) => sum + d.scheduled, 0);
+                                const totalAttended = week.reduce((sum, d) => sum + d.attended, 0);
+                                return totalScheduled > 0 ? ((totalAttended / totalScheduled) * 100).toFixed(0) : 0;
+                              })()}%
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Footer Summary */}
+            {monthlyData.length > 0 && (
+              <div className="p-6 border-t border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/5 to-transparent">
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <p className="text-sm text-gray-400 mb-1">Total Scheduled</p>
+                    <p className="text-2xl font-bold text-[#7C3AED]">
+                      {monthlyData.reduce((sum, d) => sum + d.scheduled, 0)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400 mb-1">Total Attended</p>
+                    <p className="text-2xl font-bold text-[#00D9FF]">
+                      {monthlyData.reduce((sum, d) => sum + d.attended, 0)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400 mb-1">Overall Rate</p>
+                    <p className={`text-2xl font-bold ${
+                      parseFloat(attendancePercent) >= 75 ? 'text-[#10B981]' :
+                      parseFloat(attendancePercent) >= 50 ? 'text-[#F59E0B]' : 'text-[#EF4444]'
+                    }`}>
+                      {attendancePercent}%
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
