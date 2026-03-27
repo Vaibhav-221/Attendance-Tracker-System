@@ -224,56 +224,63 @@ export default function SubjectPage() {
       <div className="max-w-4xl mx-auto relative z-10">
 
         {/* Header with Back Button */}
-        <div className="mb-8">
+        <div className="mb-6">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-400 hover:text-[#00D9FF] transition-colors mb-6 group"
+            className="flex items-center gap-2 text-gray-400 hover:text-[#00D9FF] transition-colors mb-4 group"
           >
-            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-            <span>Back to Dashboard</span>
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm">Back to Dashboard</span>
           </button>
 
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-2xl flex items-center justify-center shadow-lg shadow-[#00D9FF]/30">
-              <Book className="w-8 h-8 text-white" />
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg shadow-[#00D9FF]/30">
+              <Book className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-white">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">
                 {subjectName}
               </h1>
-              <p className="text-gray-400 text-sm mt-1">Subject Details & Attendance History</p>
+              <p className="text-gray-500 text-xs">Subject Details & History</p>
             </div>
           </div>
         </div>
 
-        {/* Main Stats Card */}
-        <div className={`bg-gradient-to-br ${attendanceStatus.bgGradient} border ${attendanceStatus.borderColor} rounded-2xl p-6 sm:p-8 mb-8 relative overflow-hidden`}>
+        {/* Main Stats Card - Compact Version */}
+        <div className={`bg-gradient-to-br ${attendanceStatus.bgGradient} border ${attendanceStatus.borderColor} rounded-xl p-5 mb-6 relative overflow-hidden`}>
           
           {/* Animated background orbs */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl animate-float"></div>
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full blur-xl animate-float-delayed"></div>
 
           <div className="relative z-10">
-            {/* Percentage Display */}
-            <div className="text-center mb-8">
-              <div className="flex items-center justify-center gap-3 mb-3">
-                <Award className={`w-10 h-10 ${attendanceStatus.color}`} />
-                <p className={`text-7xl sm:text-8xl font-bold ${attendanceStatus.color}`}>
-                  {percent}%
-                </p>
-                <span className="text-5xl">{attendanceStatus.icon}</span>
+            
+            {/* Compact Header with Percentage */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className={`w-11 h-11 rounded-lg flex items-center justify-center ${
+                  parseFloat(percent) >= 75 ? 'bg-[#10B981]/20' :
+                  parseFloat(percent) >= 50 ? 'bg-[#F59E0B]/20' : 'bg-[#EF4444]/20'
+                }`}>
+                  <Award className={`w-5 h-5 ${attendanceStatus.color}`} />
+                </div>
+                <div>
+                  <p className="text-gray-400 text-sm">Overall Attendance</p>
+                  <div className={`inline-block px-3 py-1 rounded text-xs font-medium ${
+                    parseFloat(percent) >= 75 ? 'bg-[#10B981]/20 text-[#10B981]' :
+                    parseFloat(percent) >= 50 ? 'bg-[#F59E0B]/20 text-[#F59E0B]' : 'bg-[#EF4444]/20 text-[#EF4444]'
+                  }`}>
+                    {attendanceStatus.status}
+                  </div>
+                </div>
               </div>
-              <p className="text-gray-400 text-lg mb-2">Overall Attendance</p>
-              <div className={`inline-block px-4 py-2 rounded-full ${
-                parseFloat(percent) >= 75 ? 'bg-[#10B981]/20 text-[#10B981]' :
-                parseFloat(percent) >= 50 ? 'bg-[#F59E0B]/20 text-[#F59E0B]' : 'bg-[#EF4444]/20 text-[#EF4444]'
-              } font-medium`}>
-                {attendanceStatus.status}
+              <div className="text-right pr-2">
+                <p className={`text-5xl font-bold ${attendanceStatus.color}`}>{percent}%</p>
               </div>
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full bg-[#1A1F3A] h-3 rounded-full overflow-hidden mb-8">
+            <div className="w-full bg-[#1A1F3A] h-2 rounded-full overflow-hidden mb-4">
               <div 
                 className={`h-full rounded-full transition-all duration-1000 ${
                   parseFloat(percent) >= 75 ? 'bg-[#10B981]' :
@@ -283,25 +290,25 @@ export default function SubjectPage() {
               ></div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-3 gap-4">
+            {/* Compact Stats Grid */}
+            <div className="grid grid-cols-3 gap-3">
               
-              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 text-center border border-white/10">
-                <BarChart3 className="w-6 h-6 text-gray-300 mx-auto mb-2" />
-                <p className="text-3xl font-bold text-white">{total}</p>
-                <p className="text-gray-400 text-sm">Total Classes</p>
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-3 text-center border border-white/10">
+                <BarChart3 className="w-5 h-5 text-gray-300 mx-auto mb-1" />
+                <p className="text-2xl font-bold text-white">{total}</p>
+                <p className="text-gray-400 text-xs">Total</p>
               </div>
 
-              <div className="bg-[#10B981]/10 backdrop-blur-sm rounded-xl p-4 text-center border border-[#10B981]/20">
-                <CheckCircle className="w-6 h-6 text-[#10B981] mx-auto mb-2" />
-                <p className="text-3xl font-bold text-[#10B981]">{present}</p>
-                <p className="text-gray-400 text-sm">Present</p>
+              <div className="bg-[#10B981]/10 backdrop-blur-sm rounded-lg p-3 text-center border border-[#10B981]/20">
+                <CheckCircle className="w-5 h-5 text-[#10B981] mx-auto mb-1" />
+                <p className="text-2xl font-bold text-[#10B981]">{present}</p>
+                <p className="text-gray-400 text-xs">Present</p>
               </div>
 
-              <div className="bg-[#EF4444]/10 backdrop-blur-sm rounded-xl p-4 text-center border border-[#EF4444]/20">
-                <XCircle className="w-6 h-6 text-[#EF4444] mx-auto mb-2" />
-                <p className="text-3xl font-bold text-[#EF4444]">{absent}</p>
-                <p className="text-gray-400 text-sm">Absent</p>
+              <div className="bg-[#EF4444]/10 backdrop-blur-sm rounded-lg p-3 text-center border border-[#EF4444]/20">
+                <XCircle className="w-5 h-5 text-[#EF4444] mx-auto mb-1" />
+                <p className="text-2xl font-bold text-[#EF4444]">{absent}</p>
+                <p className="text-gray-400 text-xs">Absent</p>
               </div>
 
             </div>
@@ -309,12 +316,12 @@ export default function SubjectPage() {
         </div>
 
         {/* Attendance History */}
-        <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl p-6 sm:p-8">
+        <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl p-4">
           
-          <div className="flex items-center gap-3 mb-6">
-            <Calendar className="w-6 h-6 text-[#00D9FF]" />
-            <h2 className="text-2xl font-semibold text-white">Attendance History</h2>
-            <span className="text-sm text-gray-500 ml-auto">{history.length} sessions</span>
+          <div className="flex items-center gap-3 mb-4">
+            <Calendar className="w-5 h-5 text-[#00D9FF]" />
+            <h2 className="text-xl font-semibold text-white">Attendance History</h2>
+            <span className="text-xs text-gray-500 ml-auto">{history.length} sessions</span>
           </div>
 
           {history.length === 0 ? (
@@ -324,47 +331,48 @@ export default function SubjectPage() {
               <p className="text-gray-600 text-sm mt-2">History will appear as classes are scheduled</p>
             </div>
           ) : (
-            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
               {history.map((item, index) => {
                 // Format date
                 const dateObj = new Date(item.date);
                 const formattedDate = mounted ? dateObj.toLocaleDateString('en-US', { 
-                  weekday: 'short', 
                   month: 'short', 
-                  day: 'numeric', 
-                  year: 'numeric' 
+                  day: 'numeric',
+                  year: 'numeric'
                 }) : item.date;
 
                 return (
                   <div
                     key={index}
-                    className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-gradient-to-r from-[#0A0E27] to-[#0F1629] border rounded-xl p-4 sm:p-5 transition-all duration-300 hover:scale-[1.02] ${
+                    className={`flex items-center justify-between gap-3 bg-gradient-to-r from-[#0A0E27] to-[#0F1629] border rounded-lg p-3 transition-all duration-300 hover:scale-[1.01] ${
                       item.present 
                         ? 'border-[#10B981]/30 hover:border-[#10B981]/50' 
                         : 'border-[#EF4444]/30 hover:border-[#EF4444]/50'
                     }`}
                   >
                     
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    {/* Date and Icon */}
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                         item.present ? 'bg-[#10B981]/20' : 'bg-[#EF4444]/20'
                       }`}>
                         {item.present ? (
-                          <CheckCircle className="w-5 h-5 text-[#10B981]" />
+                          <CheckCircle className="w-4 h-4 text-[#10B981]" />
                         ) : (
-                          <XCircle className="w-5 h-5 text-[#EF4444]" />
+                          <XCircle className="w-4 h-4 text-[#EF4444]" />
                         )}
                       </div>
-                      <div>
-                        <p className="text-white font-medium">{formattedDate}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-medium text-sm">{formattedDate}</p>
                         <p className="text-xs text-gray-500">Session {history.length - index}</p>
                       </div>
                     </div>
 
-                    <div className={`px-4 py-2 rounded-full font-medium ${
+                    {/* Status Badge */}
+                    <div className={`px-3 py-1 rounded text-xs font-medium flex-shrink-0 ${
                       item.present 
-                        ? 'bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30' 
-                        : 'bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/30'
+                        ? 'bg-[#10B981]/20 text-[#10B981]' 
+                        : 'bg-[#EF4444]/20 text-[#EF4444]'
                     }`}>
                       {item.present ? '✓ Present' : '✗ Absent'}
                     </div>
