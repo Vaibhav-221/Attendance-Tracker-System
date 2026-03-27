@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
 import {
   doc,
   getDoc,
@@ -33,6 +34,7 @@ export default function CRDashboard() {
   const [published, setPublished] = useState(false);
 
   const [actionLoading, setActionLoading] = useState({});
+  const [showUserMenu, setShowUserMenu] = useState(false);
   
   const [weeklyData, setWeeklyData] = useState([]);
 
@@ -43,6 +45,15 @@ export default function CRDashboard() {
       ...prev,
       [key]: value
     }));
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.push("/cr/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   // Get greeting based on time
@@ -457,8 +468,35 @@ export default function CRDashboard() {
               <p className="text-xs text-gray-500">Class Representative</p>
               <p className="text-sm text-gray-300 font-medium">{userData?.name || 'CR User'}</p>
             </div>
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full flex items-center justify-center text-white font-semibold text-base sm:text-lg border-2 border-[#1A1F3A] shadow-lg shadow-[#00D9FF]/30 hover:scale-110 hover:shadow-[#00D9FF]/60 transition-all duration-300 cursor-pointer">
-              {userData?.name?.charAt(0) || 'CR'}
+            
+            {/* User Menu */}
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full flex items-center justify-center text-white font-semibold text-base sm:text-lg border-2 border-[#1A1F3A] shadow-lg shadow-[#00D9FF]/30 hover:scale-110 hover:shadow-[#00D9FF]/60 transition-all duration-300 cursor-pointer"
+              >
+                {userData?.name?.charAt(0) || 'CR'}
+              </button>
+
+              {/* Dropdown Menu */}
+              {showUserMenu && (
+                <div className="absolute right-0 mt-2 w-64 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50 animate-fadeIn">
+                  <div className="p-3 border-b border-[#1A1F3A]">
+                    <p className="text-white font-medium truncate">{userData?.name}</p>
+                    <p className="text-gray-500 text-xs truncate">{userData?.email}</p>
+                  </div>
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-500/10 transition-colors duration-200 flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Logout</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -906,6 +944,21 @@ export default function CRDashboard() {
       </div>
 
       <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
         }
