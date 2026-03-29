@@ -220,18 +220,22 @@ export default function StudentDashboard() {
       }
   
       const classId = userDoc.data().classId;
-  
+
       setUserData(userDoc.data());
-  
-      await fetchAllSubjects(classId);
-      await fetchAttendanceHistory(classId, user.uid);
-      await fetchWeeklyAttendance(classId, user.uid);
-      await fetchMonthlyAttendance(classId, user.uid);
-      await fetchJoinCode(classId);
-  
+
+      // Fetch all initial data in parallel for maximum speed
+      await Promise.all([
+        fetchAllSubjects(classId),
+        fetchAttendanceHistory(classId, user.uid),
+        fetchWeeklyAttendance(classId, user.uid),
+        fetchMonthlyAttendance(classId, user.uid),
+        fetchJoinCode(classId)
+      ]);
+
+      // Set up real-time listeners after initial data load
       listenToSchedule(classId);
       listenToTodayAttendance(classId, user.uid);
-  
+
       setLoading(false);
   
     });
@@ -256,73 +260,106 @@ export default function StudentDashboard() {
   };
 
   const fetchWeeklyAttendance = async (classId, studentId) => {
-    const scheduleSnapshot = await getDocs(
-      collection(db, "classes", classId, "dailySchedule")
-    );
-
-    const sortedDates = scheduleSnapshot.docs
-      .map(doc => doc.id)
-      .sort()
-      .slice(-7); // Last 7 days
-
-    const weeklyStats = [];
-
-    for (const date of sortedDates) {
-      const scheduleDoc = await getDoc(doc(db, "classes", classId, "dailySchedule", date));
-      const scheduled = scheduleDoc.data()?.subjects || [];
-
-      const attendanceDoc = await getDoc(
-        doc(db, "classes", classId, "attendance", date, "students", studentId)
+    try {
+      const scheduleSnapshot = await getDocs(
+        collection(db, "classes", classId, "dailySchedule")
       );
-      const attended = attendanceDoc.data()?.subjects || [];
 
-      const dateObj = new Date(date);
-      const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-      const dayDate = dateObj.getDate();
+      const sortedDates = scheduleSnapshot.docs
+        .map(doc => doc.id)
+        .sort()
+        .slice(-7); // Last 7 days
 
-      weeklyStats.push({
-        day: dayName,
-        date: dayDate,
-        classes: attended.length
-      });
+      // Batch fetch all schedule and attendance documents in parallel
+      const schedulePromises = sortedDates.map(date =>
+        getDoc(doc(db, "classes", classId, "dailySchedule", date))
+      );
+      const attendancePromises = sortedDates.map(date =>
+        getDoc(doc(db, "classes", classId, "attendance", date, "students", studentId))
+      );
+
+      const [scheduleDocs, attendanceDocs] = await Promise.all([
+        Promise.all(schedulePromises),
+        Promise.all(attendancePromises)
+      ]);
+
+      const weeklyStats = [];
+
+      for (let i = 0; i < sortedDates.length; i++) {
+        const date = sortedDates[i];
+        const scheduleDoc = scheduleDocs[i];
+        const attendanceDoc = attendanceDocs[i];
+
+        const scheduled = scheduleDoc.data()?.subjects || [];
+        const attended = attendanceDoc.data()?.subjects || [];
+
+        const dateObj = new Date(date);
+        const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+        const dayDate = dateObj.getDate();
+
+        weeklyStats.push({
+          day: dayName,
+          date: dayDate,
+          classes: attended.length,
+          scheduled: scheduled.length
+        });
+      }
+
+      setWeeklyData(weeklyStats);
+    } catch (error) {
+      console.error("Error fetching weekly attendance:", error);
     }
-
-    setWeeklyData(weeklyStats);
   };
 
   const fetchMonthlyAttendance = async (classId, studentId) => {
-    const scheduleSnapshot = await getDocs(
-      collection(db, "classes", classId, "dailySchedule")
-    );
-
-    const sortedDates = scheduleSnapshot.docs
-      .map(doc => doc.id)
-      .sort()
-      .slice(-30); // Last 30 days
-
-    const monthlyStats = [];
-
-    for (const date of sortedDates) {
-      const scheduleDoc = await getDoc(doc(db, "classes", classId, "dailySchedule", date));
-      const scheduled = scheduleDoc.data()?.subjects || [];
-
-      const attendanceDoc = await getDoc(
-        doc(db, "classes", classId, "attendance", date, "students", studentId)
+    try {
+      const scheduleSnapshot = await getDocs(
+        collection(db, "classes", classId, "dailySchedule")
       );
-      const attended = attendanceDoc.data()?.subjects || [];
 
-      const dateObj = new Date(date);
-      const dayName = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const sortedDates = scheduleSnapshot.docs
+        .map(doc => doc.id)
+        .sort()
+        .slice(-30); // Last 30 days
 
-      monthlyStats.push({
-        day: dayName,
-        scheduled: scheduled.length,
-        attended: attended.length,
-        percentage: scheduled.length > 0 ? ((attended.length / scheduled.length) * 100).toFixed(0) : 0
-      });
+      // Batch fetch all schedule and attendance documents in parallel
+      const schedulePromises = sortedDates.map(date =>
+        getDoc(doc(db, "classes", classId, "dailySchedule", date))
+      );
+      const attendancePromises = sortedDates.map(date =>
+        getDoc(doc(db, "classes", classId, "attendance", date, "students", studentId))
+      );
+
+      const [scheduleDocs, attendanceDocs] = await Promise.all([
+        Promise.all(schedulePromises),
+        Promise.all(attendancePromises)
+      ]);
+
+      const monthlyStats = [];
+
+      for (let i = 0; i < sortedDates.length; i++) {
+        const date = sortedDates[i];
+        const scheduleDoc = scheduleDocs[i];
+        const attendanceDoc = attendanceDocs[i];
+
+        const scheduled = scheduleDoc.data()?.subjects || [];
+        const attended = attendanceDoc.data()?.subjects || [];
+
+        const dateObj = new Date(date);
+        const dayName = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+        monthlyStats.push({
+          day: dayName,
+          scheduled: scheduled.length,
+          attended: attended.length,
+          percentage: scheduled.length > 0 ? ((attended.length / scheduled.length) * 100).toFixed(0) : 0
+        });
+      }
+
+      setMonthlyData(monthlyStats);
+    } catch (error) {
+      console.error("Error fetching monthly attendance:", error);
     }
-
-    setMonthlyData(monthlyStats);
   };
 
   const listenToSchedule = (classId) => {
@@ -431,131 +468,113 @@ export default function StudentDashboard() {
   };
 
   const fetchAttendanceHistory = async (classId, studentId) => {
+    try {
+      // Fetch all data in parallel for maximum speed
+      const [scheduleSnapshot, subjectsSnapshot] = await Promise.all([
+        getDocs(collection(db, "classes", classId, "dailySchedule")),
+        getDocs(collection(db, "classes", classId, "subjects"))
+      ]);
 
-    const scheduleSnapshot = await getDocs(
-      collection(db, "classes", classId, "dailySchedule")
-    );
-
-    let totalScheduled = 0;
-    let totalPresent = 0;
-
-    let stats = {};
-
-    const subjectsSnapshot = await getDocs(
-      collection(db, "classes", classId, "subjects")
-    );
-
-    subjectsSnapshot.docs.forEach(doc => {
-
-      stats[doc.id] = {
-        name: doc.data().subjectName,
-        total: 0,
-        present: 0
-      };
-
-    });
-
-    for (const scheduleDoc of scheduleSnapshot.docs) {
-
-      const date = scheduleDoc.id;
-      const scheduled = scheduleDoc.data().subjects || [];
-
-      totalScheduled += scheduled.length;
-
-      scheduled.forEach(id => {
-        if (stats[id]) stats[id].total++;
+      // Build stats object from subjects
+      let stats = {};
+      subjectsSnapshot.docs.forEach(doc => {
+        stats[doc.id] = {
+          name: doc.data().subjectName,
+          total: 0,
+          present: 0
+        };
       });
 
-      const attendanceRef = doc(
-        db,
-        "classes",
-        classId,
-        "attendance",
-        date,
-        "students",
-        studentId
+      // Get all schedule dates
+      const scheduleDocs = scheduleSnapshot.docs;
+      const dates = scheduleDocs.map(doc => doc.id);
+
+      // Batch fetch all attendance documents for this student in parallel
+      const attendancePromises = dates.map(date =>
+        getDoc(doc(db, "classes", classId, "attendance", date, "students", studentId))
       );
 
-      const attendanceDoc = await getDoc(attendanceRef);
+      const attendanceDocs = await Promise.all(attendancePromises);
 
-      if (attendanceDoc.exists()) {
+      // Process all data in a single pass
+      let totalScheduled = 0;
+      let totalPresent = 0;
 
-        const present = attendanceDoc.data().subjects || [];
+      scheduleDocs.forEach((scheduleDoc, index) => {
+        const scheduled = scheduleDoc.data()?.subjects || [];
+        totalScheduled += scheduled.length;
 
-        totalPresent += present.length;
-
-        present.forEach(id => {
-          if (stats[id]) stats[id].present++;
+        scheduled.forEach(id => {
+          if (stats[id]) stats[id].total++;
         });
 
-      }
+        const attendanceDoc = attendanceDocs[index];
+        if (attendanceDoc.exists()) {
+          const present = attendanceDoc.data()?.subjects || [];
+          totalPresent += present.length;
 
+          present.forEach(id => {
+            if (stats[id]) stats[id].present++;
+          });
+        }
+      });
+
+      const percent = totalScheduled === 0 ? 0 : ((totalPresent / totalScheduled) * 100).toFixed(2);
+      setAttendancePercent(percent);
+
+      const formatted = Object.keys(stats).map(id => {
+        const total = stats[id].total;
+        const present = stats[id].present;
+        const percent = total === 0 ? 0 : ((present / total) * 100).toFixed(1);
+
+        return {
+          id,
+          name: stats[id].name,
+          total,
+          present,
+          percent
+        };
+      });
+
+      setSubjectStats(formatted);
+
+      // Auto-calculate safe bunk data
+      const targetPercent = 75;
+      const bunkData = formatted.map(subject => {
+        const { total, present, name, id, percent } = subject;
+        const currentPercent = parseFloat(percent);
+
+        if (currentPercent >= targetPercent) {
+          const canBunk = Math.floor((present - 0.75 * total) / 0.75);
+          return {
+            id,
+            name,
+            total,
+            present,
+            currentPercent: currentPercent.toFixed(1),
+            canBunk: canBunk > 0 ? canBunk : 0,
+            needToAttend: 0,
+            status: 'safe'
+          };
+        } else {
+          const needToAttend = Math.ceil((0.75 * total - present) / 0.25);
+          return {
+            id,
+            name,
+            total,
+            present,
+            currentPercent: currentPercent.toFixed(1),
+            canBunk: 0,
+            needToAttend: needToAttend > 0 ? needToAttend : 0,
+            status: 'danger'
+          };
+        }
+      });
+
+      setSafeBunkData(bunkData);
+    } catch (error) {
+      console.error("Error fetching attendance history:", error);
     }
-
-    const percent =
-      totalScheduled === 0
-        ? 0
-        : ((totalPresent / totalScheduled) * 100).toFixed(2);
-
-    setAttendancePercent(percent);
-
-    const formatted = Object.keys(stats).map(id => {
-
-      const total = stats[id].total;
-      const present = stats[id].present;
-
-      const percent =
-        total === 0
-          ? 0
-          : ((present / total) * 100).toFixed(1);
-
-      return {
-        id,
-        name: stats[id].name,
-        total,
-        present,
-        percent
-      };
-
-    });
-
-    setSubjectStats(formatted);
-
-    // Auto-calculate safe bunk data
-    const targetPercent = 75;
-    const bunkData = formatted.map(subject => {
-      const { total, present, name, id, percent } = subject;
-      const currentPercent = parseFloat(percent);
-
-      if (currentPercent >= targetPercent) {
-        const canBunk = Math.floor((present - 0.75 * total) / 0.75);
-        return {
-          id,
-          name,
-          total,
-          present,
-          currentPercent: currentPercent.toFixed(1),
-          canBunk: canBunk > 0 ? canBunk : 0,
-          needToAttend: 0,
-          status: 'safe'
-        };
-      } else {
-        const needToAttend = Math.ceil((0.75 * total - present) / 0.25);
-        return {
-          id,
-          name,
-          total,
-          present,
-          currentPercent: currentPercent.toFixed(1),
-          canBunk: 0,
-          needToAttend: needToAttend > 0 ? needToAttend : 0,
-          status: 'danger'
-        };
-      }
-    });
-
-    setSafeBunkData(bunkData);
-
   };
 
   if (loading) {
@@ -565,17 +584,36 @@ export default function StudentDashboard() {
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00D9FF]/10 rounded-full blur-[100px] animate-float"></div>
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#7C3AED]/10 rounded-full blur-[100px] animate-float-delayed"></div>
         </div>
-        
+
         <div className="text-center relative z-10">
-          <div className="relative w-24 h-24 mx-auto mb-6">
-            <div className="absolute inset-0 border-4 border-[#00D9FF]/20 rounded-full"></div>
-            <div className="absolute inset-0 border-4 border-transparent border-t-[#00D9FF] rounded-full animate-spin"></div>
-            <div className="absolute inset-2 border-4 border-transparent border-t-[#7C3AED] rounded-full animate-spin-slow"></div>
+          {/* Modern Multi-Ring Loader */}
+          <div className="relative w-24 h-24 mx-auto mb-8">
+            {/* Outer ring */}
+            <div className="absolute inset-0 border-4 border-transparent border-t-[#00D9FF] border-r-[#7C3AED] rounded-full animate-spin" style={{ animationDuration: '1.5s' }}></div>
+            {/* Middle ring */}
+            <div className="absolute inset-2 border-4 border-transparent border-b-[#10B981] border-l-[#F59E0B] rounded-full animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }}></div>
+            {/* Inner pulse */}
+            <div className="absolute inset-4 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full animate-pulse opacity-80"></div>
+            {/* Center dot */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-3 h-3 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full animate-pulse"></div>
+              <div className="w-4 h-4 bg-white rounded-full shadow-lg shadow-[#00D9FF]/50 animate-bounce-slow"></div>
             </div>
           </div>
-          <p className="text-gray-400 text-lg font-medium animate-pulse">Loading your dashboard...</p>
+
+          {/* Loading text */}
+          <div className="space-y-2">
+            <p className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] via-[#7C3AED] to-[#10B981] text-xl font-bold animate-gradient" style={{ backgroundSize: '200% 200%' }}>
+              Loading Your Dashboard
+            </p>
+            <p className="text-gray-500 text-sm">Fetching your attendance data...</p>
+          </div>
+
+          {/* Bouncing dots */}
+          <div className="flex justify-center gap-2 mt-6">
+            <div className="w-2 h-2 bg-[#00D9FF] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-2 h-2 bg-[#7C3AED] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-2 h-2 bg-[#10B981] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
         </div>
       </div>
     );
@@ -1639,7 +1677,7 @@ export default function StudentDashboard() {
             transform: translate(20px, -20px) scale(1.05);
           }
         }
-        
+
         @keyframes float-delayed {
           0%, 100% {
             transform: translate(0, 0) scale(1);
@@ -1648,15 +1686,15 @@ export default function StudentDashboard() {
             transform: translate(-20px, 20px) scale(1.05);
           }
         }
-        
+
         .animate-float {
           animation: float 8s ease-in-out infinite;
         }
-        
+
         .animate-float-delayed {
           animation: float-delayed 10s ease-in-out infinite;
         }
-        
+
         @keyframes pulse-slow {
           0%, 100% {
             opacity: 0.5;
@@ -1667,7 +1705,7 @@ export default function StudentDashboard() {
             transform: scale(1.05);
           }
         }
-        
+
         .animate-pulse-slow {
           animation: pulse-slow 4s ease-in-out infinite;
         }
@@ -1680,7 +1718,7 @@ export default function StudentDashboard() {
             transform: rotate(-360deg);
           }
         }
-        
+
         .animate-spin-slow {
           animation: spin-slow 2s linear infinite;
         }
@@ -1695,9 +1733,49 @@ export default function StudentDashboard() {
             transform: translateY(0);
           }
         }
-        
+
         .animate-fadeIn {
           animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes bounce-slow {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+        }
+
+        .animate-bounce-slow {
+          animation: bounce-slow 2s ease-in-out infinite;
+        }
+
+        @keyframes gradient {
+          0%, 100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+        }
+
+        .animate-gradient {
+          background-size: 200% 200%;
+          animation: gradient 3s ease infinite;
+        }
+
+        @keyframes bounce {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-5px);
+          }
+        }
+
+        .animate-bounce {
+          animation: bounce 0.6s ease-in-out infinite;
         }
 
         @keyframes pulseBorder {
@@ -1708,7 +1786,7 @@ export default function StudentDashboard() {
             opacity: 0.6;
           }
         }
-        
+
         .animate-pulse-border {
           animation: pulseBorder 3s ease-in-out infinite;
         }
@@ -1718,7 +1796,7 @@ export default function StudentDashboard() {
             width: 0%;
           }
         }
-        
+
         .animate-progress-fill {
           animation: progressFill 1.5s ease-out;
         }

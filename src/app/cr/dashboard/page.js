@@ -214,14 +214,20 @@ export default function CRDashboard() {
     try {
       setAnalyticsLoading(true);
 
-      // Fetch total students (users with this classId and role 'student')
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("classId", "==", classId), where("role", "==", "student"));
-      const usersSnapshot = await getDocs(q);
+      // Fetch all base data in parallel
+      const [usersSnapshot, todayAttendanceSnapshot, scheduleSnapshot] = await Promise.all([
+        // Fetch total students
+        getDocs(query(collection(db, "users"), where("classId", "==", classId), where("role", "==", "student"))),
+        // Fetch today's attendance
+        getDocs(collection(db, "classes", classId, "attendance", new Date().toISOString().split("T")[0], "students")),
+        // Fetch all schedule data
+        getDocs(collection(db, "classes", classId, "dailySchedule"))
+      ]);
+
       const totalStudentsCount = usersSnapshot.docs.length;
       setTotalStudents(totalStudentsCount);
 
-      // Fetch recent students (last 5 joined)
+      // Fetch recent students (from already fetched users data)
       const recentStudentsList = usersSnapshot.docs
         .map(doc => ({
           id: doc.id,
@@ -232,18 +238,14 @@ export default function CRDashboard() {
         .slice(0, 5);
       setRecentStudents(recentStudentsList);
 
-      // Fetch today's attendance
-      const today = new Date().toISOString().split("T")[0];
-      const attendanceRef = collection(db, "classes", classId, "attendance", today, "students");
-      const attendanceSnapshot = await getDocs(attendanceRef);
-      const todayAttendanceCount = attendanceSnapshot.docs.filter(doc => {
+      // Today's attendance (already fetched)
+      const todayAttendanceCount = todayAttendanceSnapshot.docs.filter(doc => {
         const subjects = doc.data().subjects || [];
         return subjects.length > 0;
       }).length;
       setTodayAttendance(todayAttendanceCount);
 
-      // Fetch weekly attendance data (last 7 days)
-      const scheduleSnapshot = await getDocs(collection(db, "classes", classId, "dailySchedule"));
+      // Fetch weekly attendance data (last 7 days) - batch fetch in parallel
       const dates = [];
       const currentDate = new Date();
 
@@ -254,15 +256,23 @@ export default function CRDashboard() {
         dates.push(dateStr);
       }
 
-      const weeklyAttData = [];
+      // Build schedule map for quick lookup
+      const scheduleMap = {};
+      scheduleSnapshot.docs.forEach(doc => {
+        scheduleMap[doc.id] = doc.data()?.subjects || [];
+      });
 
-      for (const dateStr of dates) {
-        const scheduleDoc = scheduleSnapshot.docs.find(doc => doc.id === dateStr);
-        const scheduledCount = scheduleDoc?.data()?.subjects?.length || 0;
+      // Batch fetch all attendance collections for the week in parallel
+      const attendancePromises = dates.map(dateStr =>
+        getDocs(collection(db, "classes", classId, "attendance", dateStr, "students"))
+      );
 
-        const dayAttendanceRef = collection(db, "classes", classId, "attendance", dateStr, "students");
-        const dayAttendanceSnapshot = await getDocs(dayAttendanceRef);
-        const attendedCount = dayAttendanceSnapshot.docs.filter(doc => {
+      const weeklyAttendanceSnapshots = await Promise.all(attendancePromises);
+
+      const weeklyAttData = dates.map((dateStr, index) => {
+        const scheduledCount = scheduleMap[dateStr]?.length || 0;
+        const attendanceSnapshot = weeklyAttendanceSnapshots[index];
+        const attendedCount = attendanceSnapshot.docs.filter(doc => {
           const subjects = doc.data().subjects || [];
           return subjects.length > 0;
         }).length;
@@ -271,14 +281,14 @@ export default function CRDashboard() {
         const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
         const dayDate = dateObj.getDate();
 
-        weeklyAttData.push({
+        return {
           day: dayName,
           date: dayDate,
           scheduled: scheduledCount,
           attended: attendedCount,
           percentage: scheduledCount > 0 ? ((attendedCount / totalStudentsCount) * 100).toFixed(0) : 0
-        });
-      }
+        };
+      });
 
       setWeeklyAttendance(weeklyAttData);
 
@@ -502,18 +512,36 @@ export default function CRDashboard() {
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00D9FF]/10 rounded-full blur-[100px] animate-float"></div>
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#7C3AED]/10 rounded-full blur-[100px] animate-float-delayed"></div>
         </div>
-        
+
         <div className="text-center relative z-10">
-          {/* Professional Loader */}
-          <div className="relative w-24 h-24 mx-auto mb-6">
-            <div className="absolute inset-0 border-4 border-[#00D9FF]/20 rounded-full"></div>
-            <div className="absolute inset-0 border-4 border-transparent border-t-[#00D9FF] rounded-full animate-spin"></div>
-            <div className="absolute inset-2 border-4 border-transparent border-t-[#7C3AED] rounded-full animate-spin-slow"></div>
+          {/* Modern Multi-Layer Loader */}
+          <div className="relative w-24 h-24 mx-auto mb-8">
+            {/* Outer spinning ring */}
+            <div className="absolute inset-0 border-4 border-transparent border-t-[#00D9FF] border-r-[#7C3AED] rounded-full animate-spin" style={{ animationDuration: '1.5s' }}></div>
+            {/* Middle spinning ring */}
+            <div className="absolute inset-2 border-4 border-transparent border-b-[#10B981] border-l-[#F59E0B] rounded-full animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }}></div>
+            {/* Inner pulse circle */}
+            <div className="absolute inset-4 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full animate-pulse opacity-80"></div>
+            {/* Center dot */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-3 h-3 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full animate-pulse"></div>
+              <div className="w-4 h-4 bg-white rounded-full shadow-lg shadow-[#00D9FF]/50 animate-bounce-slow"></div>
             </div>
           </div>
-          <p className="text-gray-400 text-lg font-medium animate-pulse">Loading your dashboard...</p>
+
+          {/* Loading text with gradient */}
+          <div className="space-y-2">
+            <p className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] via-[#7C3AED] to-[#10B981] text-xl font-bold animate-gradient" style={{ backgroundSize: '200% 200%' }}>
+              Loading Dashboard
+            </p>
+            <p className="text-gray-500 text-sm">Please wait while we fetch your data</p>
+          </div>
+
+          {/* Animated dots */}
+          <div className="flex justify-center gap-2 mt-6">
+            <div className="w-2 h-2 bg-[#00D9FF] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-2 h-2 bg-[#7C3AED] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-2 h-2 bg-[#10B981] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
         </div>
       </div>
     );
