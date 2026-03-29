@@ -11,7 +11,9 @@ import {
   collection,
   addDoc,
   getDocs,
-  deleteDoc
+  deleteDoc,
+  query,
+  where
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
@@ -35,8 +37,15 @@ export default function CRDashboard() {
 
   const [actionLoading, setActionLoading] = useState({});
   const [showUserMenu, setShowUserMenu] = useState(false);
-  
+
   const [weeklyData, setWeeklyData] = useState([]);
+
+  // Monitor analytics state
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [todayAttendance, setTodayAttendance] = useState(0);
+  const [weeklyAttendance, setWeeklyAttendance] = useState([]);
+  const [recentStudents, setRecentStudents] = useState([]);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -89,6 +98,7 @@ export default function CRDashboard() {
         fetchTodaySchedule(user.uid);
         fetchJoinCode(user.uid);
         fetchWeeklyData(user.uid);
+        fetchAnalytics(user.uid);
       }
 
       setLoading(false);
@@ -98,6 +108,13 @@ export default function CRDashboard() {
     init();
 
   }, []);
+
+  // Refresh analytics when switching to monitor tab
+  useEffect(() => {
+    if (view === "monitor" && userData?.classId) {
+      fetchAnalytics(userData.classId);
+    }
+  }, [view, userData]);
 
   const generateJoinCode = () => {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -142,14 +159,14 @@ export default function CRDashboard() {
   };
 
   const fetchWeeklyData = async (classId) => {
-    
+
     try {
       const scheduleRef = collection(db, "classes", classId, "dailySchedule");
       const snapshot = await getDocs(scheduleRef);
-      
+
       const dates = [];
       const currentDate = new Date();
-      
+
       for (let i = 4; i >= 0; i--) {
         const date = new Date(currentDate);
         date.setDate(date.getDate() - i);
@@ -159,25 +176,25 @@ export default function CRDashboard() {
           date: date.getDate()
         });
       }
-      
+
       const weekData = dates.map(dateInfo => {
         const scheduleDoc = snapshot.docs.find(doc => doc.id === dateInfo.dateStr);
         const classCount = scheduleDoc?.data()?.subjects?.length || 0;
-        
+
         return {
           day: dateInfo.day,
           date: dateInfo.date,
           classes: classCount
         };
       });
-      
+
       setWeeklyData(weekData);
-      
+
     } catch (err) {
       console.error("Error fetching weekly data:", err);
       const fallbackData = [];
       const currentDate = new Date();
-      
+
       for (let i = 4; i >= 0; i--) {
         const date = new Date(currentDate);
         date.setDate(date.getDate() - i);
@@ -187,10 +204,89 @@ export default function CRDashboard() {
           classes: 0
         });
       }
-      
+
       setWeeklyData(fallbackData);
     }
-    
+
+  };
+
+  const fetchAnalytics = async (classId) => {
+    try {
+      setAnalyticsLoading(true);
+
+      // Fetch total students (users with this classId and role 'student')
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("classId", "==", classId), where("role", "==", "student"));
+      const usersSnapshot = await getDocs(q);
+      const totalStudentsCount = usersSnapshot.docs.length;
+      setTotalStudents(totalStudentsCount);
+
+      // Fetch recent students (last 5 joined)
+      const recentStudentsList = usersSnapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          joinedAt: doc.data().createdAt?.toDate?.() || new Date()
+        }))
+        .sort((a, b) => b.joinedAt - a.joinedAt)
+        .slice(0, 5);
+      setRecentStudents(recentStudentsList);
+
+      // Fetch today's attendance
+      const today = new Date().toISOString().split("T")[0];
+      const attendanceRef = collection(db, "classes", classId, "attendance", today, "students");
+      const attendanceSnapshot = await getDocs(attendanceRef);
+      const todayAttendanceCount = attendanceSnapshot.docs.filter(doc => {
+        const subjects = doc.data().subjects || [];
+        return subjects.length > 0;
+      }).length;
+      setTodayAttendance(todayAttendanceCount);
+
+      // Fetch weekly attendance data (last 7 days)
+      const scheduleSnapshot = await getDocs(collection(db, "classes", classId, "dailySchedule"));
+      const dates = [];
+      const currentDate = new Date();
+
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(currentDate);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split("T")[0];
+        dates.push(dateStr);
+      }
+
+      const weeklyAttData = [];
+
+      for (const dateStr of dates) {
+        const scheduleDoc = scheduleSnapshot.docs.find(doc => doc.id === dateStr);
+        const scheduledCount = scheduleDoc?.data()?.subjects?.length || 0;
+
+        const dayAttendanceRef = collection(db, "classes", classId, "attendance", dateStr, "students");
+        const dayAttendanceSnapshot = await getDocs(dayAttendanceRef);
+        const attendedCount = dayAttendanceSnapshot.docs.filter(doc => {
+          const subjects = doc.data().subjects || [];
+          return subjects.length > 0;
+        }).length;
+
+        const dateObj = new Date(dateStr);
+        const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+        const dayDate = dateObj.getDate();
+
+        weeklyAttData.push({
+          day: dayName,
+          date: dayDate,
+          scheduled: scheduledCount,
+          attended: attendedCount,
+          percentage: scheduledCount > 0 ? ((attendedCount / totalStudentsCount) * 100).toFixed(0) : 0
+        });
+      }
+
+      setWeeklyAttendance(weeklyAttData);
+
+    } catch (err) {
+      console.error("Error fetching analytics:", err);
+    } finally {
+      setAnalyticsLoading(false);
+    }
   };
 
   const handleCreateClass = async () => {
@@ -564,6 +660,17 @@ export default function CRDashboard() {
           </button>
 
           <button
+            onClick={() => setView("monitor")}
+            className={`px-4 sm:px-7 py-2.5 sm:py-3 rounded-t-lg font-medium text-xs sm:text-sm transition-all duration-300 whitespace-nowrap ${
+              view === "monitor"
+                ? "bg-gradient-to-br from-[#00D9FF] to-[#0EA5E9] text-white shadow-lg shadow-[#00D9FF]/30"
+                : "bg-transparent text-gray-500 hover:text-gray-300 hover:bg-[#1A1F3A]/50"
+            }`}
+          >
+            Monitor
+          </button>
+
+          <button
             onClick={() => setView("student")}
             className={`px-4 sm:px-7 py-2.5 sm:py-3 rounded-t-lg font-medium text-xs sm:text-sm transition-all duration-300 whitespace-nowrap ${
               view === "student"
@@ -583,6 +690,271 @@ export default function CRDashboard() {
             className="w-full h-[600px] sm:h-[800px] border border-[#1A1F3A] rounded-xl hover:border-[#00D9FF]/30 transition-all duration-300"
           />
 
+        )}
+
+        {view === "monitor" && (
+          <>
+            {/* Monitor Dashboard */}
+            <div className="space-y-6 sm:space-y-8">
+
+              {/* Page Header */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg shadow-[#00D9FF]/30">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-semibold text-white">Analytics Monitor</h2>
+                  <p className="text-xs sm:text-sm text-gray-500">Track class performance and engagement</p>
+                </div>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+
+                {/* Total Students Card */}
+                <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#00D9FF]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#00D9FF]/20 group">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-[#00D9FF]/5 rounded-full blur-2xl group-hover:bg-[#00D9FF]/10 transition-all duration-300"></div>
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2 relative z-10">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#00D9FF]/10 rounded-lg flex items-center justify-center group-hover:bg-[#00D9FF]/20 group-hover:scale-110 transition-all duration-300">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#00D9FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">Total Students</p>
+                  </div>
+                  {analyticsLoading ? (
+                    <div className="h-8 w-16 bg-[#1A1F3A] rounded animate-pulse"></div>
+                  ) : (
+                    <p className="text-2xl sm:text-3xl font-semibold text-[#00D9FF] relative z-10 group-hover:scale-110 transition-transform duration-300">{totalStudents}</p>
+                  )}
+                </div>
+
+                {/* Today's Attendance Card */}
+                <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#10B981]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#10B981]/20 group">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-[#10B981]/5 rounded-full blur-2xl group-hover:bg-[#10B981]/10 transition-all duration-300"></div>
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2 relative z-10">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#10B981]/10 rounded-lg flex items-center justify-center group-hover:bg-[#10B981]/20 group-hover:scale-110 transition-all duration-300">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">Today's Attendance</p>
+                  </div>
+                  {analyticsLoading ? (
+                    <div className="h-8 w-16 bg-[#1A1F3A] rounded animate-pulse"></div>
+                  ) : (
+                    <p className="text-2xl sm:text-3xl font-semibold text-[#10B981] relative z-10 group-hover:scale-110 transition-transform duration-300">
+                      {todayAttendance}
+                      <span className="text-xs sm:text-sm text-gray-500 font-normal ml-1">/ {totalStudents}</span>
+                    </p>
+                  )}
+                </div>
+
+                {/* Weekly Avg Card */}
+                <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#F59E0B]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#F59E0B]/20 group col-span-2 lg:col-span-1">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-[#F59E0B]/5 rounded-full blur-2xl group-hover:bg-[#F59E0B]/10 transition-all duration-300"></div>
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2 relative z-10">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#F59E0B]/10 rounded-lg flex items-center justify-center group-hover:bg-[#F59E0B]/20 group-hover:scale-110 transition-all duration-300">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                      </svg>
+                    </div>
+                    <p className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">Attendance Rate</p>
+                  </div>
+                  {analyticsLoading ? (
+                    <div className="h-8 w-20 bg-[#1A1F3A] rounded animate-pulse"></div>
+                  ) : (
+                    <p className="text-2xl sm:text-3xl font-semibold text-[#F59E0B] relative z-10 group-hover:scale-110 transition-transform duration-300">
+                      {totalStudents > 0 ? Math.round((todayAttendance / totalStudents) * 100) : 0}%
+                    </p>
+                  )}
+                </div>
+
+              </div>
+
+              {/* Weekly Attendance Chart */}
+              <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:border-[#00D9FF]/30 hover:shadow-lg hover:shadow-[#00D9FF]/10 transition-all duration-300">
+                <div className="flex justify-between items-start mb-4 sm:mb-6">
+                  <h3 className="text-base sm:text-lg font-semibold text-white">Weekly Attendance Overview</h3>
+                  <span className="text-xs sm:text-sm text-gray-500 hidden sm:inline">Last 7 days</span>
+                </div>
+
+                {analyticsLoading ? (
+                  <div className="h-64 bg-[#1A1F3A] rounded-xl animate-pulse"></div>
+                ) : (
+                  <div className="h-64 sm:h-72">
+                    <div className="flex items-end justify-between gap-2 sm:gap-4 h-full">
+                      {weeklyAttendance.map((data, idx) => {
+                        const maxVal = Math.max(...weeklyAttendance.map(d => Math.max(d.scheduled, d.attended)), 1);
+                        const scheduledHeight = (data.scheduled / maxVal) * 100;
+                        const attendedHeight = (data.attended / maxVal) * 100;
+
+                        return (
+                          <div key={idx} className="flex-1 flex flex-col items-center gap-2 sm:gap-3 group">
+                            <div className="w-full flex flex-col gap-1 relative" style={{ height: '200px' }}>
+                              {/* Scheduled (background) */}
+                              <div className="absolute bottom-0 w-full bg-[#1A1F3A] rounded-t-lg transition-all duration-300 group-hover:bg-[#252B44]" style={{ height: `${scheduledHeight}%`, minHeight: scheduledHeight > 0 ? '20px' : '4px' }}>
+                                {data.scheduled > 0 && (
+                                  <div className="absolute inset-0 bg-gradient-to-t from-[#00D9FF]/20 to-transparent rounded-t-lg"></div>
+                                )}
+                              </div>
+                              {/* Attended (foreground) */}
+                              <div className="absolute bottom-0 w-full bg-gradient-to-t from-[#00D9FF] to-[#7C3AED] rounded-t-lg transition-all duration-300 group-hover:from-[#00D9FF] group-hover:to-[#7C3AED]/80 opacity-80" style={{ height: `${attendedHeight}%`, minHeight: attendedHeight > 0 ? '20px' : '4px' }}>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <span className="text-white text-xs font-medium drop-shadow-md">{data.attended}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-center">
+                              <span className="text-xs sm:text-sm text-gray-300 font-medium block group-hover:text-[#00D9FF] transition-colors">{data.day}</span>
+                              <span className="text-[10px] sm:text-xs text-gray-500">{data.date}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Legend */}
+                    <div className="flex justify-center gap-4 sm:gap-6 mt-6 pt-4 border-t border-[#1A1F3A]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-gradient-to-r from-[#00D9FF] to-[#7C3AED]"></div>
+                        <span className="text-xs sm:text-sm text-gray-400">Attended</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-[#1A1F3A]"></div>
+                        <span className="text-xs sm:text-sm text-gray-400">Scheduled</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Recent Students & Quick Actions Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+
+                {/* Recent Students */}
+                <div className="lg:col-span-2 bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:border-[#00D9FF]/30 hover:shadow-lg hover:shadow-[#00D9FF]/10 transition-all duration-300">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-base sm:text-lg font-semibold text-white">Recent Students</h3>
+                    <span className="text-xs sm:text-sm text-gray-500">Latest 5</span>
+                  </div>
+
+                  {analyticsLoading ? (
+                    <div className="space-y-3">
+                      {[1,2,3,4,5].map(i => (
+                        <div key={i} className="flex items-center gap-3 p-3 bg-[#1A1F3A] rounded-lg animate-pulse">
+                          <div className="w-10 h-10 rounded-full bg-[#0A0E27]"></div>
+                          <div className="flex-1">
+                            <div className="h-4 bg-[#0A0E27] rounded w-3/4 mb-2"></div>
+                            <div className="h-3 bg-[#0A0E27] rounded w-1/2"></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : recentStudents.length > 0 ? (
+                    <div className="space-y-2 sm:space-y-3">
+                      {recentStudents.map((student, idx) => (
+                        <div key={student.id || idx} className="flex items-center gap-3 p-2 sm:p-3 bg-[#1A1F3A] rounded-lg hover:bg-[#252B44] transition-all duration-300">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                            {student.name?.charAt(0) || 'S'}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm sm:text-base text-gray-200 font-medium truncate">{student.name || 'Anonymous'}</p>
+                            <p className="text-xs sm:text-sm text-gray-500 truncate">{student.email || 'No email'}</p>
+                          </div>
+                          <div className="text-xs text-gray-500 flex-shrink-0 hidden sm:block">
+                            {student.joinedAt ? new Date(student.joinedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 px-4">
+                      <svg className="w-12 h-12 text-gray-700 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                      <p className="text-gray-500 text-sm">No students yet</p>
+                      <p className="text-gray-600 text-xs mt-1">Share your join code to get started</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Quick Stats Card */}
+                <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:border-[#7C3AED]/30 hover:shadow-lg hover:shadow-[#7C3AED]/10 transition-all duration-300">
+                  <h3 className="text-base sm:text-lg font-semibold text-white mb-4">Quick Insights</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-[#1A1F3A] rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-[#00D9FF] shadow-[#00D9FF] shadow-lg"></div>
+                        <span className="text-sm text-gray-300">Join Code</span>
+                      </div>
+                      <p className="text-sm font-mono text-[#00D9FF] tracking-wider">{joinCode || "N/A"}</p>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-[#1A1F3A] rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-[#10B981] shadow-[#10B981] shadow-lg"></div>
+                        <span className="text-sm text-gray-300">Present Today</span>
+                      </div>
+                      <p className="text-sm font-semibold text-[#10B981]">{todayAttendance}</p>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-[#1A1F3A] rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-[#F59E0B] shadow-[#F59E0B] shadow-lg"></div>
+                        <span className="text-sm text-gray-300">Absent Today</span>
+                      </div>
+                      <p className="text-sm font-semibold text-[#F59E0B]">{totalStudents - todayAttendance}</p>
+                    </div>
+
+                    {totalStudents > 0 && (
+                      <div className="mt-4 p-4 bg-gradient-to-br from-[#0A0E27] to-[#1A1F3A] rounded-lg border border-[#1A1F3A]">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-xs text-gray-400">Participation</span>
+                          <span className="text-xs font-medium text-[#00D9FF]">
+                            {Math.round((todayAttendance / totalStudents) * 100)}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-[#0A0E27] rounded-full h-2 overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-[#00D9FF] to-[#7C3AED] rounded-full transition-all duration-1000"
+                            style={{ width: `${Math.min((todayAttendance / totalStudents) * 100, 100)}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Additional Analytics Card */}
+              <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:border-[#F59E0B]/30 hover:shadow-lg hover:shadow-[#F59E0B]/10 transition-all duration-300">
+                <h3 className="text-base sm:text-lg font-semibold text-white mb-4">Today's Summary</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                  <div className="text-center p-3 bg-[#1A1F3A] rounded-lg">
+                    <p className="text-2xl sm:text-3xl font-bold text-[#00D9FF]">{totalStudents}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">Enrolled</p>
+                  </div>
+                  <div className="text-center p-3 bg-[#1A1F3A] rounded-lg">
+                    <p className="text-2xl sm:text-3xl font-bold text-[#10B981]">{todayAttendance}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">Present</p>
+                  </div>
+                  <div className="text-center p-3 bg-[#1A1F3A] rounded-lg">
+                    <p className="text-2xl sm:text-3xl font-bold text-[#F59E0B]">{totalStudents - todayAttendance}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">Absent</p>
+                  </div>
+                  <div className="text-center p-3 bg-[#1A1F3A] rounded-lg">
+                    <p className="text-2xl sm:text-3xl font-bold text-[#7C3AED]">{subjects.length}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">Subjects</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </>
         )}
 
         {view === "cr" && (
