@@ -8,7 +8,8 @@ import {
   getDocs,
   collection
 } from "firebase/firestore";
-import { ChevronLeft, ChevronRight, Calendar, CheckCircle, XCircle, BookOpen, TrendingUp, X, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, CheckCircle, XCircle, BookOpen, TrendingUp, X, Clock, ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function AttendanceCalendar() {
   const [attendanceData, setAttendanceData] = useState({});
@@ -20,6 +21,8 @@ export default function AttendanceCalendar() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  const router = useRouter();
 
   const subjectColors = [
     { bg: 'bg-[#00D9FF]', text: 'text-[#00D9FF]', border: 'border-[#00D9FF]', hex: '#00D9FF' },
@@ -202,6 +205,12 @@ export default function AttendanceCalendar() {
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
+          <button
+            onClick={() => router.back()}
+            className="w-9 h-9 rounded-lg bg-white/5 hover:bg-[#00D9FF]/20 border border-[#1A1F3A] hover:border-[#00D9FF]/40 flex items-center justify-center text-gray-400 hover:text-[#00D9FF] transition-all duration-200 flex-shrink-0"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
           <div className="w-10 h-10 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg shadow-[#00D9FF]/30 flex-shrink-0">
             <Calendar className="w-5 h-5 text-white" />
           </div>

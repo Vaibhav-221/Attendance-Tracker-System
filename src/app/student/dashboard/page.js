@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import {
@@ -33,10 +33,11 @@ export default function StudentDashboard() {
   const [marking, setMarking] = useState({});
   const [undoing, setUndoing] = useState({});
   const [updating, setUpdating] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSafeBunkModal, setShowSafeBunkModal] = useState(false);
   const [showJoinCodeModal, setShowJoinCodeModal] = useState(false);
   const [showSubjectAttendanceModal, setShowSubjectAttendanceModal] = useState(false);
+  const [showSubjectsOverviewModal, setShowSubjectsOverviewModal] = useState(false);
   const [showTodayClassesModal, setShowTodayClassesModal] = useState(false);
   const [showMonthlyChartModal, setShowMonthlyChartModal] = useState(false);
   const [newJoinCode, setNewJoinCode] = useState("");
@@ -45,6 +46,10 @@ export default function StudentDashboard() {
   const [safeBunkData, setSafeBunkData] = useState([]);
   const [mounted, setMounted] = useState(false);
   const [monthlyData, setMonthlyData] = useState([]);
+
+  const menuButtonRef = useRef(null);
+  const firstMenuItemRef = useRef(null);
+  const firstRender = useRef(true);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -191,6 +196,44 @@ export default function StudentDashboard() {
     setMounted(true);
   }, []);
 
+  // Prevent body scroll when sidebar or modals are open
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [sidebarOpen]);
+
+  // Close sidebar on Escape key
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') setSidebarOpen(false);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
+
+  // Focus management for accessibility
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+
+    if (sidebarOpen) {
+      const timer = setTimeout(() => {
+        firstMenuItemRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      menuButtonRef.current?.focus();
+    }
+  }, [sidebarOpen]);
+
   useEffect(() => {
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -244,7 +287,7 @@ export default function StudentDashboard() {
   
   }, []);
 
-  const fetchAllSubjects = async (classId) => {
+  async function fetchAllSubjects(classId) {
 
     const snapshot = await getDocs(
       collection(db, "classes", classId, "subjects")
@@ -257,9 +300,9 @@ export default function StudentDashboard() {
 
     setAllSubjects(subjects);
 
-  };
+  }
 
-  const fetchWeeklyAttendance = async (classId, studentId) => {
+  async function fetchWeeklyAttendance(classId, studentId) {
     try {
       const scheduleSnapshot = await getDocs(
         collection(db, "classes", classId, "dailySchedule")
@@ -309,9 +352,9 @@ export default function StudentDashboard() {
     } catch (error) {
       console.error("Error fetching weekly attendance:", error);
     }
-  };
+  }
 
-  const fetchMonthlyAttendance = async (classId, studentId) => {
+  async function fetchMonthlyAttendance(classId, studentId) {
     try {
       const scheduleSnapshot = await getDocs(
         collection(db, "classes", classId, "dailySchedule")
@@ -360,9 +403,9 @@ export default function StudentDashboard() {
     } catch (error) {
       console.error("Error fetching monthly attendance:", error);
     }
-  };
+  }
 
-  const listenToSchedule = (classId) => {
+  function listenToSchedule(classId) {
 
     const ref = doc(
       db,
@@ -386,9 +429,9 @@ export default function StudentDashboard() {
 
     });
 
-  };
+  }
 
-  const listenToTodayAttendance = (classId, studentId) => {
+  function listenToTodayAttendance(classId, studentId) {
 
     const ref = doc(
       db,
@@ -408,7 +451,7 @@ export default function StudentDashboard() {
 
     });
 
-  };
+  }
 
   const handleMarkAttendance = (subjectId, e) => {
 
@@ -467,7 +510,7 @@ export default function StudentDashboard() {
 
   };
 
-  const fetchAttendanceHistory = async (classId, studentId) => {
+  async function fetchAttendanceHistory(classId, studentId) {
     try {
       // Fetch all data in parallel for maximum speed
       const [scheduleSnapshot, subjectsSnapshot] = await Promise.all([
@@ -575,7 +618,7 @@ export default function StudentDashboard() {
     } catch (error) {
       console.error("Error fetching attendance history:", error);
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -631,6 +674,27 @@ export default function StudentDashboard() {
   const attendanceStatus = getAttendanceStatus(parseFloat(attendancePercent));
   const maxClasses = Math.max(...weeklyData.map(d => d.classes), 1);
 
+  // Calculate weekly attendance trend from monthly data
+  const weeklyTrend = useMemo(() => {
+    if (!mounted || monthlyData.length === 0) return [];
+    const weeks = [];
+    // Process from newest to oldest
+    for (let i = monthlyData.length - 1; i >= 0; i -= 7) {
+      const startIdx = Math.max(i - 6, 0);
+      const weekSlice = monthlyData.slice(startIdx, i + 1);
+      const totalPct = weekSlice.reduce((sum, day) => sum + parseFloat(day.percentage), 0);
+      const avgPct = totalPct / weekSlice.length;
+      // Use the most recent date in this week as label
+      const label = weekSlice[weekSlice.length - 1].day;
+      weeks.push({
+        label,
+        percentage: avgPct
+      });
+    }
+    // Reverse to show oldest first (chronological left to right)
+    return weeks.reverse();
+  }, [monthlyData, mounted]);
+
   return (
 
     <div className="min-h-screen bg-[#0A0E27] text-gray-200 p-3 sm:p-5 lg:p-8 relative overflow-hidden">
@@ -639,6 +703,148 @@ export default function StudentDashboard() {
       <div className="absolute top-[-100px] right-[-100px] w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] bg-[#00D9FF]/5 rounded-full blur-[100px] animate-float"></div>
       <div className="absolute bottom-[-150px] left-[-150px] w-[350px] h-[350px] sm:w-[500px] sm:h-[500px] bg-[#7C3AED]/5 rounded-full blur-[120px] animate-float-delayed"></div>
       <div className="absolute top-1/2 left-1/2 w-[200px] h-[200px] sm:w-[300px] sm:h-[300px] bg-[#10B981]/5 rounded-full blur-[100px] animate-pulse-slow"></div>
+
+      {/* Backdrop */}
+      <div
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300 ${
+          sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setSidebarOpen(false)}
+      ></div>
+
+      {/* Sidebar */}
+      <nav
+        className={`fixed inset-y-0 left-0 w-80 max-w-full bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border-r border-[#1A1F3A] z-50 flex flex-col transform transition-transform duration-300 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } ${!sidebarOpen ? 'pointer-events-none' : ''}`}
+        aria-label="Main navigation"
+        aria-hidden={!sidebarOpen}
+      >
+        {/* Sidebar Header with Close Button */}
+        <div className="p-3 border-b border-[#1A1F3A] flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center flex-shrink-0">
+              <User className="w-4 h-4 text-white" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-white font-medium text-xs truncate">{userData?.name}</p>
+              <p className="text-gray-500 text-[10px] truncate">{userData?.email}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
+            className="w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors flex-shrink-0"
+          >
+            <X className="w-4 h-4 text-gray-400" />
+          </button>
+        </div>
+
+        {/* Sidebar Navigation */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
+          <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mb-2.5">Navigation</p>
+
+          {/* Calendar */}
+          <button
+            ref={firstMenuItemRef}
+            onClick={() => {
+              router.push("/student/calender");
+              setSidebarOpen(false);
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-[#7C3AED]/20 border border-transparent hover:border-[#7C3AED]/30 transition-all duration-200"
+          >
+            <Calendar className="w-4 h-4 text-[#7C3AED]" />
+            <span className="text-white text-sm">Calendar</span>
+          </button>
+
+          {/* Safe Bunk */}
+          <button
+            onClick={() => {
+              calculateSafeBunk();
+              setSidebarOpen(false);
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-[#F59E0B]/20 border border-transparent hover:border-[#F59E0B]/30 transition-all duration-200"
+          >
+            <TrendingUp className="w-4 h-4 text-[#F59E0B]" />
+            <span className="text-white text-sm">Safe Bunk</span>
+          </button>
+
+          {/* Subjects Overview */}
+          <button
+            onClick={() => {
+              setShowSubjectsOverviewModal(true);
+              setSidebarOpen(false);
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-[#00D9FF]/20 border border-transparent hover:border-[#00D9FF]/30 transition-all duration-200"
+          >
+            <BarChart3 className="w-4 h-4 text-[#00D9FF]" />
+            <span className="text-white text-sm">Subjects Overview</span>
+          </button>
+
+          {/* Today's Schedule */}
+          <button
+            onClick={() => {
+              setShowTodayClassesModal(true);
+              setSidebarOpen(false);
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-[#10B981]/20 border border-transparent hover:border-[#10B981]/30 transition-all duration-200"
+          >
+            <CheckCircle className="w-4 h-4 text-[#10B981]" />
+            <span className="text-white text-sm">Today's Schedule</span>
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-[#1A1F3A] mx-3"></div>
+
+        {/* User Actions */}
+        <div className="p-3 space-y-2">
+          {/* Join Code */}
+          <div className="bg-[#00D9FF]/10 border border-[#00D9FF]/20 rounded-lg p-2.5">
+            <p className="text-gray-500 text-[10px] mb-1">Class Join Code</p>
+            <div className="flex items-center gap-1.5">
+              <code className="flex-1 bg-[#00D9FF]/5 text-[#00D9FF] px-2 py-1 rounded text-[10px] font-mono">
+                {joinCode}
+              </code>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(joinCode);
+                  alert("Join code copied!");
+                  setSidebarOpen(false);
+                }}
+                className="p-1 hover:bg-white/5 rounded transition-colors"
+                title="Copy"
+              >
+                📋
+              </button>
+            </div>
+          </div>
+
+          {/* Change Class */}
+          <button
+            onClick={() => {
+              setShowJoinCodeModal(true);
+              setSidebarOpen(false);
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[#00D9FF] hover:bg-[#00D9FF]/10 border border-transparent hover:border-[#00D9FF]/30 transition-all duration-200"
+          >
+            <Book className="w-4 h-4" />
+            <span className="text-sm font-medium">Change Class</span>
+          </button>
+
+          {/* Logout */}
+          <button
+            onClick={() => {
+              handleLogout();
+              setSidebarOpen(false);
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-400/30 transition-all duration-200"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="text-sm font-medium">Logout</span>
+          </button>
+        </div>
+      </nav>
 
       <div className="max-w-7xl mx-auto relative z-10">
 
@@ -658,369 +864,255 @@ export default function StudentDashboard() {
             </div>
           </div>
 
-          {/* User Menu */}
+          {/* Hamburger Menu Button */}
           <div className="relative flex-shrink-0">
             <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full flex items-center justify-center text-white font-semibold text-base sm:text-lg border-2 border-[#1A1F3A] shadow-lg shadow-[#00D9FF]/30 hover:scale-110 transition-all duration-300"
+              ref={menuButtonRef}
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+              className="w-10 h-10 sm:w-12 sm:h-12 bg-[#1A1F3A] rounded-full flex items-center justify-center text-gray-300 border border-[#2A2F4A] hover:bg-[#2A2F4A] hover:text-white transition-all duration-200"
             >
-              {userData?.name?.charAt(0)}
+              {sidebarOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
             </button>
-
-            {/* Dropdown Menu */}
-            {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-64 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50 animate-fadeIn">
-                <div className="p-3 border-b border-[#1A1F3A]">
-                  <p className="text-white font-medium truncate">{userData?.name}</p>
-                  <p className="text-gray-500 text-xs truncate">{userData?.email}</p>
-                </div>
-
-                {/* Join Code Display */}
-                <div className="p-3 border-b border-[#1A1F3A]">
-                  <p className="text-gray-500 text-xs mb-1">Class Join Code</p>
-                  <div className="flex items-center gap-2">
-                    <code className="flex-1 bg-[#00D9FF]/10 text-[#00D9FF] px-3 py-2 rounded-lg font-mono text-sm">
-                      {joinCode}
-                    </code>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(joinCode);
-                        alert("Join code copied!");
-                      }}
-                      className="p-2 hover:bg-white/5 rounded-lg transition-colors"
-                      title="Copy"
-                    >
-                      📋
-                    </button>
-                  </div>
-                </div>
-
-                {/* Change Class Button */}
-                <button
-                  onClick={() => {
-                    setShowJoinCodeModal(true);
-                    setShowUserMenu(false);
-                  }}
-                  className="w-full px-4 py-3 text-left text-[#00D9FF] hover:bg-[#00D9FF]/10 transition-colors duration-200 flex items-center gap-2 border-b border-[#1A1F3A]"
-                >
-                  <Book className="w-4 h-4" />
-                  <span>Change Class</span>
-                </button>
-
-                {/* Logout Button */}
-                <button
-                  onClick={handleLogout}
-                  className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-500/10 transition-colors duration-200 flex items-center gap-2"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Logout</span>
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 mb-8">
-          
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-12 gap-2 sm:gap-4 mb-4">
+
           {/* Overall Attendance Card - ENHANCED */}
-          <div 
+          <div
             onClick={() => setShowSubjectAttendanceModal(true)}
-            className={`lg:col-span-6 bg-gradient-to-br ${attendanceStatus.bgGradient} border ${attendanceStatus.borderColor} rounded-2xl p-6 relative overflow-hidden hover:border-opacity-80 transition-all duration-300 hover:scale-[1.02] group shadow-lg ${attendanceStatus.glowColor} cursor-pointer`}
+            className="col-span-2 sm:col-span-2 lg:col-span-6 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl p-4 relative overflow-hidden hover:border-[#00D9FF]/30 transition-all duration-300 hover:scale-[1.02] group cursor-pointer"
           >
             
-            {/* Animated background orbs */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-all duration-500 animate-float"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full blur-xl group-hover:bg-white/10 transition-all duration-500 animate-float-delayed"></div>
-
-            {/* Pulsing border effect */}
-            <div className="absolute inset-0 border-2 border-white/10 rounded-2xl animate-pulse-border"></div>
-
             <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform backdrop-blur-sm">
-                    <Award className={`w-6 h-6 ${attendanceStatus.color}`} />
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform backdrop-blur-sm">
+                    <Award className={`w-4 h-4 ${attendanceStatus.color}`} />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-400">Overall Attendance</p>
-                    <p className="text-xs text-gray-500">{attendanceStatus.status}</p>
+                    <p className="text-xs text-gray-400">Overall</p>
+                    <p className="text-[10px] text-gray-500">{attendanceStatus.status}</p>
                   </div>
                 </div>
-                <span className="text-3xl">{attendanceStatus.icon}</span>
+                <span className="text-xl">{attendanceStatus.icon}</span>
               </div>
 
-              <p className={`text-5xl sm:text-6xl font-bold ${attendanceStatus.color} mb-4 group-hover:scale-105 transition-transform inline-block`}>
+              <p className={`text-4xl font-bold ${attendanceStatus.color} mb-3`}>
                 {attendancePercent}%
               </p>
 
-              <div className="w-full bg-[#1A1F3A] h-3 rounded-full overflow-hidden mb-2">
-                <div 
-                  className={`h-full rounded-full transition-all duration-1000 ease-out animate-progress-fill ${
-                    parseFloat(attendancePercent) >= 75 
-                      ? 'bg-[#10B981]' 
-                      : parseFloat(attendancePercent) >= 50 
-                        ? 'bg-[#F59E0B]' 
+              <div className="w-full bg-[#1A1F3A] h-2 rounded-full overflow-hidden mb-2">
+                <div
+                  className={`h-full rounded-full transition-all duration-1000 ease-out ${
+                    parseFloat(attendancePercent) >= 75
+                      ? 'bg-[#10B981]'
+                      : parseFloat(attendancePercent) >= 50
+                        ? 'bg-[#F59E0B]'
                         : 'bg-[#EF4444]'
                   }`}
                   style={{ width: `${attendancePercent}%` }}
                 ></div>
               </div>
-              <div className="flex justify-between items-center">
-                <p className="text-xs text-gray-500">Target: 75%</p>
-                <p className="text-xs text-gray-400 group-hover:text-[#00D9FF] transition-colors">Click for details →</p>
-              </div>
+              <p className="text-[10px] text-gray-500 text-center">Target: 75% | Click for details</p>
             </div>
           </div>
 
-          {/* Weekly Chart Card */}
-          <div 
-            onClick={() => setShowMonthlyChartModal(true)}
-            className="lg:col-span-6 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl p-6 relative overflow-hidden hover:border-[#7C3AED]/50 transition-all duration-300 hover:scale-[1.02] cursor-pointer group"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <BarChart3 className="w-5 h-5 text-[#7C3AED]" />
-                <h3 className="text-base font-medium text-white">Last 7 Days</h3>
-              </div>
-              <p className="text-xs text-gray-400 group-hover:text-[#7C3AED] transition-colors">View monthly →</p>
+          {/* Weekly Trend Card */}
+          <div className="col-span-2 sm:col-span-2 lg:col-span-6 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl p-4 relative overflow-hidden">
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart3 className="w-4 h-4 text-[#7C3AED]" />
+              <h3 className="text-xs font-medium text-white">Weekly Attendance Trend</h3>
             </div>
-            
-            {mounted && (
-              <div className="flex items-end justify-between gap-2 h-32">
-                {weeklyData.map((day, index) => (
-                  <div key={index} className="flex flex-col items-center flex-1 group">
-                    <div className="w-full flex items-end justify-center mb-2 h-20">
-                      <div 
-                        className="w-full bg-gradient-to-t from-[#00D9FF] to-[#7C3AED] rounded-t-lg transition-all duration-500 hover:opacity-80 relative group-hover:shadow-lg group-hover:shadow-[#00D9FF]/50"
-                        style={{ 
-                          height: `${(day.classes / maxClasses) * 100}%`,
-                          minHeight: day.classes > 0 ? '8px' : '0px'
-                        }}
-                      >
-                        {day.classes > 0 && (
-                          <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-medium text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                            {day.classes}
-                          </span>
-                        )}
-                      </div>
+            {mounted && weeklyTrend.length > 0 && (
+              <div className="flex items-end justify-between h-24 gap-1">
+                {weeklyTrend.map((week, idx) => (
+                  <div key={idx} className="flex-1 flex flex-col items-center group">
+                    <div className="w-full flex items-end justify-center h-16">
+                      <div
+                        className="w-full bg-gradient-to-t from-[#00D9FF] to-[#7C3AED] rounded-sm transition-all duration-500 hover:opacity-80"
+                        style={{ height: `${week.percentage}%`, minHeight: '4px' }}
+                      ></div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-xs font-medium text-gray-400">{day.day}</div>
-                      <div className="text-[10px] text-gray-600">{day.date}</div>
-                    </div>
+                    <p className="text-[8px] text-gray-400 mt-1 truncate w-full text-center">{week.label}</p>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Safe Bunk Calculator */}
-          <div 
+          {/* Safe Bunk Card */}
+          <div
             onClick={calculateSafeBunk}
-            className="lg:col-span-3 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl p-6 relative overflow-hidden hover:border-[#F59E0B]/50 transition-all duration-300 hover:scale-105 group cursor-pointer"
+            className="lg:col-span-6 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl p-4 relative overflow-hidden hover:border-[#F59E0B]/50 transition-all duration-300 hover:scale-[1.02] group cursor-pointer"
           >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-[#F59E0B]/5 rounded-full blur-2xl group-hover:bg-[#F59E0B]/10 transition-all duration-300"></div>
+            <div className="absolute top-0 right-0 w-16 h-16 bg-[#F59E0B]/5 rounded-full blur-xl group-hover:bg-[#F59E0B]/10 transition-all duration-300"></div>
             <div className="relative z-10">
-              <div className="w-10 h-10 bg-[#F59E0B]/10 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <TrendingUp className="w-5 h-5 text-[#F59E0B]" />
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 bg-[#F59E0B]/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <TrendingUp className="w-4 h-4 text-[#F59E0B]" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Safe Bunk</p>
+                </div>
               </div>
-              <p className="text-sm text-gray-500 mb-1">Safe Bunk</p>
-              <p className="text-3xl font-bold text-[#F59E0B]">
+              <p className="text-2xl font-bold text-[#F59E0B]">
                 {safeBunkData.filter(s => s.status === 'safe').reduce((sum, s) => sum + s.canBunk, 0)}
               </p>
-              <p className="text-xs text-gray-400 mt-2 group-hover:text-[#F59E0B] transition-colors">View details →</p>
+              <p className="text-[10px] text-gray-400 mt-1">classes you can skip</p>
             </div>
           </div>
 
-          {/* Today's Classes */}
-          <div 
-            onClick={() => setShowTodayClassesModal(true)}
-            className="lg:col-span-3 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl p-6 relative overflow-hidden hover:border-[#10B981]/50 transition-all duration-300 hover:scale-105 group cursor-pointer"
+          {/* Today's Classes Card */}
+          <div
+            onClick={() => {
+              const el = document.getElementById('mark-attendance-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="lg:col-span-6 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl p-4 relative overflow-hidden hover:border-[#10B981]/50 transition-all duration-300 hover:scale-[1.02] group cursor-pointer"
           >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-[#10B981]/5 rounded-full blur-2xl group-hover:bg-[#10B981]/10 transition-all duration-300"></div>
+            <div className="absolute top-0 right-0 w-16 h-16 bg-[#10B981]/5 rounded-full blur-xl group-hover:bg-[#10B981]/10 transition-all duration-300"></div>
             <div className="relative z-10">
-              <div className="w-10 h-10 bg-[#10B981]/10 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <Clock className="w-5 h-5 text-[#10B981]" />
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 bg-[#10B981]/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Clock className="w-4 h-4 text-[#10B981]" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Today's Classes</p>
+                </div>
               </div>
-              <p className="text-sm text-gray-500 mb-1">Today's Classes</p>
-              <p className="text-3xl font-bold text-[#10B981]">{todaySubjects.length}</p>
-              <p className="text-xs text-gray-400 mt-2 group-hover:text-[#10B981] transition-colors">View list →</p>
+              <p className="text-2xl font-bold text-[#10B981]">{todaySubjects.length}</p>
+              <p className="text-[10px] text-gray-400 mt-1">scheduled today</p>
             </div>
           </div>
-
         </div>
 
-        {/* Calendar Button */}
-        <button
-          onClick={() => router.push("/student/calender")}
-          className="mb-8 bg-gradient-to-r from-[#7C3AED] to-[#9D7FED] text-white px-6 py-3 rounded-xl font-medium shadow-lg shadow-[#7C3AED]/30 hover:shadow-[#7C3AED]/50 hover:scale-105 transition-all duration-300 flex items-center gap-2"
-        >
-          <Calendar className="w-5 h-5" />
-          View Attendance Calendar
-        </button>
 
-        {/* Subjects Overview */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <BarChart3 className="w-6 h-6 text-[#00D9FF]" />
-            <h2 className="text-xl sm:text-2xl font-semibold text-white">Subjects Overview</h2>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {subjectStats.map((subject, index) => {
-              const colors = getSubjectColor(index);
-              
-              return (
-                <div
-                  key={subject.id}
-                  onClick={() => router.push(`/student/subject/${subject.id}`)}
-                  className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl p-5 cursor-pointer hover:border-[#00D9FF]/30 hover:scale-[1.02] transition-all duration-300 group"
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-2.5 h-2.5 rounded-full ${colors.bg} shadow-lg ${colors.glow} animate-pulse-slow`}></div>
-                      <span className="text-white font-medium text-lg">{subject.name}</span>
-                    </div>
-                    <span className={`${colors.text} font-bold text-2xl`}>{subject.percent}%</span>
-                  </div>
-
-                  <p className="text-gray-500 text-sm mb-3">
-                    <span className={colors.text}>{subject.present}</span> / {subject.total} Sessions Attended
-                  </p>
-
-                  <div className="w-full bg-[#1A1F3A] h-2.5 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${colors.bg} rounded-full transition-all duration-1000 ease-out`}
-                      style={{ width: `${subject.percent}%` }}
-                    ></div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Today's Classes */}
-        <div>
-          <div className="flex flex-wrap items-center gap-3 mb-6">
-            <CheckCircle className="w-6 h-6 text-[#10B981]" />
-            <h2 className="text-xl sm:text-2xl font-semibold text-white">Today's Classes</h2>
-            {mounted && (
-              <span className="text-xs sm:text-sm text-gray-500">
-                ({new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})
-              </span>
-            )}
+        {/* Today's Classes - Mark Attendance */}
+        <div className="mb-8" id="mark-attendance-section">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-[#10B981]" />
+              <h2 className="text-lg font-semibold text-white">Today's Classes</h2>
+              {mounted && (
+                <span className="text-xs text-gray-500">
+                  ({new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})
+                </span>
+              )}
+            </div>
           </div>
 
           {todaySubjects.length === 0 ? (
-            <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl p-12 text-center">
-              <Clock className="w-16 h-16 text-gray-700 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">No classes scheduled today</p>
-              <p className="text-gray-600 text-sm mt-2">Enjoy your day off!</p>
+            <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl p-8 text-center">
+              <Clock className="w-12 h-12 text-gray-700 mx-auto mb-3" />
+              <p className="text-gray-500">No classes scheduled today</p>
+              <p className="text-gray-600 text-sm mt-1">Enjoy your day off!</p>
             </div>
           ) : (
-            <div className="space-y-3 mb-6">
-              {todaySubjects.map((subjectId, index) => {
-                const subject = allSubjects.find(s => s.id === subjectId);
-                const marked = markedSubjects.includes(subjectId);
-                const colors = getSubjectColor(index);
-                const isMarking = marking[subjectId];
-                const isUndoing = undoing[subjectId];
+            <>
+              <div className="space-y-2 mb-4">
+                {todaySubjects.map((subjectId, index) => {
+                  const subject = allSubjects.find(s => s.id === subjectId);
+                  const marked = markedSubjects.includes(subjectId);
+                  const colors = getSubjectColor(index);
+                  const isMarking = marking[subjectId];
+                  const isUndoing = undoing[subjectId];
 
-                return (
-                  <div
-                    key={subjectId}
-                    className={`bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border ${colors.border} border-l-4 rounded-xl p-4 sm:p-5 flex flex-row justify-between items-center gap-3 hover:bg-[#131829] transition-all duration-300 cursor-pointer group`}
-                  >
-                    <div 
-                      className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0"
-                      onClick={() => router.push(`/student/subject/${subjectId}`)}
+                  return (
+                    <div
+                      key={subjectId}
+                      className={`bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border ${colors.border} border-l-4 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3 hover:bg-[#131829] transition-all duration-300`}
                     >
-                      <div className={`w-3 h-3 flex-shrink-0 rounded-full ${colors.bg} ${colors.glow} shadow-lg animate-pulse-slow`}></div>
-                      <span className="text-white font-medium text-sm sm:text-base lg:text-lg truncate">{subject?.subjectName}</span>
+                      <div
+                        className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 cursor-pointer"
+                        onClick={() => router.push(`/student/subject/${subjectId}`)}
+                      >
+                        <div className={`w-2 h-2 rounded-full ${colors.bg} ${colors.glow} shadow-lg animate-pulse-slow flex-shrink-0`}></div>
+                        <span className="text-white font-medium text-sm truncate">{subject?.subjectName}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        {marked ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUndoAttendance(subjectId, e);
+                            }}
+                            disabled={isUndoing}
+                            className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg font-medium transition-all duration-300 flex items-center gap-1.5 text-xs ${
+                              isUndoing
+                                ? "bg-red-500/20 text-red-400/50 cursor-not-allowed"
+                                : "bg-red-500/10 text-red-400 border border-red-400/20 hover:bg-red-500/20"
+                            }`}
+                          >
+                            {isUndoing ? (
+                              <div className="w-3 h-3 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              'Undo'
+                            )}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMarkAttendance(subjectId, e);
+                            }}
+                            disabled={isMarking}
+                            className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg font-medium transition-all duration-300 flex items-center gap-1.5 text-xs ${
+                              isMarking
+                                ? "bg-[#00D9FF]/20 text-[#00D9FF]/50 cursor-not-allowed"
+                                : "bg-[#00D9FF]/10 text-[#00D9FF] border border-[#00D9FF]/20 hover:bg-[#00D9FF]/20"
+                            }`}
+                          >
+                            {isMarking ? (
+                              <div className="w-3 h-3 border-2 border-[#00D9FF] border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              <>
+                                <CheckCircle className="w-3 h-3" />
+                                Mark
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
                     </div>
+                  );
+                })}
+              </div>
 
-                    {marked ? (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUndoAttendance(subjectId, e);
-                        }}
-                        disabled={isUndoing}
-                        className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 text-sm flex-shrink-0 ${
-                          isUndoing
-                            ? "bg-red-500/20 text-red-400/50 cursor-not-allowed"
-                            : "bg-red-500/10 text-red-400 border border-red-400/20 hover:bg-red-500/20 hover:scale-105"
-                        }`}
-                      >
-                        {isUndoing ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></div>
-                            <span className="hidden sm:inline">Undoing...</span>
-                          </>
-                        ) : (
-                          'Undo'
-                        )}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleMarkAttendance(subjectId, e);
-                        }}
-                        disabled={isMarking}
-                        className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 text-sm flex-shrink-0 whitespace-nowrap ${
-                          isMarking
-                            ? "bg-[#00D9FF]/20 text-[#00D9FF]/50 cursor-not-allowed"
-                            : "bg-[#00D9FF]/10 text-[#00D9FF] border border-[#00D9FF]/20 hover:bg-[#00D9FF]/20 hover:scale-105"
-                        }`}
-                      >
-                        {isMarking ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-[#00D9FF] border-t-transparent rounded-full animate-spin"></div>
-                            <span className="hidden sm:inline">Marking...</span>
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle className="w-4 h-4" />
-                            <span className="hidden xs:inline">Mark</span>
-                            <span className="hidden sm:inline">Present</span>
-                          </>
-                        )}
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {todaySubjects.length > 0 && (
-            <button
-              onClick={updateAttendance}
-              disabled={updating}
-              className={`w-full sm:w-auto px-8 py-4 rounded-xl font-medium shadow-lg transition-all duration-300 flex items-center justify-center gap-2 ${
-                updating
-                  ? "bg-gradient-to-r from-[#10B981]/50 to-[#059669]/50 cursor-not-allowed"
-                  : "bg-gradient-to-r from-[#10B981] to-[#059669] text-white shadow-[#10B981]/30 hover:shadow-[#10B981]/50 hover:scale-105"
-              }`}
-            >
-              {updating ? (
-                <>
-                  <div className="relative w-5 h-5">
-                    <div className="absolute inset-0 border-2 border-white/20 rounded-full"></div>
-                    <div className="absolute inset-0 border-2 border-transparent border-t-white rounded-full animate-spin"></div>
-                  </div>
-                  Updating Attendance...
-                </>
-              ) : (
-                <>
-                  <TrendingUp className="w-5 h-5" />
-                  Update Attendance
-                </>
+              {todaySubjects.length > 0 && (
+                <button
+                  onClick={updateAttendance}
+                  disabled={updating}
+                  className={`w-full px-6 py-3 rounded-xl font-medium shadow-lg transition-all duration-300 flex items-center justify-center gap-2 ${
+                    updating
+                      ? "bg-gradient-to-r from-[#10B981]/50 to-[#059669]/50 cursor-not-allowed"
+                      : "bg-gradient-to-r from-[#10B981] to-[#059669] text-white shadow-[#10B981]/30 hover:shadow-[#10B981]/50"
+                  }`}
+                >
+                  {updating ? (
+                    <>
+                      <div className="relative w-4 h-4">
+                        <div className="absolute inset-0 border-2 border-white/20 rounded-full"></div>
+                        <div className="absolute inset-0 border-2 border-transparent border-t-white rounded-full animate-spin"></div>
+                      </div>
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <TrendingUp className="w-4 h-4" />
+                      Update Attendance
+                    </>
+                  )}
+                </button>
               )}
-            </button>
+            </>
           )}
         </div>
 
@@ -1297,7 +1389,7 @@ export default function StudentDashboard() {
               </div>
             </div>
 
-            {/* Classes List */}
+            {/* Classes List with Mark/Undo */}
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-300px)]">
               {todaySubjects.length === 0 ? (
                 <div className="text-center py-12">
@@ -1306,42 +1398,109 @@ export default function StudentDashboard() {
                   <p className="text-gray-600 text-sm mt-2">Enjoy your day off!</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {todaySubjects.map((subjectId, index) => {
-                    const subject = allSubjects.find(s => s.id === subjectId);
-                    const marked = markedSubjects.includes(subjectId);
-                    const colors = getSubjectColor(index);
+                <>
+                  <div className="space-y-3 mb-6">
+                    {todaySubjects.map((subjectId, index) => {
+                      const subject = allSubjects.find(s => s.id === subjectId);
+                      const marked = markedSubjects.includes(subjectId);
+                      const colors = getSubjectColor(index);
+                      const isMarking = marking[subjectId];
+                      const isUndoing = undoing[subjectId];
 
-                    return (
-                      <div
-                        key={subjectId}
-                        className={`bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border ${colors.border} border-l-4 rounded-xl p-5 flex items-center justify-between gap-4`}
-                      >
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className={`w-10 h-10 rounded-xl ${colors.bg} bg-opacity-20 flex items-center justify-center`}>
-                            <Book className={`w-5 h-5 ${colors.text}`} />
+                      return (
+                        <div
+                          key={subjectId}
+                          className={`bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border ${colors.border} border-l-4 rounded-xl p-4 sm:p-5 flex flex-row justify-between items-center gap-3 hover:bg-[#131829] transition-all duration-300 cursor-pointer group`}
+                        >
+                          <div
+                            className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0"
+                            onClick={() => router.push(`/student/subject/${subjectId}`)}
+                          >
+                            <div className={`w-3 h-3 flex-shrink-0 rounded-full ${colors.bg} ${colors.glow} shadow-lg animate-pulse-slow`}></div>
+                            <span className="text-white font-medium text-sm sm:text-base lg:text-lg truncate">{subject?.subjectName}</span>
                           </div>
-                          <div>
-                            <h3 className="text-white font-medium text-lg">{subject?.subjectName}</h3>
-                            <p className="text-sm text-gray-500">Class {index + 1} of {todaySubjects.length}</p>
-                          </div>
+
+                          {marked ? (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUndoAttendance(subjectId, e);
+                              }}
+                              disabled={isUndoing}
+                              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 text-sm flex-shrink-0 ${
+                                isUndoing
+                                  ? "bg-red-500/20 text-red-400/50 cursor-not-allowed"
+                                  : "bg-red-500/10 text-red-400 border border-red-400/20 hover:bg-red-500/20 hover:scale-105"
+                              }`}
+                            >
+                              {isUndoing ? (
+                                <>
+                                  <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></div>
+                                  <span className="hidden sm:inline">Undoing...</span>
+                                </>
+                              ) : (
+                                'Undo'
+                              )}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAttendance(subjectId, e);
+                              }}
+                              disabled={isMarking}
+                              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 text-sm flex-shrink-0 whitespace-nowrap ${
+                                isMarking
+                                  ? "bg-[#00D9FF]/20 text-[#00D9FF]/50 cursor-not-allowed"
+                                  : "bg-[#00D9FF]/10 text-[#00D9FF] border border-[#00D9FF]/20 hover:bg-[#00D9FF]/20 hover:scale-105"
+                              }`}
+                            >
+                              {isMarking ? (
+                                <>
+                                  <div className="w-4 h-4 border-2 border-[#00D9FF] border-t-transparent rounded-full animate-spin"></div>
+                                  <span className="hidden sm:inline">Marking...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle className="w-4 h-4" />
+                                  <span className="hidden xs:inline">Mark</span>
+                                  <span className="hidden sm:inline">Present</span>
+                                </>
+                              )}
+                            </button>
+                          )}
                         </div>
+                      );
+                    })}
+                  </div>
 
-                        {marked ? (
-                          <div className="flex items-center gap-2 bg-[#10B981]/20 px-4 py-2 rounded-full">
-                            <CheckCircle className="w-5 h-5 text-[#10B981]" />
-                            <span className="text-[#10B981] font-medium">Present</span>
+                  {todaySubjects.length > 0 && (
+                    <button
+                      onClick={updateAttendance}
+                      disabled={updating}
+                      className={`w-full sm:w-auto px-8 py-4 rounded-xl font-medium shadow-lg transition-all duration-300 flex items-center justify-center gap-2 ${
+                        updating
+                          ? "bg-gradient-to-r from-[#10B981]/50 to-[#059669]/50 cursor-not-allowed"
+                          : "bg-gradient-to-r from-[#10B981] to-[#059669] text-white shadow-[#10B981]/30 hover:shadow-[#10B981]/50 hover:scale-105"
+                      }`}
+                    >
+                      {updating ? (
+                        <>
+                          <div className="relative w-5 h-5">
+                            <div className="absolute inset-0 border-2 border-white/20 rounded-full"></div>
+                            <div className="absolute inset-0 border-2 border-transparent border-t-white rounded-full animate-spin"></div>
                           </div>
-                        ) : (
-                          <div className="flex items-center gap-2 bg-gray-500/20 px-4 py-2 rounded-full">
-                            <Clock className="w-5 h-5 text-gray-400" />
-                            <span className="text-gray-400 font-medium">Pending</span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                          Updating Attendance...
+                        </>
+                      ) : (
+                        <>
+                          <TrendingUp className="w-5 h-5" />
+                          Update Attendance
+                        </>
+                      )}
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -1585,6 +1744,70 @@ export default function StudentDashboard() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Subjects Overview Modal */}
+      {showSubjectsOverviewModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn" onClick={() => setShowSubjectsOverviewModal(false)}>
+          <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="p-6 border-b border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/10 to-transparent">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-[#00D9FF]/20 rounded-xl flex items-center justify-center">
+                    <BarChart3 className="w-6 h-6 text-[#00D9FF]" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">Subjects Overview</h2>
+                    <p className="text-sm text-gray-400">Detailed breakdown by subject</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowSubjectsOverviewModal(false)}
+                  className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+            </div>
+
+            {/* Subjects Grid */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {subjectStats.map((subject, index) => {
+                  const colors = getSubjectColor(index);
+
+                  return (
+                    <div
+                      key={subject.id}
+                      onClick={() => router.push(`/student/subject/${subject.id}`)}
+                      className="bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border border-[#1A1F3A] rounded-xl p-5 cursor-pointer hover:border-[#00D9FF]/30 hover:scale-[1.02] transition-all duration-300 group"
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2.5 h-2.5 rounded-full ${colors.bg} shadow-lg ${colors.glow} animate-pulse-slow`}></div>
+                          <span className="text-white font-medium text-lg">{subject.name}</span>
+                        </div>
+                        <span className={`${colors.text} font-bold text-2xl`}>{subject.percent}%</span>
+                      </div>
+
+                      <p className="text-gray-500 text-sm mb-3">
+                        <span className={colors.text}>{subject.present}</span> / {subject.total} Sessions Attended
+                      </p>
+
+                      <div className="w-full bg-[#1A1F3A] h-2.5 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${colors.bg} rounded-full transition-all duration-1000 ease-out`}
+                          style={{ width: `${subject.percent}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       )}
