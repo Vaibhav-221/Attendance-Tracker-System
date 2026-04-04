@@ -826,7 +826,7 @@ export default function StudentDashboard() {
               setShowJoinCodeModal(true);
               setSidebarOpen(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[#00D9FF] hover:bg-[#00D9FF]/10 border border-transparent hover:border-[#00D9FF]/30 transition-all duration-200"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-gradient-to-r from-[#00D9FF]/10 to-[#7C3AED]/10 text-[#00D9FF] hover:from-[#00D9FF]/20 hover:to-[#7C3AED]/20 border border-[#00D9FF]/10 hover:border-[#00D9FF]/30 transition-all duration-200"
           >
             <Book className="w-4 h-4" />
             <span className="text-sm font-medium">Change Class</span>
@@ -838,7 +838,7 @@ export default function StudentDashboard() {
               handleLogout();
               setSidebarOpen(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-400/30 transition-all duration-200"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-gradient-to-r from-red-500/10 to-red-600/10 text-red-400 hover:from-red-500/20 hover:to-red-600/20 border border-red-500/10 hover:border-red-400/30 transition-all duration-200"
           >
             <LogOut className="w-4 h-4" />
             <span className="text-sm font-medium">Logout</span>
