@@ -620,6 +620,39 @@ export default function StudentDashboard() {
     }
   }
 
+  const subjectColors = [
+    { bg: 'bg-[#00D9FF]', text: 'text-[#00D9FF]', border: 'border-[#00D9FF]', glow: 'shadow-[#00D9FF]/20' },
+    { bg: 'bg-[#7C3AED]', text: 'text-[#7C3AED]', border: 'border-[#7C3AED]', glow: 'shadow-[#7C3AED]/20' },
+    { bg: 'bg-[#F59E0B]', text: 'text-[#F59E0B]', border: 'border-[#F59E0B]', glow: 'shadow-[#F59E0B]/20' },
+    { bg: 'bg-[#10B981]', text: 'text-[#10B981]', border: 'border-[#10B981]', glow: 'shadow-[#10B981]/20' },
+    { bg: 'bg-[#EC4899]', text: 'text-[#EC4899]', border: 'border-[#EC4899]', glow: 'shadow-[#EC4899]/20' },
+  ];
+
+  const getSubjectColor = (index) => subjectColors[index % subjectColors.length];
+  const attendanceStatus = getAttendanceStatus(parseFloat(attendancePercent));
+  const maxClasses = Math.max(...weeklyData.map(d => d.classes), 1);
+
+  // Calculate weekly attendance trend from monthly data
+  const weeklyTrend = useMemo(() => {
+    if (!mounted || monthlyData.length === 0) return [];
+    const weeks = [];
+    // Process from newest to oldest
+    for (let i = monthlyData.length - 1; i >= 0; i -= 7) {
+      const startIdx = Math.max(i - 6, 0);
+      const weekSlice = monthlyData.slice(startIdx, i + 1);
+      const totalPct = weekSlice.reduce((sum, day) => sum + parseFloat(day.percentage), 0);
+      const avgPct = totalPct / weekSlice.length;
+      // Use the most recent date in this week as label
+      const label = weekSlice[weekSlice.length - 1].day;
+      weeks.push({
+        label,
+        percentage: avgPct
+      });
+    }
+    // Reverse to show oldest first (chronological left to right)
+    return weeks.reverse();
+  }, [monthlyData, mounted]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0A0E27] flex items-center justify-center relative overflow-hidden">
@@ -661,39 +694,6 @@ export default function StudentDashboard() {
       </div>
     );
   }
-
-  const subjectColors = [
-    { bg: 'bg-[#00D9FF]', text: 'text-[#00D9FF]', border: 'border-[#00D9FF]', glow: 'shadow-[#00D9FF]/20' },
-    { bg: 'bg-[#7C3AED]', text: 'text-[#7C3AED]', border: 'border-[#7C3AED]', glow: 'shadow-[#7C3AED]/20' },
-    { bg: 'bg-[#F59E0B]', text: 'text-[#F59E0B]', border: 'border-[#F59E0B]', glow: 'shadow-[#F59E0B]/20' },
-    { bg: 'bg-[#10B981]', text: 'text-[#10B981]', border: 'border-[#10B981]', glow: 'shadow-[#10B981]/20' },
-    { bg: 'bg-[#EC4899]', text: 'text-[#EC4899]', border: 'border-[#EC4899]', glow: 'shadow-[#EC4899]/20' },
-  ];
-
-  const getSubjectColor = (index) => subjectColors[index % subjectColors.length];
-  const attendanceStatus = getAttendanceStatus(parseFloat(attendancePercent));
-  const maxClasses = Math.max(...weeklyData.map(d => d.classes), 1);
-
-  // Calculate weekly attendance trend from monthly data
-  const weeklyTrend = useMemo(() => {
-    if (!mounted || monthlyData.length === 0) return [];
-    const weeks = [];
-    // Process from newest to oldest
-    for (let i = monthlyData.length - 1; i >= 0; i -= 7) {
-      const startIdx = Math.max(i - 6, 0);
-      const weekSlice = monthlyData.slice(startIdx, i + 1);
-      const totalPct = weekSlice.reduce((sum, day) => sum + parseFloat(day.percentage), 0);
-      const avgPct = totalPct / weekSlice.length;
-      // Use the most recent date in this week as label
-      const label = weekSlice[weekSlice.length - 1].day;
-      weeks.push({
-        label,
-        percentage: avgPct
-      });
-    }
-    // Reverse to show oldest first (chronological left to right)
-    return weeks.reverse();
-  }, [monthlyData, mounted]);
 
   return (
 
