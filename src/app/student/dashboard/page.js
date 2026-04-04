@@ -924,25 +924,112 @@ export default function StudentDashboard() {
             </div>
           </div>
 
-          {/* Weekly Trend Card */}
+          {/* Weekly Trend Card - Cartesian Line Chart */}
           <div className="col-span-2 sm:col-span-2 lg:col-span-6 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl p-4 relative overflow-hidden">
             <div className="flex items-center gap-2 mb-3">
-              <BarChart3 className="w-4 h-4 text-[#7C3AED]" />
+              <TrendingUp className="w-4 h-4 text-[#7C3AED]" />
               <h3 className="text-xs font-medium text-white">Weekly Attendance Trend</h3>
             </div>
-            {mounted && weeklyTrend.length > 0 && (
-              <div className="flex items-end justify-between h-24 gap-1">
-                {weeklyTrend.map((week, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col items-center group">
-                    <div className="w-full flex items-end justify-center h-16">
-                      <div
-                        className="w-full bg-gradient-to-t from-[#00D9FF] to-[#7C3AED] rounded-sm transition-all duration-500 hover:opacity-80"
-                        style={{ height: `${week.percentage}%`, minHeight: '4px' }}
-                      ></div>
-                    </div>
-                    <p className="text-[8px] text-gray-400 mt-1 truncate w-full text-center">{week.label}</p>
+            {mounted && weeklyTrend.length > 0 ? (
+              <div className="relative">
+                {/* Y-axis labels */}
+                <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[8px] text-gray-500 pr-1" style={{ height: '96px' }}>
+                  <span>100%</span>
+                  <span>75%</span>
+                  <span>50%</span>
+                  <span>25%</span>
+                  <span>0%</span>
+                </div>
+
+                {/* Chart area */}
+                <div className="ml-10 relative" style={{ height: '96px' }}>
+                  {/* Grid lines */}
+                  <div className="absolute inset-0 flex flex-col justify-between">
+                    <div className="w-full h-px bg-[#1A1F3A]"></div>
+                    <div className="w-full h-px bg-[#1A1F3A]"></div>
+                    <div className="w-full h-px bg-[#1A1F3A]"></div>
+                    <div className="w-full h-px bg-[#1A1F3A]"></div>
+                    <div className="w-full h-px bg-[#1A1F3A]"></div>
                   </div>
-                ))}
+
+                  {/* 75% target line */}
+                  <div className="absolute left-0 right-0 border-t border-dashed border-[#10B981]/40" style={{ top: '25%' }}></div>
+
+                  {/* SVG Line Chart */}
+                  <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+                    {/* Defs for gradient */}
+                    <defs>
+                      <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stopColor="#00D9FF" />
+                        <stop offset="100%" stopColor="#7C3AED" />
+                      </linearGradient>
+                      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stopColor="#00D9FF" stopOpacity="0.3" />
+                        <stop offset="100%" stopColor="#7C3AED" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    {(() => {
+                      const chartWidth = 100;
+                      const chartHeight = 100;
+                      const points = weeklyTrend.map((week, i) => {
+                        const x = (i / (weeklyTrend.length - 1 || 1)) * chartWidth;
+                        const y = chartHeight - week.percentage;
+                        return { x, y, label: week.label, percentage: week.percentage };
+                      });
+
+                      if (points.length === 1) {
+                        return (
+                          <>
+                            <line
+                              x1={`${points[0].x}%`} y1={0} x2={`${points[0].x}%`} y2="100%"
+                              stroke="#1A1F3A" strokeWidth="0.3" strokeDasharray="2"
+                            />
+                            <circle
+                              cx={`${points[0].x}%`} cy={`${points[0].y}%`} r="4"
+                              fill="#00D9FF" stroke="#7C3AED" strokeWidth="1.5"
+                            />
+                          </>
+                        );
+                      }
+
+                      const linePath = points
+                        .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x}% ${p.y}%`)
+                        .join(" ");
+
+                      const areaPath = linePath + `L ${points[points.length - 1].x}% 100% L ${points[0].x}% 100% Z`;
+
+                      return (
+                        <>
+                          {/* Area fill */}
+                          <path d={areaPath} fill="url(#areaGrad)" />
+                          {/* Line */}
+                          <path d={linePath} fill="none" stroke="url(#lineGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                          {/* Data points */}
+                          {points.map((p, i) => (
+                            <g key={i}>
+                              <circle
+                                cx={`${p.x}%`} cy={`${p.y}%`} r="3"
+                                fill="#0F1629" stroke="#00D9FF" strokeWidth="2"
+                              />
+                              <title>{p.label}: {p.percentage.toFixed(1)}%</title>
+                            </g>
+                          ))}
+                        </>
+                      );
+                    })()}
+                  </svg>
+                </div>
+
+                {/* X-axis labels */}
+                <div className="ml-10 flex justify-between text-[7px] text-gray-500 mt-1">
+                  {weeklyTrend.map((week, i) => (
+                    <span key={i} className="text-center truncate">{week.label}</span>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="h-24 flex items-center justify-center text-gray-600 text-xs">
+                No weekly data yet
               </div>
             )}
           </div>
