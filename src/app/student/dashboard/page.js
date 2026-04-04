@@ -1211,47 +1211,47 @@ export default function StudentDashboard() {
           <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
             
             {/* Header */}
-            <div className="p-6 border-b border-[#1A1F3A] bg-gradient-to-r from-[#F59E0B]/10 to-transparent">
+            <div className="p-4 border-b border-[#1A1F3A] bg-gradient-to-r from-[#F59E0B]/10 to-transparent">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-[#F59E0B]/20 rounded-xl flex items-center justify-center">
-                    <TrendingUp className="w-6 h-6 text-[#F59E0B]" />
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 bg-[#F59E0B]/20 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-[#F59E0B]" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-white">Safe Bunk Calculator</h2>
-                    <p className="text-sm text-gray-400">Maintain 75% attendance target</p>
+                    <h2 className="text-lg font-bold text-white">Safe Bunk Calculator</h2>
+                    <p className="text-xs text-gray-400">Maintain 75% attendance target</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowSafeBunkModal(false)}
-                  className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-400" />
+                  <X className="w-4 h-4 text-gray-400" />
                 </button>
               </div>
 
               {/* Summary Cards */}
-              <div className="grid grid-cols-2 gap-4 mt-6">
-                <div className="bg-[#10B981]/10 border border-[#10B981]/20 rounded-xl p-4">
-                  <p className="text-sm text-gray-400 mb-1">Total Safe Bunks</p>
-                  <p className="text-3xl font-bold text-[#10B981]">
+              <div className="grid grid-cols-2 gap-3 mt-4">
+                <div className="bg-[#10B981]/10 border border-[#10B981]/20 rounded-lg p-3">
+                  <p className="text-xs text-gray-400 mb-1">Total Safe Bunks</p>
+                  <p className="text-xl font-bold text-[#10B981]">
                     {safeBunkData.filter(s => s.status === 'safe').reduce((sum, s) => sum + s.canBunk, 0)}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">Classes you can skip</p>
+                  <p className="text-[10px] text-gray-500 mt-1">Classes you can skip</p>
                 </div>
-                <div className="bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-xl p-4">
-                  <p className="text-sm text-gray-400 mb-1">Need to Attend</p>
-                  <p className="text-3xl font-bold text-[#EF4444]">
+                <div className="bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-lg p-3">
+                  <p className="text-xs text-gray-400 mb-1">Need to Attend</p>
+                  <p className="text-xl font-bold text-[#EF4444]">
                     {safeBunkData.filter(s => s.status === 'danger').reduce((sum, s) => sum + s.needToAttend, 0)}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">To reach 75%</p>
+                  <p className="text-[10px] text-gray-500 mt-1">To reach 75%</p>
                 </div>
               </div>
             </div>
 
             {/* Subject List */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-280px)]">
-              <div className="space-y-3">
+            <div className="p-4 overflow-y-auto max-h-[calc(90vh-240px)]">
+              <div className="space-y-2">
                 {safeBunkData.map((subject, index) => {
                   const colors = getSubjectColor(index);
                   const isSafe = subject.status === 'safe';
@@ -1259,15 +1259,15 @@ export default function StudentDashboard() {
                   return (
                     <div
                       key={subject.id}
-                      className={`bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border ${colors.border} border-l-4 rounded-xl p-5 hover:scale-[1.02] transition-all duration-300`}
+                      className={`bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border ${colors.border} border-l-4 rounded-lg p-3 hover:scale-[1.01] transition-all duration-300`}
                     >
-                      <div className="flex items-start justify-between gap-4 mb-3">
+                      <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className={`w-2.5 h-2.5 rounded-full ${colors.bg} animate-pulse-slow`}></div>
-                            <h3 className="text-white font-medium text-lg">{subject.name}</h3>
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className={`w-2 h-2 rounded-full ${colors.bg} animate-pulse-slow`}></div>
+                            <h3 className="text-white font-medium text-sm">{subject.name}</h3>
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-400">
+                          <div className="flex items-center gap-3 text-xs text-gray-400">
                             <span>Attendance: <span className={colors.text}>{subject.currentPercent}%</span></span>
                             <span>•</span>
                             <span>{subject.present}/{subject.total} attended</span>
@@ -1275,20 +1275,20 @@ export default function StudentDashboard() {
                         </div>
 
                         {isSafe ? (
-                          <div className="bg-[#10B981]/10 border border-[#10B981]/20 rounded-lg px-4 py-2 text-center">
-                            <p className="text-2xl font-bold text-[#10B981]">{subject.canBunk}</p>
-                            <p className="text-xs text-gray-400">can bunk</p>
+                          <div className="bg-[#10B981]/10 border border-[#10B981]/20 rounded-lg px-3 py-1.5 text-center">
+                            <p className="text-lg font-bold text-[#10B981]">{subject.canBunk}</p>
+                            <p className="text-[10px] text-gray-400">can bunk</p>
                           </div>
                         ) : (
-                          <div className="bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-lg px-4 py-2 text-center">
-                            <p className="text-2xl font-bold text-[#EF4444]">+{subject.needToAttend}</p>
-                            <p className="text-xs text-gray-400">need to attend</p>
+                          <div className="bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-lg px-3 py-1.5 text-center">
+                            <p className="text-lg font-bold text-[#EF4444]">+{subject.needToAttend}</p>
+                            <p className="text-[10px] text-gray-400">need to attend</p>
                           </div>
                         )}
                       </div>
 
                       {/* Progress Bar */}
-                      <div className="relative w-full bg-[#1A1F3A] h-2 rounded-full overflow-hidden">
+                      <div className="relative w-full bg-[#1A1F3A] h-1.5 rounded-full overflow-hidden">
                         <div
                           className={`h-full ${colors.bg} rounded-full transition-all duration-1000`}
                           style={{ width: `${subject.currentPercent}%` }}
@@ -1298,7 +1298,7 @@ export default function StudentDashboard() {
                       </div>
 
                       {!isSafe && (
-                        <p className="text-xs text-[#EF4444] mt-2">
+                        <p className="text-[10px] text-[#EF4444] mt-1.5">
                           ⚠️ Attend next {subject.needToAttend} classes consecutively to reach 75%
                         </p>
                       )}
@@ -1309,8 +1309,8 @@ export default function StudentDashboard() {
             </div>
 
             {/* Footer */}
-            <div className="p-6 border-t border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/5 to-transparent">
-              <p className="text-sm text-gray-400 text-center">
+            <div className="p-4 border-t border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/5 to-transparent">
+              <p className="text-xs text-gray-400 text-center">
                 💡 <span className="text-[#00D9FF]">Tip:</span> This calculation assumes you attend all remaining classes for subjects below 75%
               </p>
             </div>
@@ -1324,38 +1324,38 @@ export default function StudentDashboard() {
           <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
             
             {/* Header */}
-            <div className="p-6 border-b border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/10 to-transparent">
+            <div className="p-4 border-b border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/10 to-transparent">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                <div className="flex items-center gap-2">
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
                     parseFloat(attendancePercent) >= 75 ? 'bg-[#10B981]/20' :
                     parseFloat(attendancePercent) >= 50 ? 'bg-[#F59E0B]/20' : 'bg-[#EF4444]/20'
                   }`}>
-                    <Award className={`w-6 h-6 ${attendanceStatus.color}`} />
+                    <Award className={`w-4 h-4 ${attendanceStatus.color}`} />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-white">Subject-wise Attendance</h2>
-                    <p className="text-sm text-gray-400">Detailed breakdown by subject</p>
+                    <h2 className="text-lg font-bold text-white">Subject-wise Attendance</h2>
+                    <p className="text-xs text-gray-400">Detailed breakdown by subject</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowSubjectAttendanceModal(false)}
-                  className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-400" />
+                  <X className="w-4 h-4 text-gray-400" />
                 </button>
               </div>
 
               {/* Overall Summary */}
-              <div className="mt-6 bg-white/5 backdrop-blur-sm rounded-xl p-4">
+              <div className="mt-4 bg-white/5 backdrop-blur-sm rounded-lg p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-400 mb-1">Overall Attendance</p>
-                    <p className={`text-4xl font-bold ${attendanceStatus.color}`}>{attendancePercent}%</p>
+                    <p className="text-xs text-gray-400 mb-1">Overall Attendance</p>
+                    <p className={`text-2xl font-bold ${attendanceStatus.color}`}>{attendancePercent}%</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-gray-400 mb-1">Status</p>
-                    <div className={`px-4 py-2 rounded-full ${
+                    <p className="text-xs text-gray-400 mb-1">Status</p>
+                    <div className={`px-3 py-1.5 rounded-full text-xs ${
                       parseFloat(attendancePercent) >= 75 ? 'bg-[#10B981]/20 text-[#10B981]' :
                       parseFloat(attendancePercent) >= 50 ? 'bg-[#F59E0B]/20 text-[#F59E0B]' : 'bg-[#EF4444]/20 text-[#EF4444]'
                     } font-medium`}>
@@ -1367,8 +1367,8 @@ export default function StudentDashboard() {
             </div>
 
             {/* Subject List */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-250px)]">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 overflow-y-auto max-h-[calc(90vh-190px)]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {subjectStats.map((subject, index) => {
                   const colors = getSubjectColor(index);
                   const subjectPercent = parseFloat(subject.percent);
@@ -1376,35 +1376,35 @@ export default function StudentDashboard() {
                   return (
                     <div
                       key={subject.id}
-                      className={`bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border ${colors.border} rounded-xl p-5 hover:scale-[1.02] transition-all duration-300`}
+                      className={`bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border ${colors.border} rounded-lg p-3 hover:scale-[1.01] transition-all duration-300`}
                     >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-2 flex-1">
-                          <div className={`w-3 h-3 rounded-full ${colors.bg} animate-pulse-slow flex-shrink-0`}></div>
-                          <h3 className="text-white font-medium text-lg">{subject.name}</h3>
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                          <div className={`w-2 h-2 rounded-full ${colors.bg} animate-pulse-slow flex-shrink-0`}></div>
+                          <h3 className="text-white font-medium text-sm truncate">{subject.name}</h3>
                         </div>
-                        <div className="text-right">
-                          <p className={`text-3xl font-bold ${colors.text}`}>{subject.percent}%</p>
+                        <div className="text-right ml-2">
+                          <p className={`text-xl font-bold ${colors.text}`}>{subject.percent}%</p>
                         </div>
                       </div>
 
-                      <div className="space-y-2 mb-3">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Classes Attended</span>
+                      <div className="space-y-1.5 mb-2">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-400">Attended</span>
                           <span className={colors.text}>{subject.present}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Total Classes</span>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-400">Total</span>
                           <span className="text-gray-300">{subject.total}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Classes Missed</span>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-400">Missed</span>
                           <span className="text-red-400">{subject.total - subject.present}</span>
                         </div>
                       </div>
 
                       {/* Progress Bar */}
-                      <div className="relative w-full bg-[#1A1F3A] h-2.5 rounded-full overflow-hidden">
+                      <div className="relative w-full bg-[#1A1F3A] h-2 rounded-full overflow-hidden">
                         <div
                           className={`h-full ${colors.bg} rounded-full transition-all duration-1000`}
                           style={{ width: `${subject.percent}%` }}
@@ -1414,13 +1414,13 @@ export default function StudentDashboard() {
                       </div>
 
                       {/* Status Badge */}
-                      <div className="mt-3">
+                      <div className="mt-2">
                         {subjectPercent >= 75 ? (
-                          <span className="text-xs bg-[#10B981]/20 text-[#10B981] px-3 py-1 rounded-full">
+                          <span className="text-[10px] bg-[#10B981]/20 text-[#10B981] px-2 py-0.5 rounded-full">
                             ✓ Above target
                           </span>
                         ) : (
-                          <span className="text-xs bg-[#EF4444]/20 text-[#EF4444] px-3 py-1 rounded-full">
+                          <span className="text-[10px] bg-[#EF4444]/20 text-[#EF4444] px-2 py-0.5 rounded-full">
                             ⚠ Below 75%
                           </span>
                         )}
@@ -1440,16 +1440,16 @@ export default function StudentDashboard() {
           <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
             
             {/* Header */}
-            <div className="p-6 border-b border-[#1A1F3A] bg-gradient-to-r from-[#10B981]/10 to-transparent">
+            <div className="p-4 border-b border-[#1A1F3A] bg-gradient-to-r from-[#10B981]/10 to-transparent">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-[#10B981]/20 rounded-xl flex items-center justify-center">
-                    <CheckCircle className="w-6 h-6 text-[#10B981]" />
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 bg-[#10B981]/20 rounded-lg flex items-center justify-center">
+                    <CheckCircle className="w-4 h-4 text-[#10B981]" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-white">Today's Classes</h2>
+                    <h2 className="text-lg font-bold text-white">Today's Classes</h2>
                     {mounted && (
-                      <p className="text-sm text-gray-400">
+                      <p className="text-xs text-gray-400">
                         {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                       </p>
                     )}
@@ -1457,36 +1457,36 @@ export default function StudentDashboard() {
                 </div>
                 <button
                   onClick={() => setShowTodayClassesModal(false)}
-                  className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-400" />
+                  <X className="w-4 h-4 text-gray-400" />
                 </button>
               </div>
 
               {/* Summary */}
-              <div className="mt-6 grid grid-cols-2 gap-4">
-                <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
-                  <p className="text-sm text-gray-400 mb-1">Total Classes</p>
-                  <p className="text-3xl font-bold text-[#10B981]">{todaySubjects.length}</p>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="bg-white/5 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-xs text-gray-400 mb-1">Total Classes</p>
+                  <p className="text-xl font-bold text-[#10B981]">{todaySubjects.length}</p>
                 </div>
-                <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
-                  <p className="text-sm text-gray-400 mb-1">Marked Present</p>
-                  <p className="text-3xl font-bold text-[#00D9FF]">{markedSubjects.length}</p>
+                <div className="bg-white/5 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-xs text-gray-400 mb-1">Marked Present</p>
+                  <p className="text-xl font-bold text-[#00D9FF]">{markedSubjects.length}</p>
                 </div>
               </div>
             </div>
 
             {/* Classes List with Mark/Undo */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-300px)]">
+            <div className="p-4 overflow-y-auto max-h-[calc(90vh-220px)]">
               {todaySubjects.length === 0 ? (
-                <div className="text-center py-12">
-                  <Clock className="w-16 h-16 text-gray-700 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">No classes scheduled today</p>
-                  <p className="text-gray-600 text-sm mt-2">Enjoy your day off!</p>
+                <div className="text-center py-8">
+                  <Clock className="w-10 h-10 text-gray-700 mx-auto mb-2" />
+                  <p className="text-gray-500 text-sm">No classes scheduled today</p>
+                  <p className="text-gray-600 text-xs mt-1">Enjoy your day off!</p>
                 </div>
               ) : (
                 <>
-                  <div className="space-y-3 mb-6">
+                  <div className="space-y-2 mb-4">
                     {todaySubjects.map((subjectId, index) => {
                       const subject = allSubjects.find(s => s.id === subjectId);
                       const marked = markedSubjects.includes(subjectId);
@@ -1497,14 +1497,14 @@ export default function StudentDashboard() {
                       return (
                         <div
                           key={subjectId}
-                          className={`bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border ${colors.border} border-l-4 rounded-xl p-4 sm:p-5 flex flex-row justify-between items-center gap-3 hover:bg-[#131829] transition-all duration-300 cursor-pointer group`}
+                          className={`bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border ${colors.border} border-l-4 rounded-lg p-3 flex flex-row justify-between items-center gap-2 hover:bg-[#131829] transition-all duration-300 cursor-pointer group`}
                         >
                           <div
-                            className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0"
+                            className="flex items-center gap-2 flex-1 min-w-0"
                             onClick={() => router.push(`/student/subject/${subjectId}`)}
                           >
-                            <div className={`w-3 h-3 flex-shrink-0 rounded-full ${colors.bg} ${colors.glow} shadow-lg animate-pulse-slow`}></div>
-                            <span className="text-white font-medium text-sm sm:text-base lg:text-lg truncate">{subject?.subjectName}</span>
+                            <div className={`w-2 h-2 flex-shrink-0 rounded-full ${colors.bg} ${colors.glow} shadow-lg animate-pulse-slow`}></div>
+                            <span className="text-white font-medium text-sm truncate">{subject?.subjectName}</span>
                           </div>
 
                           {marked ? (
@@ -1514,7 +1514,7 @@ export default function StudentDashboard() {
                                 handleUndoAttendance(subjectId, e);
                               }}
                               disabled={isUndoing}
-                              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 text-sm flex-shrink-0 ${
+                              className={`px-3 py-1.5 rounded-lg font-medium transition-all duration-300 flex items-center gap-1.5 text-xs flex-shrink-0 ${
                                 isUndoing
                                   ? "bg-red-500/20 text-red-400/50 cursor-not-allowed"
                                   : "bg-red-500/10 text-red-400 border border-red-400/20 hover:bg-red-500/20 hover:scale-105"
@@ -1522,7 +1522,7 @@ export default function StudentDashboard() {
                             >
                               {isUndoing ? (
                                 <>
-                                  <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></div>
+                                  <div className="w-3 h-3 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></div>
                                   <span className="hidden sm:inline">Undoing...</span>
                                 </>
                               ) : (
@@ -1600,27 +1600,27 @@ export default function StudentDashboard() {
           <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
             
             {/* Header */}
-            <div className="p-6 border-b border-[#1A1F3A] bg-gradient-to-r from-[#7C3AED]/10 to-transparent">
+            <div className="p-4 border-b border-[#1A1F3A] bg-gradient-to-r from-[#7C3AED]/10 to-transparent">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-[#7C3AED]/20 rounded-xl flex items-center justify-center">
-                    <BarChart3 className="w-6 h-6 text-[#7C3AED]" />
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 bg-[#7C3AED]/20 rounded-lg flex items-center justify-center">
+                    <BarChart3 className="w-4 h-4 text-[#7C3AED]" />
                   </div>
                   <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-white">Monthly Attendance Overview</h2>
-                    <p className="text-sm text-gray-400">Last 30 days - Week by week</p>
+                    <h2 className="text-lg font-bold text-white">Monthly Attendance Overview</h2>
+                    <p className="text-xs text-gray-400">Last 30 days - Week by week</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowMonthlyChartModal(false)}
-                  className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-400" />
+                  <X className="w-4 h-4 text-gray-400" />
                 </button>
               </div>
 
               {/* Legend */}
-              <div className="mt-6 flex flex-wrap items-center gap-4">
+              <div className="mt-4 flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-[#10B981] rounded"></div>
                   <span className="text-xs text-gray-400">≥75%</span>
@@ -1840,29 +1840,29 @@ export default function StudentDashboard() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn" onClick={() => setShowSubjectsOverviewModal(false)}>
           <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
-            <div className="p-6 border-b border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/10 to-transparent">
+            <div className="p-4 border-b border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/10 to-transparent">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-[#00D9FF]/20 rounded-xl flex items-center justify-center">
-                    <BarChart3 className="w-6 h-6 text-[#00D9FF]" />
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 bg-[#00D9FF]/20 rounded-lg flex items-center justify-center">
+                    <BarChart3 className="w-4 h-4 text-[#00D9FF]" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-white">Subjects Overview</h2>
-                    <p className="text-sm text-gray-400">Detailed breakdown by subject</p>
+                    <h2 className="text-lg font-bold text-white">Subjects Overview</h2>
+                    <p className="text-xs text-gray-400">Detailed breakdown by subject</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowSubjectsOverviewModal(false)}
-                  className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-400" />
+                  <X className="w-4 h-4 text-gray-400" />
                 </button>
               </div>
             </div>
 
             {/* Subjects Grid */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 overflow-y-auto max-h-[calc(90vh-140px)]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {subjectStats.map((subject, index) => {
                   const colors = getSubjectColor(index);
 
@@ -1870,21 +1870,21 @@ export default function StudentDashboard() {
                     <div
                       key={subject.id}
                       onClick={() => router.push(`/student/subject/${subject.id}`)}
-                      className="bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border border-[#1A1F3A] rounded-xl p-5 cursor-pointer hover:border-[#00D9FF]/30 hover:scale-[1.02] transition-all duration-300 group"
+                      className="bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border border-[#1A1F3A] rounded-lg p-3 cursor-pointer hover:border-[#00D9FF]/30 hover:scale-[1.01] transition-all duration-300 group"
                     >
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-2.5 h-2.5 rounded-full ${colors.bg} shadow-lg ${colors.glow} animate-pulse-slow`}></div>
-                          <span className="text-white font-medium text-lg">{subject.name}</span>
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <div className={`w-2 h-2 rounded-full ${colors.bg} shadow-lg ${colors.glow} animate-pulse-slow flex-shrink-0`}></div>
+                          <span className="text-white font-medium text-sm truncate">{subject.name}</span>
                         </div>
-                        <span className={`${colors.text} font-bold text-2xl`}>{subject.percent}%</span>
+                        <span className={`${colors.text} font-bold text-xl ml-2`}>{subject.percent}%</span>
                       </div>
 
-                      <p className="text-gray-500 text-sm mb-3">
+                      <p className="text-gray-500 text-xs mb-2">
                         <span className={colors.text}>{subject.present}</span> / {subject.total} Sessions Attended
                       </p>
 
-                      <div className="w-full bg-[#1A1F3A] h-2.5 rounded-full overflow-hidden">
+                      <div className="w-full bg-[#1A1F3A] h-2 rounded-full overflow-hidden">
                         <div
                           className={`h-full ${colors.bg} rounded-full transition-all duration-1000 ease-out`}
                           style={{ width: `${subject.percent}%` }}
@@ -1905,35 +1905,35 @@ export default function StudentDashboard() {
           <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
             
             {/* Header */}
-            <div className="p-6 border-b border-[#1A1F3A]">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-[#00D9FF]/20 rounded-xl flex items-center justify-center">
-                    <Book className="w-6 h-6 text-[#00D9FF]" />
+            <div className="p-4 border-b border-[#1A1F3A]">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 bg-[#00D9FF]/20 rounded-lg flex items-center justify-center">
+                    <Book className="w-4 h-4 text-[#00D9FF]" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white">Change Class</h2>
-                    <p className="text-sm text-gray-400">Enter new join code</p>
+                    <h2 className="text-lg font-bold text-white">Change Class</h2>
+                    <p className="text-xs text-gray-400">Enter new join code</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowJoinCodeModal(false)}
-                  className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-400" />
+                  <X className="w-4 h-4 text-gray-400" />
                 </button>
               </div>
 
               {/* Current Class Info */}
-              <div className="bg-[#00D9FF]/10 border border-[#00D9FF]/20 rounded-lg p-4">
-                <p className="text-sm text-gray-400 mb-1">Current Join Code</p>
-                <code className="text-[#00D9FF] font-mono text-lg">{joinCode}</code>
+              <div className="bg-[#00D9FF]/10 border border-[#00D9FF]/20 rounded-lg p-3">
+                <p className="text-xs text-gray-400 mb-1">Current Join Code</p>
+                <code className="text-[#00D9FF] font-mono text-base">{joinCode}</code>
               </div>
             </div>
 
             {/* Body */}
-            <div className="p-6">
-              <label className="block text-sm text-gray-400 mb-2">New Join Code</label>
+            <div className="p-4">
+              <label className="block text-xs text-gray-400 mb-1.5">New Join Code</label>
               <input
                 type="text"
                 value={newJoinCode}
