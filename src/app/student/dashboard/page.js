@@ -916,9 +916,9 @@ export default function StudentDashboard() {
               <User className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0 flex-1">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white truncate">Student Dashboard</h1>
+              <h1 className={`text-xl sm:text-2xl md:text-3xl font-semibold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>Student Dashboard</h1>
               {mounted && (
-                <p className="text-xs sm:text-sm text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#7C3AED] font-medium truncate">
+                <p className={`text-xs sm:text-sm font-medium truncate ${isDark ? 'text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#7C3AED]' : 'text-slate-600'}`}>
                   {getGreeting()}, {userData?.name}!
                 </p>
               )}
@@ -931,7 +931,7 @@ export default function StudentDashboard() {
               ref={menuButtonRef}
               onClick={() => setSidebarOpen(!sidebarOpen)}
               aria-label={sidebarOpen ? "Close menu" : "Open menu"}
-              className="w-10 h-10 sm:w-12 sm:h-12 bg-[#1A1F3A] rounded-full flex items-center justify-center text-gray-300 border border-[#2A2F4A] hover:bg-[#2A2F4A] hover:text-white transition-all duration-200"
+              className={`w-10 h-10 sm:w-12 sm:h-12 ${isDark ? 'bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] border-none' : 'bg-gradient-to-br from-blue-500 to-indigo-600 border border-blue-400/30'} rounded-full flex items-center justify-center ${isDark ? 'text-white' : 'text-white'} shadow-lg ${isDark ? 'shadow-[#00D9FF]/30' : 'shadow-blue-500/30'} hover:scale-110 transition-all duration-200`}
             >
               {sidebarOpen ? (
                 <X className="w-5 h-5" />
@@ -948,73 +948,73 @@ export default function StudentDashboard() {
           {/* Overall Attendance Card - ENHANCED */}
           <div
             onClick={() => setShowSubjectAttendanceModal(true)}
-            className="col-span-2 sm:col-span-2 lg:col-span-6 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl p-4 relative overflow-hidden hover:border-[#00D9FF]/30 transition-all duration-300 hover:scale-[1.02] group cursor-pointer"
+            className={`col-span-2 sm:col-span-2 lg:col-span-6 ${isDark ? 'bg-gradient-to-br from-blue-900/60 to-indigo-900/60 border border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/50'} rounded-xl p-4 relative overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group cursor-pointer`}
           >
-            
+
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform backdrop-blur-sm">
-                    <Award className={`w-4 h-4 ${attendanceStatus.color}`} />
+                  <div className={`w-8 h-8 ${isDark ? 'bg-blue-500/20 border border-blue-500/30' : 'bg-white border border-blue-200'} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform backdrop-blur-sm`}>
+                    <Award className={`w-4 h-4 ${isDark ? 'text-[#00D9FF]' : 'text-blue-600'}`} />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400">Overall</p>
-                    <p className="text-[10px] text-gray-500">{attendanceStatus.status}</p>
+                    <p className={`text-xs ${isDark ? 'text-blue-300' : 'text-blue-700'}`}>Overall</p>
+                    <p className={`text-[10px] ${isDark ? 'text-blue-400/70' : 'text-blue-600'}`}>{attendanceStatus.status}</p>
                   </div>
                 </div>
                 <span className="text-xl">{attendanceStatus.icon}</span>
               </div>
 
-              <p className={`text-4xl font-bold ${attendanceStatus.color} mb-3`}>
+              <p className={`text-4xl font-bold ${isDark ? 'text-white' : 'text-slate-900'} mb-3`}>
                 {attendancePercent}%
               </p>
 
-              <div className="w-full bg-[#1A1F3A] h-2 rounded-full overflow-hidden mb-2">
+              <div className={`w-full ${isDark ? 'bg-slate-800/50' : 'bg-slate-200'} h-2 rounded-full overflow-hidden mb-2`}>
                 <div
                   className={`h-full rounded-full transition-all duration-1000 ease-out ${
                     parseFloat(attendancePercent) >= 75
-                      ? 'bg-[#10B981]'
+                      ? isDark ? 'bg-[#10B981]' : 'bg-green-500'
                       : parseFloat(attendancePercent) >= 50
-                        ? 'bg-[#F59E0B]'
-                        : 'bg-[#EF4444]'
+                        ? isDark ? 'bg-[#F59E0B]' : 'bg-amber-500'
+                        : isDark ? 'bg-[#EF4444]' : 'bg-red-500'
                   }`}
                   style={{ width: `${attendancePercent}%` }}
                 ></div>
               </div>
-              <p className="text-[10px] text-gray-500 text-center">Target: 75% | Click for details</p>
+              <p className={`text-[10px] ${isDark ? 'text-blue-400/60' : 'text-blue-500'} text-center`}>Target: 75% | Click for details</p>
             </div>
           </div>
 
           {/* Weekly Trend Card - Cartesian Line Chart */}
-          <div className="col-span-2 sm:col-span-2 lg:col-span-6 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl p-4 relative overflow-hidden">
+          <div className={`col-span-2 sm:col-span-2 lg:col-span-6 ${isDark ? 'bg-gradient-to-br from-blue-900/60 to-indigo-900/60 border border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/50'} rounded-xl p-4 relative overflow-hidden`}>
             <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="w-4 h-4 text-[#7C3AED]" />
-              <h3 className="text-xs font-medium text-white">Weekly Attendance Trend</h3>
+              <TrendingUp className={`w-4 h-4 ${isDark ? 'text-[#00D9FF]' : 'text-blue-600'}`} />
+              <h3 className={`text-xs font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>Weekly Attendance Trend</h3>
             </div>
             {mounted && weeklyTrend.length > 0 ? (
               <div className="relative">
                 {/* Y-axis labels */}
-                <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[8px] text-gray-500 pr-1" style={{ height: '96px' }}>
-                  <span>100%</span>
-                  <span>75%</span>
-                  <span>50%</span>
-                  <span>25%</span>
-                  <span>0%</span>
+                <div className={`absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[8px] pr-1`} style={{ height: '96px' }}>
+                  <span className={isDark ? 'text-blue-300' : 'text-blue-700'}>100%</span>
+                  <span className={isDark ? 'text-blue-300' : 'text-blue-700'}>75%</span>
+                  <span className={isDark ? 'text-blue-300' : 'text-blue-700'}>50%</span>
+                  <span className={isDark ? 'text-blue-300' : 'text-blue-700'}>25%</span>
+                  <span className={isDark ? 'text-blue-300' : 'text-blue-700'}>0%</span>
                 </div>
 
                 {/* Chart area */}
                 <div className="ml-10 relative" style={{ height: '96px' }}>
                   {/* Grid lines */}
                   <div className="absolute inset-0 flex flex-col justify-between">
-                    <div className="w-full h-px bg-[#1A1F3A]"></div>
-                    <div className="w-full h-px bg-[#1A1F3A]"></div>
-                    <div className="w-full h-px bg-[#1A1F3A]"></div>
-                    <div className="w-full h-px bg-[#1A1F3A]"></div>
-                    <div className="w-full h-px bg-[#1A1F3A]"></div>
+                    <div className={`w-full h-px ${isDark ? 'bg-blue-500/20' : 'bg-blue-200'}`}></div>
+                    <div className={`w-full h-px ${isDark ? 'bg-blue-500/20' : 'bg-blue-200'}`}></div>
+                    <div className={`w-full h-px ${isDark ? 'bg-blue-500/20' : 'bg-blue-200'}`}></div>
+                    <div className={`w-full h-px ${isDark ? 'bg-blue-500/20' : 'bg-blue-200'}`}></div>
+                    <div className={`w-full h-px ${isDark ? 'bg-blue-500/20' : 'bg-blue-200'}`}></div>
                   </div>
 
                   {/* 75% target line */}
-                  <div className="absolute left-0 right-0 border-t border-dashed border-[#10B981]/40" style={{ top: '25%' }}></div>
+                  <div className={`absolute left-0 right-0 border-t border-dashed ${isDark ? 'border-[#10B981]/40' : 'border-green-500/40'}`} style={{ top: '25%' }}></div>
 
                   {/* SVG Line Chart */}
                   <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
@@ -1098,22 +1098,22 @@ export default function StudentDashboard() {
           {/* Safe Bunk Card */}
           <div
             onClick={calculateSafeBunk}
-            className="lg:col-span-6 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl p-4 relative overflow-hidden hover:border-[#F59E0B]/50 transition-all duration-300 hover:scale-[1.02] group cursor-pointer"
+            className={`lg:col-span-6 ${isDark ? 'bg-gradient-to-br from-amber-900/60 to-orange-900/60 border border-amber-500/30 hover:border-amber-500/50' : 'bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-300/50 hover:border-amber-400'} rounded-xl p-4 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] group cursor-pointer`}
           >
-            <div className="absolute top-0 right-0 w-16 h-16 bg-[#F59E0B]/5 rounded-full blur-xl group-hover:bg-[#F59E0B]/10 transition-all duration-300"></div>
+            <div className={`absolute top-0 right-0 w-16 h-16 ${isDark ? 'bg-amber-500/10' : 'bg-amber-500/15'} rounded-full blur-xl group-hover:bg-amber-500/20 transition-all duration-300`}></div>
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 bg-[#F59E0B]/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <TrendingUp className="w-4 h-4 text-[#F59E0B]" />
+                <div className={`w-8 h-8 ${isDark ? 'bg-amber-500/20 border border-amber-500/30' : 'bg-white border border-amber-200'} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                  <TrendingUp className={`w-4 h-4 ${isDark ? 'text-amber-400' : 'text-amber-600'}`} />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400">Safe Bunk</p>
+                  <p className={`text-xs ${isDark ? 'text-amber-300' : 'text-amber-700'}`}>Safe Bunk</p>
                 </div>
               </div>
-              <p className="text-2xl font-bold text-[#F59E0B]">
+              <p className={`text-2xl font-bold ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
                 {safeBunkData.filter(s => s.status === 'safe').reduce((sum, s) => sum + s.canBunk, 0)}
               </p>
-              <p className="text-[10px] text-gray-400 mt-1">classes you can skip</p>
+              <p className={`text-[10px] ${isDark ? 'text-amber-300/70' : 'text-amber-700'} mt-1`}>classes you can skip</p>
             </div>
           </div>
 
@@ -1123,20 +1123,20 @@ export default function StudentDashboard() {
               const el = document.getElementById('mark-attendance-section');
               if (el) el.scrollIntoView({ behavior: 'smooth' });
             }}
-            className="lg:col-span-6 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl p-4 relative overflow-hidden hover:border-[#10B981]/50 transition-all duration-300 hover:scale-[1.02] group cursor-pointer"
+            className={`lg:col-span-6 ${isDark ? 'bg-gradient-to-br from-emerald-900/60 to-teal-900/60 border border-emerald-500/30 hover:border-emerald-500/50' : 'bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-300/50 hover:border-emerald-400'} rounded-xl p-4 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] group cursor-pointer`}
           >
-            <div className="absolute top-0 right-0 w-16 h-16 bg-[#10B981]/5 rounded-full blur-xl group-hover:bg-[#10B981]/10 transition-all duration-300"></div>
+            <div className={`absolute top-0 right-0 w-16 h-16 ${isDark ? 'bg-emerald-500/10' : 'bg-emerald-500/15'} rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all duration-300`}></div>
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 bg-[#10B981]/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Clock className="w-4 h-4 text-[#10B981]" />
+                <div className={`w-8 h-8 ${isDark ? 'bg-emerald-500/20 border border-emerald-500/30' : 'bg-white border border-emerald-200'} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                  <Clock className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400">Today's Classes</p>
+                  <p className={`text-xs ${isDark ? 'text-emerald-300' : 'text-emerald-700'}`}>Today's Classes</p>
                 </div>
               </div>
-              <p className="text-2xl font-bold text-[#10B981]">{todaySubjects.length}</p>
-              <p className="text-[10px] text-gray-400 mt-1">scheduled today</p>
+              <p className={`text-2xl font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>{todaySubjects.length}</p>
+              <p className={`text-[10px] ${isDark ? 'text-emerald-300/70' : 'text-emerald-700'} mt-1`}>scheduled today</p>
             </div>
           </div>
         </div>
@@ -1146,10 +1146,10 @@ export default function StudentDashboard() {
         <div className="mb-8" id="mark-attendance-section">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-[#10B981]" />
-              <h2 className="text-lg font-semibold text-white">Today's Classes</h2>
+              <CheckCircle className={`w-5 h-5 ${isDark ? 'text-[#10B981]' : 'text-green-600'}`} />
+              <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>Today's Classes</h2>
               {mounted && (
-                <span className="text-xs text-gray-500">
+                <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>
                   ({new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})
                 </span>
               )}
@@ -1157,10 +1157,10 @@ export default function StudentDashboard() {
           </div>
 
           {todaySubjects.length === 0 ? (
-            <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl p-8 text-center">
-              <Clock className="w-12 h-12 text-gray-700 mx-auto mb-3" />
-              <p className="text-gray-500">No classes scheduled today</p>
-              <p className="text-gray-600 text-sm mt-1">Enjoy your day off!</p>
+            <div className={`${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-white border border-slate-200'} rounded-xl p-8 text-center`}>
+              <Clock className={`w-12 h-12 ${isDark ? 'text-gray-700' : 'text-slate-400'} mx-auto mb-3`} />
+              <p className={`${isDark ? 'text-gray-500' : 'text-slate-500'}`}>No classes scheduled today</p>
+              <p className={`${isDark ? 'text-gray-600' : 'text-slate-600'} text-sm mt-1`}>Enjoy your day off!</p>
             </div>
           ) : (
             <>
@@ -1175,14 +1175,14 @@ export default function StudentDashboard() {
                   return (
                     <div
                       key={subjectId}
-                      className={`bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border ${colors.border} border-l-4 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3 hover:bg-[#131829] transition-all duration-300`}
+                      className={`${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'} border-l-4 ${colors.border} rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3 hover:scale-[1.01] transition-all duration-300`}
                     >
                       <div
                         className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 cursor-pointer"
                         onClick={() => router.push(`/student/subject/${subjectId}`)}
                       >
                         <div className={`w-2 h-2 rounded-full ${colors.bg} ${colors.glow} shadow-lg animate-pulse-slow flex-shrink-0`}></div>
-                        <span className="text-white font-medium text-sm truncate">{subject?.subjectName}</span>
+                        <span className={`font-medium text-sm truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{subject?.subjectName}</span>
                       </div>
 
                       <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -1195,8 +1195,8 @@ export default function StudentDashboard() {
                             disabled={isUndoing}
                             className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg font-medium transition-all duration-300 flex items-center gap-1.5 text-xs ${
                               isUndoing
-                                ? "bg-red-500/20 text-red-400/50 cursor-not-allowed"
-                                : "bg-red-500/10 text-red-400 border border-red-400/20 hover:bg-red-500/20"
+                                ? `${isDark ? 'bg-red-500/20 text-red-400/50' : 'bg-red-500/20 text-red-400/50'} cursor-not-allowed`
+                                : `${isDark ? 'bg-red-500/10 text-red-400 border border-red-400/20 hover:bg-red-500/20' : 'bg-red-500/10 text-red-600 border border-red-500/30 hover:bg-red-500/20'}`
                             }`}
                           >
                             {isUndoing ? (
@@ -1214,8 +1214,8 @@ export default function StudentDashboard() {
                             disabled={isMarking}
                             className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg font-medium transition-all duration-300 flex items-center gap-1.5 text-xs ${
                               isMarking
-                                ? "bg-[#00D9FF]/20 text-[#00D9FF]/50 cursor-not-allowed"
-                                : "bg-[#00D9FF]/10 text-[#00D9FF] border border-[#00D9FF]/20 hover:bg-[#00D9FF]/20"
+                                ? `${isDark ? 'bg-[#00D9FF]/20 text-[#00D9FF]/50' : 'bg-blue-500/20 text-blue-500/50'} cursor-not-allowed`
+                                : `${isDark ? 'bg-[#00D9FF]/10 text-[#00D9FF] border border-[#00D9FF]/20 hover:bg-[#00D9FF]/20' : 'bg-blue-500/10 text-blue-600 border border-blue-500/30 hover:bg-blue-500/20'}`
                             }`}
                           >
                             {isMarking ? (
