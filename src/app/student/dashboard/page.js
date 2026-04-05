@@ -12,11 +12,60 @@ import {
   onSnapshot
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { Calendar, TrendingUp, Book, CheckCircle, Clock, Award, BarChart3, User, LogOut, Menu, X } from "lucide-react";
+import { Calendar, TrendingUp, Book, CheckCircle, Clock, Award, BarChart3, User, LogOut, Menu, X, Sun, Moon } from "lucide-react";
+import { useTheme } from "@/lib/theme-context";
 
 export default function StudentDashboard() {
 
   const router = useRouter();
+  const { isDark, toggleTheme } = useTheme();
+
+  // Theme configuration
+  const T = {
+    page: isDark ? '#0A0E27' : '#F8FAFC',
+    card: isDark ? '#0F1629' : '#FFFFFF',
+    cardAlt: isDark ? '#0F1629' : '#F8FAFC',
+    border: isDark ? '#1A1F3A' : '#E2E8F0',
+    borderHover: isDark ? '#2A2F4A' : '#CBD5E1',
+    text: isDark ? 'text-white' : 'text-slate-900',
+    textMuted: isDark ? 'text-gray-400' : 'text-slate-500',
+    textSubtle: isDark ? 'text-gray-500' : 'text-slate-400',
+    textCodeMuted: isDark ? 'text-gray-600' : 'text-slate-500',
+    inputBg: isDark ? '#1A1F3A' : '#E2E8F0',
+    subtleHighlight: isDark ? 'bg-white/5' : 'bg-slate-50',
+    subtleHighlightHover: isDark ? 'bg-white/10' : 'bg-slate-100',
+    gridLine: isDark ? '#1A1F3A' : '#E2E8F0',
+    weekBg: isDark ? '#0A0E27' : '#F8FAFC',
+    weekBorder: isDark ? '#1A1F3A' : '#E2E8F0',
+    todayBorder: isDark ? '#00D9FF/40' : '#3B82F6/50',
+    todayBg: isDark ? 'rgba(0,217,255,0.05)' : 'rgba(59,130,246,0.05)',
+    todayText: isDark ? '#00D9FF' : '#3B82F6',
+    modalOverlay: isDark ? 'bg-black/60' : 'bg-black/30',
+    sidebarBg: isDark ? '#0F1629' : '#FFFFFF',
+    sidebarBorder: isDark ? '#1A1F3A' : '#E2E8F0',
+    sidebarNav: isDark ? '#1A1F3A' : '#F1F5F9',
+    hamburgerBg: isDark ? '#1A1F3A' : '#FFFFFF',
+    hamburgerBorder: isDark ? '#2A2F4A' : '#E2E8F0',
+    hamburgerText: isDark ? 'text-gray-300' : 'text-slate-700',
+    hamburgerHover: isDark ? '#2A2F4A' : '#F1F5F9',
+    progressBar: isDark ? '#1A1F3A' : '#E2E8F0',
+    targetLine: isDark ? 'border-white/50' : 'border-slate-400',
+    chartGradBg: isDark ? 'bg-[#1A1F3A]' : 'bg-slate-200',
+    emptyBar: isDark ? 'bg-gray-700/20' : 'bg-slate-200',
+    emptyBarLight: isDark ? 'bg-gray-700/30' : 'bg-slate-200',
+    navText: isDark ? 'text-gray-500' : 'text-slate-400',
+    navTextSmall: isDark ? 'text-gray-500' : 'text-slate-500',
+    codeBg: isDark ? 'bg-[#00D9FF]/5' : 'bg-slate-100',
+    codeBorder: isDark ? 'bg-[#00D9FF]/5' : 'bg-slate-100',
+    cardShadow: isDark ? 'bg-white/3' : 'bg-slate-100/50',
+    cardShadowHover: isDark ? 'bg-white/5' : 'bg-slate-100',
+    modalBackdrop: isDark ? 'backdrop-blur-sm' : '',
+    tipText: isDark ? 'text-gray-600' : 'text-slate-400',
+    dayEmptyText: isDark ? 'text-gray-600' : 'text-slate-400',
+    noDataText: isDark ? 'text-gray-600' : 'text-slate-400',
+    dayLabel: isDark ? 'text-gray-400' : 'text-slate-500',
+    dayText: isDark ? 'text-gray-600' : 'text-slate-400',
+  };
 
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
@@ -621,11 +670,11 @@ export default function StudentDashboard() {
   }
 
   const subjectColors = [
-    { bg: 'bg-[#00D9FF]', text: 'text-[#00D9FF]', border: 'border-[#00D9FF]', glow: 'shadow-[#00D9FF]/20' },
-    { bg: 'bg-[#7C3AED]', text: 'text-[#7C3AED]', border: 'border-[#7C3AED]', glow: 'shadow-[#7C3AED]/20' },
-    { bg: 'bg-[#F59E0B]', text: 'text-[#F59E0B]', border: 'border-[#F59E0B]', glow: 'shadow-[#F59E0B]/20' },
-    { bg: 'bg-[#10B981]', text: 'text-[#10B981]', border: 'border-[#10B981]', glow: 'shadow-[#10B981]/20' },
-    { bg: 'bg-[#EC4899]', text: 'text-[#EC4899]', border: 'border-[#EC4899]', glow: 'shadow-[#EC4899]/20' },
+    { bg: 'bg-[#00D9FF]', text: isDark ? 'text-[#00D9FF]' : 'text-[#0891b2]', border: 'border-[#00D9FF]', glow: 'shadow-[#00D9FF]/20' },
+    { bg: 'bg-[#7C3AED]', text: isDark ? 'text-[#7C3AED]' : 'text-[#6d28d9]', border: 'border-[#7C3AED]', glow: 'shadow-[#7C3AED]/20' },
+    { bg: 'bg-[#F59E0B]', text: isDark ? 'text-[#F59E0B]' : 'text-[#d97706]', border: 'border-[#F59E0B]', glow: 'shadow-[#F59E0B]/20' },
+    { bg: 'bg-[#10B981]', text: isDark ? 'text-[#10B981]' : 'text-[#059669]', border: 'border-[#10B981]', glow: 'shadow-[#10B981]/20' },
+    { bg: 'bg-[#EC4899]', text: isDark ? 'text-[#EC4899]' : 'text-[#db2777]', border: 'border-[#EC4899]', glow: 'shadow-[#EC4899]/20' },
   ];
 
   const getSubjectColor = (index) => subjectColors[index % subjectColors.length];
@@ -655,7 +704,7 @@ export default function StudentDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0E27] flex items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: T.page }}>
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00D9FF]/10 rounded-full blur-[100px] animate-float"></div>
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#7C3AED]/10 rounded-full blur-[100px] animate-float-delayed"></div>
@@ -664,27 +713,21 @@ export default function StudentDashboard() {
         <div className="text-center relative z-10">
           {/* Modern Multi-Ring Loader */}
           <div className="relative w-24 h-24 mx-auto mb-8">
-            {/* Outer ring */}
             <div className="absolute inset-0 border-4 border-transparent border-t-[#00D9FF] border-r-[#7C3AED] rounded-full animate-spin" style={{ animationDuration: '1.5s' }}></div>
-            {/* Middle ring */}
             <div className="absolute inset-2 border-4 border-transparent border-b-[#10B981] border-l-[#F59E0B] rounded-full animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }}></div>
-            {/* Inner pulse */}
             <div className="absolute inset-4 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full animate-pulse opacity-80"></div>
-            {/* Center dot */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-4 h-4 bg-white rounded-full shadow-lg shadow-[#00D9FF]/50 animate-bounce-slow"></div>
+              <div className={`w-4 h-4 rounded-full shadow-lg shadow-[#00D9FF]/50 animate-bounce-slow ${isDark ? 'bg-white' : 'bg-slate-900'}`}></div>
             </div>
           </div>
 
-          {/* Loading text */}
           <div className="space-y-2">
             <p className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] via-[#7C3AED] to-[#10B981] text-xl font-bold animate-gradient" style={{ backgroundSize: '200% 200%' }}>
               Loading Your Dashboard
             </p>
-            <p className="text-gray-500 text-sm">Fetching your attendance data...</p>
+            <p className={`text-sm ${T.textSubtle}`}>Fetching your attendance data...</p>
           </div>
 
-          {/* Bouncing dots */}
           <div className="flex justify-center gap-2 mt-6">
             <div className="w-2 h-2 bg-[#00D9FF] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
             <div className="w-2 h-2 bg-[#7C3AED] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
@@ -697,7 +740,7 @@ export default function StudentDashboard() {
 
   return (
 
-    <div className="min-h-screen bg-[#0A0E27] text-gray-200 p-3 sm:p-5 lg:p-8 relative overflow-hidden">
+    <div className={`min-h-screen p-3 sm:p-5 lg:p-8 relative overflow-hidden`} style={{ backgroundColor: T.page, color: isDark ? 'rgb(226,232,240)' : 'rgb(51, 65, 85)' }}>
 
       {/* Animated Background */}
       <div className="absolute top-[-100px] right-[-100px] w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] bg-[#00D9FF]/5 rounded-full blur-[100px] animate-float"></div>
@@ -787,10 +830,28 @@ export default function StudentDashboard() {
               setShowTodayClassesModal(true);
               setSidebarOpen(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-[#10B981]/20 border border-transparent hover:border-[#10B981]/30 transition-all duration-200"
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg ${isDark ? 'bg-white/5 hover:bg-[#10B981]/20 border border-transparent hover:border-[#10B981]/30' : 'bg-slate-100 hover:bg-[#10B981]/20 border border-slate-200 hover:border-[#10B981]/30'} transition-all duration-200`}
           >
             <CheckCircle className="w-4 h-4 text-[#10B981]" />
-            <span className="text-white text-sm">Today's Schedule</span>
+            <span className={`${isDark ? 'text-white' : 'text-slate-900'} text-sm`}>Today's Schedule</span>
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div className={`border-t ${isDark ? 'border-[#1A1F3A]' : 'border-slate-200'} mx-3`}></div>
+
+        {/* Theme Toggle */}
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {isDark ? <Moon className="w-4 h-4 text-gray-400" /> : <Sun className="w-4 h-4 text-yellow-500" />}
+            <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>{isDark ? 'Dark' : 'Light'} Mode</span>
+          </div>
+          <button
+            onClick={toggleTheme}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${isDark ? 'bg-[#2A2F4A]' : 'bg-slate-300'}`}
+          >
+            <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${isDark ? 'translate-x-6' : 'translate-x-0'}`}></div>
           </button>
         </div>
 

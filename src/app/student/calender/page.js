@@ -8,10 +8,28 @@ import {
   getDocs,
   collection
 } from "firebase/firestore";
-import { ChevronLeft, ChevronRight, Calendar, CheckCircle, XCircle, BookOpen, TrendingUp, X, Clock, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight, Calendar, CheckCircle, XCircle, BookOpen, TrendingUp, X, Clock, ArrowLeft } from "lucide-react";
+import { useTheme } from "@/lib/theme-context";
 
 export default function AttendanceCalendar() {
+  const { isDark } = useTheme();
+  const router = useRouter();
+
+  // Theme configuration
+  const T = {
+    page: isDark ? '#0A0E27' : '#F8FAFC',
+    textMain: isDark ? 'text-white' : 'text-slate-900',
+    textMuted: isDark ? 'text-gray-400' : 'text-slate-500',
+    textSubtle: isDark ? 'text-gray-500' : 'text-slate-400',
+    border: isDark ? 'border-[#1A1F3A]' : 'border-slate-200',
+    accentColor: isDark ? '#00D9FF' : '#3B82F6',
+    successColor: isDark ? '#10B981' : '#059669',
+    warningColor: isDark ? '#F59E0B' : '#D97706',
+    dangerColor: isDark ? '#EF4444' : '#DC2626',
+    modalOverlay: isDark ? 'bg-black/60' : 'bg-black/30',
+  };
+
   const [attendanceData, setAttendanceData] = useState({});
   const [subjectsMap, setSubjectsMap] = useState({});
   const [selectedDate, setSelectedDate] = useState(null);
@@ -21,8 +39,6 @@ export default function AttendanceCalendar() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [mounted, setMounted] = useState(false);
-
-  const router = useRouter();
 
   const subjectColors = [
     { bg: 'bg-[#00D9FF]', text: 'text-[#00D9FF]', border: 'border-[#00D9FF]', hex: '#00D9FF' },
@@ -177,25 +193,25 @@ export default function AttendanceCalendar() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0E27] flex items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: T.page }}>
         <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00D9FF]/10 rounded-full blur-[100px] animate-float"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#7C3AED]/10 rounded-full blur-[100px] animate-float-delayed"></div>
+          <div className={`absolute top-1/4 left-1/4 w-96 h-96 bg-[${isDark ? '#00D9FF' : '#3B82F6'}]/10 rounded-full blur-[100px] animate-float`}></div>
+          <div className={`absolute bottom-1/4 right-1/4 w-96 h-96 bg-[${isDark ? '#7C3AED' : '#8B5CF6'}]/10 rounded-full blur-[100px] animate-float-delayed`}></div>
         </div>
         <div className="text-center relative z-10">
           <div className="relative w-20 h-20 mx-auto mb-5">
-            <div className="absolute inset-0 border-4 border-[#00D9FF]/20 rounded-full"></div>
+            <div className={`absolute inset-0 border-4 border-[${isDark ? '#00D9FF' : '#3B82F6'}]/20 rounded-full`}></div>
             <div className="absolute inset-0 border-4 border-transparent border-t-[#00D9FF] rounded-full animate-spin"></div>
             <div className="absolute inset-2 border-4 border-transparent border-t-[#7C3AED] rounded-full animate-spin-slow"></div>
           </div>
-          <p className="text-gray-400 text-base font-medium animate-pulse">Loading calendar...</p>
+          <p className={`text-base font-medium animate-pulse ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>Loading calendar...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0E27] text-gray-200 p-3 sm:p-5 lg:p-8 relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: T.page, color: isDark ? 'rgb(226,232,240)' : 'rgb(51, 65, 85)' }}>
 
       {/* Animated Background */}
       <div className="absolute top-[-100px] right-[-100px] w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] bg-[#00D9FF]/5 rounded-full blur-[100px] animate-float pointer-events-none"></div>
@@ -207,16 +223,16 @@ export default function AttendanceCalendar() {
         <div className="flex items-center gap-3 mb-8">
           <button
             onClick={() => router.back()}
-            className="w-9 h-9 rounded-lg bg-white/5 hover:bg-[#00D9FF]/20 border border-[#1A1F3A] hover:border-[#00D9FF]/40 flex items-center justify-center text-gray-400 hover:text-[#00D9FF] transition-all duration-200 flex-shrink-0"
+            className={`w-9 h-9 rounded-lg ${isDark ? 'bg-white/5 hover:bg-[#00D9FF]/20 border border-[#1A1F3A] hover:border-[#00D9FF]/40 text-gray-400 hover:text-[#00D9FF]' : 'bg-slate-100 hover:bg-[#3B82F6]/20 border border-slate-200 hover:border-[#3B82F6]/40 text-slate-500 hover:text-[#3B82F6]'} flex items-center justify-center transition-all duration-200 flex-shrink-0`}
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div className="w-10 h-10 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg shadow-[#00D9FF]/30 flex-shrink-0">
+          <div className={`w-10 h-10 bg-gradient-to-br ${isDark ? 'from-[#00D9FF] to-[#7C3AED]' : 'from-blue-500 to-indigo-600'} rounded-xl flex items-center justify-center shadow-lg ${isDark ? 'shadow-[#00D9FF]/30' : 'shadow-blue-500/30'} flex-shrink-0`}>
             <Calendar className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white">Attendance Calendar</h1>
-            <p className="text-xs sm:text-sm text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#7C3AED] font-medium">
+            <h1 className={`text-xl sm:text-2xl md:text-3xl font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>Attendance Calendar</h1>
+            <p className={`text-xs sm:text-sm ${isDark ? 'text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#7C3AED]' : 'bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-600 text-slate-700'}`} style={{ WebkitTextFillColor: isDark ? 'transparent' : 'currentColor' }}>
               Your attendance history at a glance
             </p>
           </div>
@@ -225,16 +241,16 @@ export default function AttendanceCalendar() {
         {/* Monthly Summary Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
           {[
-            { label: 'Month Rate', value: `${monthStats.percent}%`, color: parseFloat(monthStats.percent) >= 75 ? 'text-[#10B981]' : parseFloat(monthStats.percent) >= 50 ? 'text-[#F59E0B]' : 'text-[#EF4444]', icon: TrendingUp, iconColor: 'text-[#00D9FF]' },
-            { label: 'Days w/ Classes', value: monthStats.daysWithClass, color: 'text-[#00D9FF]', icon: Calendar, iconColor: 'text-[#00D9FF]' },
-            { label: 'Present', value: monthStats.totalPresent, color: 'text-[#10B981]', icon: CheckCircle, iconColor: 'text-[#10B981]' },
-            { label: 'Absent', value: monthStats.totalScheduled - monthStats.totalPresent, color: 'text-[#EF4444]', icon: XCircle, iconColor: 'text-[#EF4444]' },
+            { label: 'Month Rate', value: `${monthStats.percent}%`, color: parseFloat(monthStats.percent) >= 75 ? `text-[${T.successColor}]` : parseFloat(monthStats.percent) >= 50 ? `text-[${T.warningColor}]` : `text-[${T.dangerColor}]`, icon: TrendingUp, iconColor: `text-[${T.accentColor}]` },
+            { label: 'Days w/ Classes', value: monthStats.daysWithClass, color: `text-[${T.accentColor}]`, icon: Calendar, iconColor: `text-[${T.accentColor}]` },
+            { label: 'Present', value: monthStats.totalPresent, color: `text-[${T.successColor}]`, icon: CheckCircle, iconColor: `text-[${T.successColor}]` },
+            { label: 'Absent', value: monthStats.totalScheduled - monthStats.totalPresent, color: `text-[${T.dangerColor}]`, icon: XCircle, iconColor: `text-[${T.dangerColor}]` },
           ].map((stat, i) => (
-            <div key={i} className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#00D9FF]/30 transition-all duration-300 hover:scale-[1.02] group">
-              <div className="absolute top-0 right-0 w-16 h-16 bg-white/3 rounded-full blur-xl group-hover:bg-white/5 transition-all"></div>
+            <div key={i} className={`bg-gradient-to-br ${isDark ? 'from-[#0F1629] to-[#0A0E27]' : 'from-white to-slate-50'} border ${T.border} rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#00D9FF]/30 transition-all duration-300 hover:scale-[1.02] group`}>
+              <div className={`absolute top-0 right-0 w-16 h-16 ${isDark ? 'bg-white/3' : 'bg-slate-200/50'} rounded-full blur-xl group-hover:bg-white/5 transition-all`}></div>
               <div className="flex items-center gap-2 mb-2">
                 <stat.icon className={`w-4 h-4 ${stat.iconColor}`} />
-                <p className="text-xs text-gray-500">{stat.label}</p>
+                <p className={`text-xs ${T.textSubtle}`}>{stat.label}</p>
               </div>
               <p className={`text-2xl sm:text-3xl font-bold ${stat.color}`}>{stat.value}</p>
             </div>
@@ -245,20 +261,20 @@ export default function AttendanceCalendar() {
         <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl overflow-hidden shadow-2xl mb-6">
 
           {/* Calendar Header */}
-          <div className="p-4 sm:p-6 border-b border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/5 to-[#7C3AED]/5">
+          <div className={`p-4 sm:p-6 border-b ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/5 to-[#7C3AED]/5' : 'border-slate-200 bg-gradient-to-r from-blue-500/5 to-indigo-600/5'}`}>
             <div className="flex items-center justify-between mb-5">
               <button
                 onClick={prevMonth}
-                className="w-9 h-9 rounded-xl bg-[#1A1F3A] hover:bg-[#00D9FF]/20 border border-[#2A2F4A] hover:border-[#00D9FF]/40 flex items-center justify-center text-gray-400 hover:text-[#00D9FF] transition-all duration-200"
+                className={`w-9 h-9 rounded-xl ${isDark ? 'bg-[#1A1F3A] hover:bg-[#00D9FF]/20 border border-[#2A2F4A] hover:border-[#00D9FF]/40 text-gray-400 hover:text-[#00D9FF]' : 'bg-slate-100 hover:bg-blue-500/20 border border-slate-200 hover:border-blue-500/40 text-slate-500 hover:text-blue-600'} flex items-center justify-center transition-all duration-200`}
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
 
-              <h2 className="text-base sm:text-xl font-semibold text-white tracking-wide">{monthName}</h2>
+              <h2 className={`text-base sm:text-xl font-semibold tracking-wide ${isDark ? 'text-white' : 'text-slate-900'}`}>{monthName}</h2>
 
               <button
                 onClick={nextMonth}
-                className="w-9 h-9 rounded-xl bg-[#1A1F3A] hover:bg-[#00D9FF]/20 border border-[#2A2F4A] hover:border-[#00D9FF]/40 flex items-center justify-center text-gray-400 hover:text-[#00D9FF] transition-all duration-200"
+                className={`w-9 h-9 rounded-xl ${isDark ? 'bg-[#1A1F3A] hover:bg-[#00D9FF]/20 border border-[#2A2F4A] hover:border-[#00D9FF]/40 text-gray-400 hover:text-[#00D9FF]' : 'bg-slate-100 hover:bg-blue-500/20 border border-slate-200 hover:border-blue-500/40 text-slate-500 hover:text-blue-600'} flex items-center justify-center transition-all duration-200`}
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -267,29 +283,29 @@ export default function AttendanceCalendar() {
             {/* Legend */}
             <div className="flex flex-wrap gap-3 sm:gap-5 text-xs justify-center">
               {[
-                { color: '#10B981', label: '≥ 75% Present' },
-                { color: '#F59E0B', label: '50–74% Present' },
-                { color: '#EF4444', label: '< 50% Present' },
+                { color: isDark ? '#10B981' : '#059669', label: '≥ 75% Present' },
+                { color: isDark ? '#F59E0B' : '#D97706', label: '50–74% Present' },
+                { color: isDark ? '#EF4444' : '#DC2626', label: '< 50% Present' },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color, boxShadow: `0 0 8px ${item.color}80` }}></div>
-                  <span className="text-gray-400">{item.label}</span>
+                  <span className={isDark ? 'text-gray-400' : 'text-slate-500'}>{item.label}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Weekday labels */}
-          <div className="grid grid-cols-7 border-b border-[#1A1F3A]">
+          <div className={`grid grid-cols-7 border-b ${isDark ? 'border-[#1A1F3A]' : 'border-slate-200'}`}>
             {weekdays.map((day) => (
-              <div key={day} className="py-2 sm:py-3 text-center text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <div key={day} className={`py-2 sm:py-3 text-center text-[10px] sm:text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>
                 {day}
               </div>
             ))}
           </div>
 
           {/* Calendar Grid */}
-          <div className="grid grid-cols-7 p-2 sm:p-4 gap-1 sm:gap-2">
+          <div className={`grid grid-cols-7 p-2 sm:p-4 gap-1 sm:gap-2 ${isDark ? '' : 'bg-slate-50/50'}`}>
             {calendarDays.map((date, index) => {
               if (!date) {
                 return <div key={`empty-${index}`} className="aspect-square" />;
@@ -309,17 +325,17 @@ export default function AttendanceCalendar() {
                   className={`
                     aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all duration-200 group
                     ${hasClasses ? 'cursor-pointer hover:scale-105' : 'cursor-default'}
-                    ${isSelected ? 'ring-2 ring-[#00D9FF] ring-offset-1 ring-offset-[#0F1629]' : ''}
-                    ${isToday && !color ? 'border border-[#00D9FF]/40' : ''}
+                    ${isSelected ? `ring-2 ring-[${T.accent}] ring-offset-1 ring-offset-${isDark ? '[#0F1629]' : 'white'}` : ''}
+                    ${isToday && !color ? `border ${isDark ? 'border-[#00D9FF]/40' : 'border-blue-500/50'}` : ''}
                   `}
                   style={{
-                    backgroundColor: color ? color.bg : isToday ? 'rgba(0,217,255,0.05)' : 'transparent',
-                    border: color ? `1px solid ${color.border}` : isToday ? '1px solid rgba(0,217,255,0.3)' : '1px solid transparent',
+                    backgroundColor: color ? color.bg : isToday ? (isDark ? 'rgba(0,217,255,0.05)' : 'rgba(59,130,246,0.05)') : 'transparent',
+                    border: color ? `1px solid ${color.border}` : isToday ? (isDark ? '1px solid rgba(0,217,255,0.3)' : '1px solid rgba(59,130,246,0.3)') : '1px solid transparent',
                   }}
                 >
                   <span className={`text-xs sm:text-sm font-medium ${
-                    isToday ? 'text-[#00D9FF] font-bold' :
-                    color ? 'text-white' : 'text-gray-500'
+                    isToday ? `${isDark ? 'text-[#00D9FF]' : 'text-blue-600'} font-bold` :
+                    color ? (isDark ? 'text-white' : 'text-slate-900') : (isDark ? 'text-gray-500' : 'text-slate-400')
                   }`}>
                     {date.getDate()}
                   </span>
@@ -334,7 +350,7 @@ export default function AttendanceCalendar() {
 
                   {/* Today indicator */}
                   {isToday && !color && (
-                    <div className="w-1 h-1 rounded-full bg-[#00D9FF] mt-0.5 sm:mt-1" />
+                    <div className={`w-1 h-1 rounded-full mt-0.5 sm:mt-1 ${isDark ? 'bg-[#00D9FF]' : 'bg-blue-600'}`} />
                   )}
                 </button>
               );
@@ -343,7 +359,7 @@ export default function AttendanceCalendar() {
         </div>
 
         {/* Quick tip */}
-        <p className="text-center text-xs text-gray-600">
+        <p className={`text-center text-xs ${isDark ? 'text-gray-600' : 'text-slate-500'}`}>
           💡 Tap any highlighted date to view detailed attendance for that day
         </p>
 
@@ -352,33 +368,33 @@ export default function AttendanceCalendar() {
       {/* Day Detail Modal */}
       {showModal && selectedDate && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4 animate-fadeIn"
+          className={`fixed inset-0 ${T.modalOverlay} backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4 animate-fadeIn`}
           onClick={() => setShowModal(false)}
         >
           <div
-            className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg max-h-[85vh] overflow-hidden shadow-2xl"
+            className={`bg-gradient-to-br ${isDark ? 'from-[#0F1629] to-[#0A0E27]' : 'from-white to-slate-50'} border ${T.border} rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg max-h-[85vh] overflow-hidden shadow-2xl`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="p-5 sm:p-6 border-b border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/10 to-[#7C3AED]/5">
+            <div className={`p-5 sm:p-6 border-b ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/10 to-[#7C3AED]/5' : 'border-slate-200 bg-gradient-to-r from-blue-500/5 to-indigo-600/5'}`}>
               {/* Drag handle (mobile) */}
-              <div className="w-10 h-1 bg-[#2A2F4A] rounded-full mx-auto mb-4 sm:hidden"></div>
+              <div className={`w-10 h-1 ${isDark ? 'bg-[#2A2F4A]' : 'bg-slate-300'} rounded-full mx-auto mb-4 sm:hidden`}></div>
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 bg-gradient-to-br from-[#00D9FF]/20 to-[#7C3AED]/20 rounded-xl flex items-center justify-center border border-[#00D9FF]/20">
-                    <Calendar className="w-5 h-5 text-[#00D9FF]" />
+                  <div className={`w-11 h-11 ${isDark ? 'bg-gradient-to-br from-[#00D9FF]/20 to-[#7C3AED]/20 border border-[#00D9FF]/20' : 'bg-gradient-to-br from-blue-500/20 to-indigo-600/20 border border-blue-500/20'} rounded-xl flex items-center justify-center`}>
+                    <Calendar className={`w-5 h-5 ${isDark ? 'text-[#00D9FF]' : 'text-blue-600'}`} />
                   </div>
                   <div>
-                    <h3 className="text-white font-semibold text-base sm:text-lg">
+                    <h3 className={`font-semibold text-base sm:text-lg ${isDark ? 'text-white' : 'text-slate-900'}`}>
                       {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                     </h3>
-                    <p className="text-xs text-gray-500">{new Date(selectedDate + 'T00:00:00').getFullYear()}</p>
+                    <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>{new Date(selectedDate + 'T00:00:00').getFullYear()}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="w-9 h-9 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors text-gray-400 hover:text-white"
+                  className={`w-9 h-9 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors ${isDark ? 'text-gray-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'}`}
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -388,13 +404,13 @@ export default function AttendanceCalendar() {
               {dayStats.total > 0 ? (
                 <div className="mt-5 grid grid-cols-3 gap-3">
                   {[
-                    { label: 'Total', value: dayStats.total, color: 'text-[#00D9FF]', bg: 'bg-[#00D9FF]/10', border: 'border-[#00D9FF]/20' },
-                    { label: 'Present', value: dayStats.present, color: 'text-[#10B981]', bg: 'bg-[#10B981]/10', border: 'border-[#10B981]/20' },
-                    { label: 'Absent', value: dayStats.absent, color: 'text-[#EF4444]', bg: 'bg-[#EF4444]/10', border: 'border-[#EF4444]/20' },
+                    { label: 'Total', value: dayStats.total, color: T.accent, bg: `${isDark ? 'bg-[#00D9FF]/10' : 'bg-blue-500/10'}`, border: `${isDark ? 'border-[#00D9FF]/20' : 'border-blue-500/20'}` },
+                    { label: 'Present', value: dayStats.present, color: T.success, bg: `${isDark ? 'bg-[#10B981]/10' : 'bg-green-500/10'}`, border: `${isDark ? 'border-[#10B981]/20' : 'border-green-500/20'}` },
+                    { label: 'Absent', value: dayStats.absent, color: T.danger, bg: `${isDark ? 'bg-[#EF4444]/10' : 'bg-red-500/10'}`, border: `${isDark ? 'border-[#EF4444]/20' : 'border-red-500/20'}` },
                   ].map((s) => (
                     <div key={s.label} className={`${s.bg} border ${s.border} rounded-xl p-3 text-center`}>
                       <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-                      <p className="text-[10px] text-gray-500 mt-0.5">{s.label}</p>
+                      <p className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-slate-500'} mt-0.5`}>{s.label}</p>
                     </div>
                   ))}
                 </div>
@@ -404,21 +420,25 @@ export default function AttendanceCalendar() {
               {dayStats.total > 0 && (
                 <div className="mt-4">
                   <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-xs text-gray-500">Day Attendance</span>
-                    <span className={`text-sm font-bold ${getSelectedPercentColor(selectedDayPercent)}`}>{selectedDayPercent}%</span>
+                    <span className={`text-xs ${T.textSubtle}`}>Day Attendance</span>
+                    <span className={`text-sm font-bold ${
+                      selectedDayPercent >= 75 ? `text-[${T.successColor}]` :
+                      selectedDayPercent >= 50 ? `text-[${T.warningColor}]` :
+                      `text-[${T.dangerColor}]`
+                    }`}>{selectedDayPercent}%</span>
                   </div>
-                  <div className="w-full bg-[#1A1F3A] h-2.5 rounded-full overflow-hidden relative">
+                  <div className={`w-full ${isDark ? 'bg-[#1A1F3A]' : 'bg-slate-200'} h-2.5 rounded-full overflow-hidden relative`}>
                     <div
                       className={`h-full rounded-full transition-all duration-700 ${
-                        selectedDayPercent >= 75 ? 'bg-[#10B981]' :
-                        selectedDayPercent >= 50 ? 'bg-[#F59E0B]' : 'bg-[#EF4444]'
+                        selectedDayPercent >= 75 ? `bg-[${T.successColor}]` :
+                        selectedDayPercent >= 50 ? `bg-[${T.warningColor}]` : `bg-[${T.dangerColor}]`
                       }`}
                       style={{ width: `${selectedDayPercent}%` }}
                     />
                     {/* 75% marker */}
-                    <div className="absolute top-0 left-[75%] w-0.5 h-full bg-white/40" />
+                    <div className={`absolute top-0 left-[75%] w-0.5 h-full ${isDark ? 'bg-white/40' : 'bg-slate-400'}`} />
                   </div>
-                  <p className="text-[10px] text-gray-600 mt-1">75% target line shown</p>
+                  <p className={`text-[10px] ${isDark ? 'text-gray-600' : 'text-slate-400'} mt-1`}>75% target line shown</p>
                 </div>
               )}
             </div>
@@ -427,34 +447,34 @@ export default function AttendanceCalendar() {
             <div className="overflow-y-auto max-h-[40vh] p-4 sm:p-6">
               {daySubjects.length === 0 ? (
                 <div className="text-center py-10">
-                  <Clock className="w-12 h-12 text-gray-700 mx-auto mb-3" />
-                  <p className="text-gray-500 text-base">No classes scheduled</p>
-                  <p className="text-gray-600 text-sm mt-1">This was a free day</p>
+                  <Clock className={`w-12 h-12 ${isDark ? 'text-gray-700' : 'text-slate-400'} mx-auto mb-3`} />
+                  <p className={`text-base ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>No classes scheduled</p>
+                  <p className={`text-sm ${isDark ? 'text-gray-600' : 'text-slate-400'} mt-1`}>This was a free day</p>
                 </div>
               ) : (
                 <div className="space-y-2.5">
-                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-3">Class Breakdown</p>
+                  <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-slate-500'} font-medium uppercase tracking-wider mb-3`}>Class Breakdown</p>
                   {daySubjects.map((subject, index) => {
                     const colors = getSubjectColor(index);
                     return (
                       <div
                         key={subject.id}
-                        className={`flex items-center justify-between bg-gradient-to-r from-[#0A0E27] to-[#0F1629] border ${colors.border} border-l-4 rounded-xl px-4 py-3 hover:scale-[1.01] transition-all duration-200`}
+                        className={`flex items-center justify-between ${isDark ? 'bg-gradient-to-r from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50 border'} ${colors.border} border-l-4 rounded-xl px-4 py-3 hover:scale-[1.01] transition-all duration-200`}
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <div className={`w-2 h-2 rounded-full ${colors.bg} flex-shrink-0`} style={{ boxShadow: `0 0 6px ${colors.hex}` }} />
-                          <span className="text-gray-200 font-medium text-sm truncate">{subject.name}</span>
+                          <span className={`font-medium text-sm truncate ${isDark ? 'text-gray-200' : 'text-slate-900'}`}>{subject.name}</span>
                         </div>
-                        <div className={`flex items-center gap-1.5 flex-shrink-0 ml-3 px-3 py-1 rounded-full ${subject.present ? 'bg-[#10B981]/15' : 'bg-[#EF4444]/15'}`}>
+                        <div className={`flex items-center gap-1.5 flex-shrink-0 ml-3 px-3 py-1 rounded-full ${subject.present ? (isDark ? 'bg-[#10B981]/15' : 'bg-green-500/15') : (isDark ? 'bg-[#EF4444]/15' : 'bg-red-500/15')}`}>
                           {subject.present ? (
                             <>
-                              <CheckCircle className="w-3.5 h-3.5 text-[#10B981]" />
-                              <span className="text-[#10B981] text-xs font-medium">Present</span>
+                              <CheckCircle className={`w-3.5 h-3.5 ${isDark ? 'text-[#10B981]' : 'text-green-600'}`} />
+                              <span className={`text-xs font-medium ${isDark ? 'text-[#10B981]' : 'text-green-600'}`}>Present</span>
                             </>
                           ) : (
                             <>
-                              <XCircle className="w-3.5 h-3.5 text-[#EF4444]" />
-                              <span className="text-[#EF4444] text-xs font-medium">Absent</span>
+                              <XCircle className={`w-3.5 h-3.5 ${isDark ? 'text-[#EF4444]' : 'text-red-600'}`} />
+                              <span className={`text-xs font-medium ${isDark ? 'text-[#EF4444]' : 'text-red-600'}`}>Absent</span>
                             </>
                           )}
                         </div>

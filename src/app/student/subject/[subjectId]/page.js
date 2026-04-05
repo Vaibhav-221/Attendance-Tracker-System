@@ -10,11 +10,28 @@ import {
 } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
 import { Book, TrendingUp, CheckCircle, XCircle, Calendar, Award, ArrowLeft, BarChart3 } from "lucide-react";
+import { useTheme } from "@/lib/theme-context";
 
 export default function SubjectPage() {
 
   const { subjectId } = useParams();
   const router = useRouter();
+  const { isDark } = useTheme();
+
+  // Theme configuration
+  const T = {
+    page: isDark ? '#0A0E27' : '#F8FAFC',
+    textMain: isDark ? 'text-white' : 'text-slate-900',
+    textMuted: isDark ? 'text-gray-400' : 'text-slate-500',
+    textSubtle: isDark ? 'text-gray-500' : 'text-slate-400',
+    border: isDark ? 'border-[#1A1F3A]' : 'border-slate-200',
+    accentColor: isDark ? '#00D9FF' : '#3B82F6',
+    successColor: isDark ? '#10B981' : '#059669',
+    warningColor: isDark ? '#F59E0B' : '#D97706',
+    dangerColor: isDark ? '#EF4444' : '#DC2626',
+    cardBg: isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27]' : 'bg-gradient-to-br from-white to-slate-50',
+    modalOverlay: isDark ? 'bg-black/60' : 'bg-black/30',
+  };
 
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -189,12 +206,12 @@ export default function SubjectPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0E27] flex items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: T.page }}>
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00D9FF]/10 rounded-full blur-[100px] animate-float"></div>
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#7C3AED]/10 rounded-full blur-[100px] animate-float-delayed"></div>
         </div>
-        
+
         <div className="text-center relative z-10">
           <div className="relative w-24 h-24 mx-auto mb-6">
             <div className="absolute inset-0 border-4 border-[#00D9FF]/20 rounded-full"></div>
@@ -204,7 +221,7 @@ export default function SubjectPage() {
               <div className="w-3 h-3 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full animate-pulse"></div>
             </div>
           </div>
-          <p className="text-gray-400 text-lg font-medium animate-pulse">Loading subject details...</p>
+          <p className={`text-lg font-medium animate-pulse ${T.textMuted}`}>Loading subject details...</p>
         </div>
       </div>
     );
@@ -214,7 +231,7 @@ export default function SubjectPage() {
 
   return (
 
-    <div className="min-h-screen bg-[#0A0E27] text-gray-200 p-4 sm:p-6 lg:p-8 relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden p-4 sm:p-6 lg:p-8" style={{ backgroundColor: T.page, color: isDark ? 'rgb(226,232,240)' : 'rgb(51, 65, 85)' }}>
 
       {/* Animated Background */}
       <div className="absolute top-[-100px] right-[-100px] w-[400px] h-[400px] bg-[#00D9FF]/5 rounded-full blur-[100px] animate-float"></div>
@@ -227,21 +244,21 @@ export default function SubjectPage() {
         <div className="mb-6">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-400 hover:text-[#00D9FF] transition-colors mb-4 group"
+            className={`flex items-center gap-2 ${T.textMuted} hover:text-[${T.accentColor}] transition-colors mb-4 group`}
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm">Back to Dashboard</span>
           </button>
 
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg shadow-[#00D9FF]/30">
+            <div className={`w-12 h-12 bg-gradient-to-br ${isDark ? 'from-[#00D9FF] to-[#7C3AED]' : 'from-blue-500 to-indigo-600'} rounded-xl flex items-center justify-center shadow-lg ${isDark ? 'shadow-[#00D9FF]/30' : 'shadow-blue-500/30'}`}>
               <Book className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              <h1 className={`text-2xl sm:text-3xl font-bold ${T.textMain}`}>
                 {subjectName}
               </h1>
-              <p className="text-gray-500 text-xs">Subject Details & History</p>
+              <p className={`text-xs ${T.textSubtle}`}>Subject Details & History</p>
             </div>
           </div>
         </div>
@@ -280,11 +297,11 @@ export default function SubjectPage() {
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full bg-[#1A1F3A] h-2 rounded-full overflow-hidden mb-4">
-              <div 
+            <div className={`w-full ${isDark ? 'bg-[#1A1F3A]' : 'bg-slate-200'} h-2 rounded-full overflow-hidden mb-4`}>
+              <div
                 className={`h-full rounded-full transition-all duration-1000 ${
-                  parseFloat(percent) >= 75 ? 'bg-[#10B981]' :
-                  parseFloat(percent) >= 50 ? 'bg-[#F59E0B]' : 'bg-[#EF4444]'
+                  parseFloat(percent) >= 75 ? `bg-[${T.successColor}]` :
+                  parseFloat(percent) >= 50 ? `bg-[${T.warningColor}]` : `bg-[${T.dangerColor}]`
                 }`}
                 style={{ width: `${percent}%` }}
               ></div>
@@ -292,23 +309,23 @@ export default function SubjectPage() {
 
             {/* Compact Stats Grid */}
             <div className="grid grid-cols-3 gap-3">
-              
-              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-3 text-center border border-white/10">
-                <BarChart3 className="w-5 h-5 text-gray-300 mx-auto mb-1" />
-                <p className="text-2xl font-bold text-white">{total}</p>
-                <p className="text-gray-400 text-xs">Total</p>
+
+              <div className={`${isDark ? 'bg-white/5' : 'bg-slate-100'} backdrop-blur-sm rounded-lg p-3 text-center border ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
+                <BarChart3 className={`w-5 h-5 mx-auto mb-1 ${isDark ? 'text-gray-300' : 'text-slate-600'}`} />
+                <p className={`text-2xl font-bold ${T.textMain}`}>{total}</p>
+                <p className={`text-xs ${T.textMuted}`}>Total</p>
               </div>
 
-              <div className="bg-[#10B981]/10 backdrop-blur-sm rounded-lg p-3 text-center border border-[#10B981]/20">
-                <CheckCircle className="w-5 h-5 text-[#10B981] mx-auto mb-1" />
-                <p className="text-2xl font-bold text-[#10B981]">{present}</p>
-                <p className="text-gray-400 text-xs">Present</p>
+              <div className={`${isDark ? 'bg-[#10B981]/10' : 'bg-green-500/10'} backdrop-blur-sm rounded-lg p-3 text-center border ${isDark ? 'border-[#10B981]/20' : 'border-green-500/20'}`}>
+                <CheckCircle className={`w-5 h-5 mx-auto mb-1 ${isDark ? 'text-[#10B981]' : 'text-green-600'}`} />
+                <p className={`text-2xl font-bold ${isDark ? 'text-[#10B981]' : 'text-green-600'}`}>{present}</p>
+                <p className={`text-xs ${T.textMuted}`}>Present</p>
               </div>
 
-              <div className="bg-[#EF4444]/10 backdrop-blur-sm rounded-lg p-3 text-center border border-[#EF4444]/20">
-                <XCircle className="w-5 h-5 text-[#EF4444] mx-auto mb-1" />
-                <p className="text-2xl font-bold text-[#EF4444]">{absent}</p>
-                <p className="text-gray-400 text-xs">Absent</p>
+              <div className={`${isDark ? 'bg-[#EF4444]/10' : 'bg-red-500/10'} backdrop-blur-sm rounded-lg p-3 text-center border ${isDark ? 'border-[#EF4444]/20' : 'border-red-500/20'}`}>
+                <XCircle className={`w-5 h-5 mx-auto mb-1 ${isDark ? 'text-[#EF4444]' : 'text-red-600'}`} />
+                <p className={`text-2xl font-bold ${isDark ? 'text-[#EF4444]' : 'text-red-600'}`}>{absent}</p>
+                <p className={`text-xs ${T.textMuted}`}>Absent</p>
               </div>
 
             </div>
@@ -316,19 +333,19 @@ export default function SubjectPage() {
         </div>
 
         {/* Attendance History */}
-        <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl p-4">
+        <div className={`${T.cardBg} border ${T.border} rounded-xl p-4`}>
           
           <div className="flex items-center gap-3 mb-4">
-            <Calendar className="w-5 h-5 text-[#00D9FF]" />
-            <h2 className="text-xl font-semibold text-white">Attendance History</h2>
-            <span className="text-xs text-gray-500 ml-auto">{history.length} sessions</span>
+            <Calendar className={`w-5 h-5 text-[${T.accentColor}]`} />
+            <h2 className={`text-xl font-semibold ${T.textMain}`}>Attendance History</h2>
+            <span className={`text-xs ${T.textMuted} ml-auto`}>{history.length} sessions</span>
           </div>
 
           {history.length === 0 ? (
             <div className="text-center py-12">
-              <Calendar className="w-16 h-16 text-gray-700 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">No attendance records yet</p>
-              <p className="text-gray-600 text-sm mt-2">History will appear as classes are scheduled</p>
+              <Calendar className={`w-16 h-16 ${isDark ? 'text-gray-700' : 'text-slate-400'} mx-auto mb-4`} />
+              <p className={`text-lg ${T.textMuted}`}>No attendance records yet</p>
+              <p className={`text-sm ${isDark ? 'text-gray-600' : 'text-slate-500'} mt-2`}>History will appear as classes are scheduled</p>
             </div>
           ) : (
             <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
@@ -344,35 +361,35 @@ export default function SubjectPage() {
                 return (
                   <div
                     key={index}
-                    className={`flex items-center justify-between gap-3 bg-gradient-to-r from-[#0A0E27] to-[#0F1629] border rounded-lg p-3 transition-all duration-300 hover:scale-[1.01] ${
-                      item.present 
-                        ? 'border-[#10B981]/30 hover:border-[#10B981]/50' 
-                        : 'border-[#EF4444]/30 hover:border-[#EF4444]/50'
+                    className={`flex items-center justify-between gap-3 ${isDark ? 'bg-gradient-to-r from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'} border rounded-lg p-3 transition-all duration-300 hover:scale-[1.01] ${
+                      item.present
+                        ? `border-[${T.successColor}]/30 hover:border-[${T.successColor}]/50`
+                        : `border-[${T.dangerColor}]/30 hover:border-[${T.dangerColor}]/50`
                     }`}
                   >
                     
                     {/* Date and Icon */}
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                        item.present ? 'bg-[#10B981]/20' : 'bg-[#EF4444]/20'
+                        item.present ? (isDark ? 'bg-[#10B981]/20' : 'bg-green-500/20') : (isDark ? 'bg-[#EF4444]/20' : 'bg-red-500/20')
                       }`}>
                         {item.present ? (
-                          <CheckCircle className="w-4 h-4 text-[#10B981]" />
+                          <CheckCircle className={`w-4 h-4 ${isDark ? 'text-[#10B981]' : 'text-green-600'}`} />
                         ) : (
-                          <XCircle className="w-4 h-4 text-[#EF4444]" />
+                          <XCircle className={`w-4 h-4 ${isDark ? 'text-[#EF4444]' : 'text-red-600'}`} />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-white font-medium text-sm">{formattedDate}</p>
-                        <p className="text-xs text-gray-500">Session {history.length - index}</p>
+                        <p className={`font-medium text-sm ${T.textMain}`}>{formattedDate}</p>
+                        <p className={`text-xs ${T.textMuted}`}>Session {history.length - index}</p>
                       </div>
                     </div>
 
                     {/* Status Badge */}
                     <div className={`px-3 py-1 rounded text-xs font-medium flex-shrink-0 ${
-                      item.present 
-                        ? 'bg-[#10B981]/20 text-[#10B981]' 
-                        : 'bg-[#EF4444]/20 text-[#EF4444]'
+                      item.present
+                        ? `${isDark ? 'bg-[#10B981]/20' : 'bg-green-500/20'} text-[${T.successColor}]`
+                        : `${isDark ? 'bg-[#EF4444]/20' : 'bg-red-500/20'} text-[${T.dangerColor}]`
                     }`}>
                       {item.present ? '✓ Present' : '✗ Absent'}
                     </div>

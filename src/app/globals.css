@@ -20,6 +20,11 @@
    Dark Mode Support
 ----------------------------- */
 
+.light {
+  --background: #F8FAFC;
+  --foreground: #1E293B;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #020617;
@@ -113,6 +118,54 @@ body {
 
 .react-calendar__month-view__days__day--neighboringMonth {
   color: #475569 !important;
+}
+
+/* =========================================================
+   REACT CALENDAR LIGHT THEME
+   ========================================================= */
+
+.light .react-calendar {
+  background: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.light .react-calendar__navigation button {
+  color: #1e293b !important;
+}
+
+.light .react-calendar__navigation button:hover {
+  background: #f1f5f9 !important;
+}
+
+.light .react-calendar__month-view__weekdays {
+  color: #64748b !important;
+}
+
+.light .react-calendar__tile {
+  color: #1e293b !important;
+}
+
+.light .react-calendar__tile:enabled:hover {
+  background: #f1f5f9 !important;
+}
+
+.light .react-calendar__tile--now {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.light .react-calendar__tile--active {
+  background: #2563eb !important;
+  color: white !important;
+}
+
+.light .react-calendar__month-view__days__day--weekend {
+  color: #ef4444 !important;
+}
+
+.light .react-calendar__month-view__days__day--neighboringMonth {
+  color: #94a3b8 !important;
 }
 
 
