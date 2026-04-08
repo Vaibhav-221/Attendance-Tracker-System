@@ -50,34 +50,16 @@ export default function Home() {
 
       <div className="relative z-10 max-w-7xl w-full">
 
-        {/* Animated Logo with 3D Effect */}
-        <div className="flex justify-center mb-8 perspective-1000">
-          <div className="relative group">
-            {/* Glow rings */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#00D9FF] to-[#7C3AED] rounded-3xl blur-xl opacity-30 group-hover:opacity-60 transition-all duration-500 animate-pulse-glow"></div>
-            <div className="absolute inset-[-4px] bg-gradient-to-r from-[#00D9FF] to-[#7C3AED] rounded-3xl blur-md opacity-20 group-hover:opacity-40 transition-all duration-500"></div>
-            
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#00D9FF] via-[#7C3AED] to-[#EC4899] rounded-3xl flex items-center justify-center shadow-2xl shadow-[#00D9FF]/50 hover:scale-110 hover:rotate-12 transition-all duration-500 animate-bounce-slow transform-gpu">
-              <svg className="w-10 h-10 sm:w-12 sm:h-12 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              
-              {/* Orbiting dots */}
-              <div className="absolute inset-0 animate-spin-slow">
-                <div className="absolute top-0 left-1/2 w-2 h-2 bg-[#00D9FF] rounded-full -translate-x-1/2 shadow-lg shadow-[#00D9FF]/50"></div>
-              </div>
-              <div className="absolute inset-0 animate-spin-reverse">
-                <div className="absolute bottom-0 left-1/2 w-2 h-2 bg-[#EC4899] rounded-full -translate-x-1/2 shadow-lg shadow-[#EC4899]/50"></div>
-              </div>
-            </div>
-          </div>
+        {/* Logo */}
+        <div className="flex justify-center mb-8">
+          <img src="/Logo.png" alt="Attendance Sarthi Logo" className="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-3xl p-4" />
         </div>
 
         {/* Hero Title with Advanced Animations */}
         <div className="text-center mb-3">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 tracking-wide animate-fadeInUp">
             <span className="inline-block animate-shimmer bg-gradient-to-r from-white via-[#00D9FF] to-white bg-[length:200%_100%] text-transparent bg-clip-text">
-              Attendance Tracker System
+              Attendance Sarthi
             </span>
           </h1>
           <div className="flex items-center justify-center gap-2 mb-6">

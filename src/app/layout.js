@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Attendance Tracker System",
+  title: "Attendance Sarthi",
   description: "Track your attendance efficiently",
 };
 
