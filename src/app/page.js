@@ -52,7 +52,7 @@ export default function Home() {
 
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <img src="/Logo.png" alt="Attendance Sarthi Logo" className="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-3xl p-4" />
+          <img src="/Croppedlogo.jpeg" alt="Attendance Sarthi Logo" className="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-3xl p-4" />
         </div>
 
         {/* Hero Title with Advanced Animations */}
@@ -62,13 +62,6 @@ export default function Home() {
               Attendance Sarthi
             </span>
           </h1>
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#00D9FF] animate-expand-right"></div>
-            <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] via-[#7C3AED] to-[#EC4899] animate-gradient-flow">
-              (ATS)
-            </span>
-            <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#7C3AED] animate-expand-left"></div>
-          </div>
         </div>
 
         {/* Animated Feature Pills */}
