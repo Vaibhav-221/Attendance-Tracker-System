@@ -258,7 +258,7 @@ export default function AttendanceCalendar() {
         </div>
 
         {/* Calendar Card */}
-        <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl overflow-hidden shadow-2xl mb-6">
+        <div className={`bg-gradient-to-br ${isDark ? 'from-[#0F1629] to-[#0A0E27]' : 'from-white to-slate-50'} border ${T.border} rounded-2xl overflow-hidden shadow-2xl mb-6`}>
 
           {/* Calendar Header */}
           <div className={`p-4 sm:p-6 border-b ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/5 to-[#7C3AED]/5' : 'border-slate-200 bg-gradient-to-r from-blue-500/5 to-indigo-600/5'}`}>
@@ -298,7 +298,7 @@ export default function AttendanceCalendar() {
           {/* Weekday labels */}
           <div className={`grid grid-cols-7 border-b ${isDark ? 'border-[#1A1F3A]' : 'border-slate-200'}`}>
             {weekdays.map((day) => (
-              <div key={day} className={`py-2 sm:py-3 text-center text-[10px] sm:text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>
+              <div key={day} className={`py-2 sm:py-3 text-center text-[10px] sm:text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-500' : 'text-slate-600'}`}>
                 {day}
               </div>
             ))}
@@ -330,12 +330,12 @@ export default function AttendanceCalendar() {
                   `}
                   style={{
                     backgroundColor: color ? color.bg : isToday ? (isDark ? 'rgba(0,217,255,0.05)' : 'rgba(59,130,246,0.05)') : 'transparent',
-                    border: color ? `1px solid ${color.border}` : isToday ? (isDark ? '1px solid rgba(0,217,255,0.3)' : '1px solid rgba(59,130,246,0.3)') : '1px solid transparent',
+                    border: color ? `1px solid ${isDark ? color.border : color.dot}` : isToday ? (isDark ? '1px solid rgba(0,217,255,0.3)' : '1px solid rgba(59,130,246,0.4)') : '1px solid transparent',
                   }}
                 >
                   <span className={`text-xs sm:text-sm font-medium ${
                     isToday ? `${isDark ? 'text-[#00D9FF]' : 'text-blue-600'} font-bold` :
-                    color ? (isDark ? 'text-white' : 'text-slate-900') : (isDark ? 'text-gray-500' : 'text-slate-400')
+                    color ? (isDark ? 'text-white' : 'text-slate-900') : (isDark ? 'text-gray-500' : 'text-slate-600')
                   }`}>
                     {date.getDate()}
                   </span>
