@@ -757,35 +757,35 @@ export default function StudentDashboard() {
 
       {/* Sidebar */}
       <nav
-        className={`fixed inset-y-0 left-0 w-80 max-w-full bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border-r border-[#1A1F3A] z-50 flex flex-col transform transition-transform duration-300 ${
+        className={`fixed inset-y-0 left-0 w-80 max-w-full z-50 flex flex-col transform transition-transform duration-300 ${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border-r border-[#1A1F3A]' : 'bg-white border-r border-slate-200'} ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } ${!sidebarOpen ? 'pointer-events-none' : ''}`}
         aria-label="Main navigation"
         aria-hidden={!sidebarOpen}
       >
         {/* Sidebar Header with Close Button */}
-        <div className="p-3 border-b border-[#1A1F3A] flex items-center justify-between">
+        <div className={`p-3 border-b ${isDark ? 'border-[#1A1F3A]' : 'border-slate-200'} flex items-center justify-between`}>
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center flex-shrink-0">
               <User className="w-4 h-4 text-white" />
             </div>
             <div className="min-w-0">
-              <p className="text-white font-medium text-xs truncate">{userData?.name}</p>
-              <p className="text-gray-500 text-[10px] truncate">{userData?.email}</p>
+              <p className={`font-medium text-xs truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{userData?.name}</p>
+              <p className={`text-[10px] truncate ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>{userData?.email}</p>
             </div>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
             aria-label="Close sidebar"
-            className="w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors flex-shrink-0"
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}
           >
-            <X className="w-4 h-4 text-gray-400" />
+            <X className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-slate-600'}`} />
           </button>
         </div>
 
         {/* Sidebar Navigation */}
         <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
-          <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mb-2.5">Navigation</p>
+          <p className={`text-[10px] font-medium uppercase tracking-wider mb-2.5 ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>Navigation</p>
 
           {/* Calendar */}
           <button
@@ -794,10 +794,10 @@ export default function StudentDashboard() {
               router.push("/student/calender");
               setSidebarOpen(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-[#7C3AED]/20 border border-transparent hover:border-[#7C3AED]/30 transition-all duration-200"
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg ${isDark ? 'bg-white/5 hover:bg-[#7C3AED]/20 border border-transparent hover:border-[#7C3AED]/30' : 'bg-slate-100 hover:bg-indigo-100 border border-slate-200 hover:border-indigo-200'} transition-all duration-200`}
           >
-            <Calendar className="w-4 h-4 text-[#7C3AED]" />
-            <span className="text-white text-sm">Calendar</span>
+            <Calendar className={`w-4 h-4 ${isDark ? 'text-[#7C3AED]' : 'text-indigo-600'}`} />
+            <span className={`text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>Calendar</span>
           </button>
 
           {/* Safe Bunk */}
@@ -806,10 +806,10 @@ export default function StudentDashboard() {
               calculateSafeBunk();
               setSidebarOpen(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-[#F59E0B]/20 border border-transparent hover:border-[#F59E0B]/30 transition-all duration-200"
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg ${isDark ? 'bg-white/5 hover:bg-[#F59E0B]/20 border border-transparent hover:border-[#F59E0B]/30' : 'bg-amber-50 hover:bg-amber-100 border border-amber-200'} transition-all duration-200`}
           >
-            <TrendingUp className="w-4 h-4 text-[#F59E0B]" />
-            <span className="text-white text-sm">Safe Bunk</span>
+            <TrendingUp className={`w-4 h-4 ${isDark ? 'text-[#F59E0B]' : 'text-amber-600'}`} />
+            <span className={`text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>Safe Bunk</span>
           </button>
 
           {/* Subjects Overview */}
@@ -818,10 +818,10 @@ export default function StudentDashboard() {
               setShowSubjectsOverviewModal(true);
               setSidebarOpen(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-[#00D9FF]/20 border border-transparent hover:border-[#00D9FF]/30 transition-all duration-200"
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg ${isDark ? 'bg-white/5 hover:bg-[#00D9FF]/20 border border-transparent hover:border-[#00D9FF]/30' : 'bg-blue-50 hover:bg-blue-100 border border-blue-200'} transition-all duration-200`}
           >
-            <BarChart3 className="w-4 h-4 text-[#00D9FF]" />
-            <span className="text-white text-sm">Subjects Overview</span>
+            <BarChart3 className={`w-4 h-4 ${isDark ? 'text-[#00D9FF]' : 'text-blue-600'}`} />
+            <span className={`text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>Subjects Overview</span>
           </button>
 
           {/* Today's Schedule */}
@@ -856,15 +856,15 @@ export default function StudentDashboard() {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-[#1A1F3A] mx-3"></div>
+        <div className={`border-t ${isDark ? 'border-[#1A1F3A]' : 'border-slate-200'} mx-3`}></div>
 
         {/* User Actions */}
         <div className="p-3 space-y-2">
           {/* Join Code */}
-          <div className="bg-[#00D9FF]/10 border border-[#00D9FF]/20 rounded-lg p-2.5">
-            <p className="text-gray-500 text-[10px] mb-1">Class Join Code</p>
+          <div className={`${isDark ? 'bg-[#00D9FF]/10 border border-[#00D9FF]/20' : 'bg-blue-50 border border-blue-200'} rounded-lg p-2.5`}>
+            <p className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-slate-500'} mb-1`}>Class Join Code</p>
             <div className="flex items-center gap-1.5">
-              <code className="flex-1 bg-[#00D9FF]/5 text-[#00D9FF] px-2 py-1 rounded text-[10px] font-mono">
+              <code className={`flex-1 ${isDark ? 'bg-[#00D9FF]/5 text-[#00D9FF]' : 'bg-blue-50 text-blue-600'} px-2 py-1 rounded text-[10px] font-mono`}>
                 {joinCode}
               </code>
               <button
@@ -873,7 +873,7 @@ export default function StudentDashboard() {
                   alert("Join code copied!");
                   setSidebarOpen(false);
                 }}
-                className="p-1 hover:bg-white/5 rounded transition-colors"
+                className={`p-1 rounded transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-blue-50'}`}
                 title="Copy"
               >
                 📋
@@ -887,9 +887,9 @@ export default function StudentDashboard() {
               setShowJoinCodeModal(true);
               setSidebarOpen(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-gradient-to-r from-[#00D9FF]/10 to-[#7C3AED]/10 text-[#00D9FF] hover:from-[#00D9FF]/20 hover:to-[#7C3AED]/20 border border-[#00D9FF]/10 hover:border-[#00D9FF]/30 transition-all duration-200"
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg ${isDark ? 'bg-gradient-to-r from-[#00D9FF]/10 to-[#7C3AED]/10 text-[#00D9FF] hover:from-[#00D9FF]/20 hover:to-[#7C3AED]/20 border border-[#00D9FF]/10 hover:border-[#00D9FF]/30' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'} transition-all duration-200`}
           >
-            <Book className="w-4 h-4" />
+            <Book className={`w-4 h-4 ${isDark ? 'text-[#00D9FF]' : 'text-blue-600'}`} />
             <span className="text-sm font-medium">Change Class</span>
           </button>
 
@@ -899,9 +899,9 @@ export default function StudentDashboard() {
               handleLogout();
               setSidebarOpen(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-gradient-to-r from-red-500/10 to-red-600/10 text-red-400 hover:from-red-500/20 hover:to-red-600/20 border border-red-500/10 hover:border-red-400/30 transition-all duration-200"
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg ${isDark ? 'bg-gradient-to-r from-red-500/10 to-red-600/10 text-red-400 hover:from-red-500/20 hover:to-red-600/20 border border-red-500/10 hover:border-red-400/30' : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'} transition-all duration-200`}
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className={`w-4 h-4 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
             <span className="text-sm font-medium">Logout</span>
           </button>
         </div>
@@ -931,7 +931,7 @@ export default function StudentDashboard() {
               ref={menuButtonRef}
               onClick={() => setSidebarOpen(!sidebarOpen)}
               aria-label={sidebarOpen ? "Close menu" : "Open menu"}
-              className={`w-10 h-10 sm:w-12 sm:h-12 ${isDark ? 'bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] border-none' : 'bg-gradient-to-br from-blue-500 to-indigo-600 border border-blue-400/30'} rounded-full flex items-center justify-center ${isDark ? 'text-white' : 'text-white'} shadow-lg ${isDark ? 'shadow-[#00D9FF]/30' : 'shadow-blue-500/30'} hover:scale-110 transition-all duration-200`}
+              className={`w-10 h-10 sm:w-12 sm:h-12 ${isDark ? 'bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] border-none' : 'bg-gradient-to-br from-blue-600 to-indigo-700 border border-blue-500/30'} rounded-full flex items-center justify-center text-white shadow-lg ${isDark ? 'shadow-[#00D9FF]/30' : 'shadow-blue-600/30'} hover:scale-110 transition-all duration-200`}
             >
               {sidebarOpen ? (
                 <X className="w-5 h-5" />
@@ -1268,50 +1268,50 @@ export default function StudentDashboard() {
 
       {/* Safe Bunk Modal */}
       {showSafeBunkModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn" onClick={() => setShowSafeBunkModal(false)}>
-          <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            
+        <div className={`fixed inset-0 ${T.modalOverlay} backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn`} onClick={() => setShowSafeBunkModal(false)}>
+          <div className={`${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-gradient-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl`} onClick={(e) => e.stopPropagation()}>
+
             {/* Header */}
-            <div className="p-4 border-b border-[#1A1F3A] bg-gradient-to-r from-[#F59E0B]/10 to-transparent">
+            <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#F59E0B]/10 to-transparent' : 'border-slate-200 bg-gradient-to-r from-amber-100/50 to-transparent'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 bg-[#F59E0B]/20 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 text-[#F59E0B]" />
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isDark ? 'bg-[#F59E0B]/20' : 'bg-amber-100'}`}>
+                    <TrendingUp className={`w-4 h-4 ${isDark ? 'text-[#F59E0B]' : 'text-amber-600'}`} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-white">Safe Bunk Calculator</h2>
-                    <p className="text-xs text-gray-400">Maintain 75% attendance target</p>
+                    <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Safe Bunk Calculator</h2>
+                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>Maintain 75% attendance target</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowSafeBunkModal(false)}
-                  className="w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}
                 >
-                  <X className="w-4 h-4 text-gray-400" />
+                  <X className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-slate-600'}`} />
                 </button>
               </div>
 
               {/* Summary Cards */}
               <div className="grid grid-cols-2 gap-3 mt-4">
-                <div className="bg-[#10B981]/10 border border-[#10B981]/20 rounded-lg p-3">
-                  <p className="text-xs text-gray-400 mb-1">Total Safe Bunks</p>
-                  <p className="text-xl font-bold text-[#10B981]">
+                <div className={`${isDark ? 'bg-[#10B981]/10 border border-[#10B981]/20' : 'bg-green-50 border border-green-200'} rounded-lg p-3`}>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'} mb-1`}>Total Safe Bunks</p>
+                  <p className={`text-xl font-bold ${isDark ? 'text-[#10B981]' : 'text-green-600'}`}>
                     {safeBunkData.filter(s => s.status === 'safe').reduce((sum, s) => sum + s.canBunk, 0)}
                   </p>
-                  <p className="text-[10px] text-gray-500 mt-1">Classes you can skip</p>
+                  <p className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-slate-500'} mt-1`}>Classes you can skip</p>
                 </div>
-                <div className="bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-lg p-3">
-                  <p className="text-xs text-gray-400 mb-1">Need to Attend</p>
-                  <p className="text-xl font-bold text-[#EF4444]">
+                <div className={`${isDark ? 'bg-[#EF4444]/10 border border-[#EF4444]/20' : 'bg-red-50 border border-red-200'} rounded-lg p-3`}>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'} mb-1`}>Need to Attend</p>
+                  <p className={`text-xl font-bold ${isDark ? 'text-[#EF4444]' : 'text-red-600'}`}>
                     {safeBunkData.filter(s => s.status === 'danger').reduce((sum, s) => sum + s.needToAttend, 0)}
                   </p>
-                  <p className="text-[10px] text-gray-500 mt-1">To reach 75%</p>
+                  <p className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-slate-500'} mt-1`}>To reach 75%</p>
                 </div>
               </div>
             </div>
 
             {/* Subject List */}
-            <div className="p-4 overflow-y-auto max-h-[calc(90vh-240px)]">
+            <div className={`p-4 overflow-y-auto max-h-[calc(90vh-240px)] ${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
               <div className="space-y-2">
                 {safeBunkData.map((subject, index) => {
                   const colors = getSubjectColor(index);
@@ -1320,15 +1320,15 @@ export default function StudentDashboard() {
                   return (
                     <div
                       key={subject.id}
-                      className={`bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border ${colors.border} border-l-4 rounded-lg p-3 hover:scale-[1.01] transition-all duration-300`}
+                      className={`${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-white'} border ${isDark ? colors.border : colors.border.replace('bg-', 'border-').replace('text-', 'border-').replace('border-', 'border-').replace('border-', 'border-')} border-l-4 rounded-lg p-3 hover:scale-[1.01] transition-all duration-300`}
                     >
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <div className={`w-2 h-2 rounded-full ${colors.bg} animate-pulse-slow`}></div>
-                            <h3 className="text-white font-medium text-sm">{subject.name}</h3>
+                            <h3 className={`font-medium text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>{subject.name}</h3>
                           </div>
-                          <div className="flex items-center gap-3 text-xs text-gray-400">
+                          <div className={`flex items-center gap-3 text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
                             <span>Attendance: <span className={colors.text}>{subject.currentPercent}%</span></span>
                             <span>•</span>
                             <span>{subject.present}/{subject.total} attended</span>
@@ -1336,30 +1336,30 @@ export default function StudentDashboard() {
                         </div>
 
                         {isSafe ? (
-                          <div className="bg-[#10B981]/10 border border-[#10B981]/20 rounded-lg px-3 py-1.5 text-center">
-                            <p className="text-lg font-bold text-[#10B981]">{subject.canBunk}</p>
-                            <p className="text-[10px] text-gray-400">can bunk</p>
+                          <div className={`${isDark ? 'bg-[#10B981]/10 border border-[#10B981]/20' : 'bg-green-50 border border-green-200'} rounded-lg px-3 py-1.5 text-center`}>
+                            <p className={`text-lg font-bold ${isDark ? 'text-[#10B981]' : 'text-green-600'}`}>{subject.canBunk}</p>
+                            <p className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>can bunk</p>
                           </div>
                         ) : (
-                          <div className="bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-lg px-3 py-1.5 text-center">
-                            <p className="text-lg font-bold text-[#EF4444]">+{subject.needToAttend}</p>
-                            <p className="text-[10px] text-gray-400">need to attend</p>
+                          <div className={`${isDark ? 'bg-[#EF4444]/10 border border-[#EF4444]/20' : 'bg-red-50 border border-red-200'} rounded-lg px-3 py-1.5 text-center`}>
+                            <p className={`text-lg font-bold ${isDark ? 'text-[#EF4444]' : 'text-red-600'}`}>+{subject.needToAttend}</p>
+                            <p className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>need to attend</p>
                           </div>
                         )}
                       </div>
 
                       {/* Progress Bar */}
-                      <div className="relative w-full bg-[#1A1F3A] h-1.5 rounded-full overflow-hidden">
+                      <div className={`relative w-full ${isDark ? 'bg-[#1A1F3A]' : 'bg-slate-200'} h-1.5 rounded-full overflow-hidden`}>
                         <div
                           className={`h-full ${colors.bg} rounded-full transition-all duration-1000`}
                           style={{ width: `${subject.currentPercent}%` }}
                         ></div>
                         {/* 75% marker */}
-                        <div className="absolute top-0 left-[75%] w-0.5 h-full bg-white/50"></div>
+                        <div className={`absolute top-0 left-[75%] w-0.5 h-full ${isDark ? 'bg-white/50' : 'bg-slate-400'}`}></div>
                       </div>
 
                       {!isSafe && (
-                        <p className="text-[10px] text-[#EF4444] mt-1.5">
+                        <p className={`text-[10px] ${isDark ? 'text-[#EF4444]' : 'text-red-600'} mt-1.5`}>
                           ⚠️ Attend next {subject.needToAttend} classes consecutively to reach 75%
                         </p>
                       )}
@@ -1370,9 +1370,9 @@ export default function StudentDashboard() {
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/5 to-transparent">
-              <p className="text-xs text-gray-400 text-center">
-                💡 <span className="text-[#00D9FF]">Tip:</span> This calculation assumes you attend all remaining classes for subjects below 75%
+            <div className={`p-4 border-t ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/5 to-transparent' : 'border-slate-200 bg-gradient-to-r from-blue-50/50 to-transparent'}`}>
+              <p className={`text-xs text-center ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
+                💡 <span className={isDark ? 'text-[#00D9FF]' : 'text-blue-600'}>Tip:</span> This calculation assumes you attend all remaining classes for subjects below 75%
               </p>
             </div>
           </div>
@@ -1381,44 +1381,44 @@ export default function StudentDashboard() {
 
       {/* Subject-wise Attendance Modal */}
       {showSubjectAttendanceModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn" onClick={() => setShowSubjectAttendanceModal(false)}>
-          <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            
+        <div className={`fixed inset-0 ${T.modalOverlay} backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn`} onClick={() => setShowSubjectAttendanceModal(false)}>
+          <div className={`${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-gradient-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl`} onClick={(e) => e.stopPropagation()}>
+
             {/* Header */}
-            <div className="p-4 border-b border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/10 to-transparent">
+            <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/10 to-transparent' : 'border-slate-200 bg-gradient-to-r from-blue-50/50 to-transparent'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                    parseFloat(attendancePercent) >= 75 ? 'bg-[#10B981]/20' :
-                    parseFloat(attendancePercent) >= 50 ? 'bg-[#F59E0B]/20' : 'bg-[#EF4444]/20'
+                    parseFloat(attendancePercent) >= 75 ? (isDark ? 'bg-[#10B981]/20' : 'bg-green-100') :
+                    parseFloat(attendancePercent) >= 50 ? (isDark ? 'bg-[#F59E0B]/20' : 'bg-amber-100') : (isDark ? 'bg-[#EF4444]/20' : 'bg-red-100')
                   }`}>
                     <Award className={`w-4 h-4 ${attendanceStatus.color}`} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-white">Subject-wise Attendance</h2>
-                    <p className="text-xs text-gray-400">Detailed breakdown by subject</p>
+                    <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Subject-wise Attendance</h2>
+                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>Detailed breakdown by subject</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowSubjectAttendanceModal(false)}
-                  className="w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}
                 >
-                  <X className="w-4 h-4 text-gray-400" />
+                  <X className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-slate-600'}`} />
                 </button>
               </div>
 
               {/* Overall Summary */}
-              <div className="mt-4 bg-white/5 backdrop-blur-sm rounded-lg p-3">
+              <div className={`mt-4 ${isDark ? 'bg-white/5' : 'bg-slate-50'} backdrop-blur-sm rounded-lg p-3`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-gray-400 mb-1">Overall Attendance</p>
+                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'} mb-1`}>Overall Attendance</p>
                     <p className={`text-2xl font-bold ${attendanceStatus.color}`}>{attendancePercent}%</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-gray-400 mb-1">Status</p>
+                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'} mb-1`}>Status</p>
                     <div className={`px-3 py-1.5 rounded-full text-xs ${
-                      parseFloat(attendancePercent) >= 75 ? 'bg-[#10B981]/20 text-[#10B981]' :
-                      parseFloat(attendancePercent) >= 50 ? 'bg-[#F59E0B]/20 text-[#F59E0B]' : 'bg-[#EF4444]/20 text-[#EF4444]'
+                      parseFloat(attendancePercent) >= 75 ? (isDark ? 'bg-[#10B981]/20 text-[#10B981]' : 'bg-green-100 text-green-600') :
+                      parseFloat(attendancePercent) >= 50 ? (isDark ? 'bg-[#F59E0B]/20 text-[#F59E0B]' : 'bg-amber-100 text-amber-600') : (isDark ? 'bg-[#EF4444]/20 text-[#EF4444]' : 'bg-red-100 text-red-600')
                     } font-medium`}>
                       {attendanceStatus.status}
                     </div>
@@ -1428,7 +1428,7 @@ export default function StudentDashboard() {
             </div>
 
             {/* Subject List */}
-            <div className="p-4 overflow-y-auto max-h-[calc(90vh-190px)]">
+            <div className={`p-4 overflow-y-auto max-h-[calc(90vh-190px)] ${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {subjectStats.map((subject, index) => {
                   const colors = getSubjectColor(index);
@@ -1437,12 +1437,12 @@ export default function StudentDashboard() {
                   return (
                     <div
                       key={subject.id}
-                      className={`bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border ${colors.border} rounded-lg p-3 hover:scale-[1.01] transition-all duration-300`}
+                      className={`${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-white'} border ${isDark ? colors.border : colors.border.replace('bg-', 'border-').replace('text-', 'border-').replace('border-', 'border-').replace('border-', 'border-')} rounded-lg p-3 hover:scale-[1.01] transition-all duration-300`}
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-1.5 flex-1 min-w-0">
                           <div className={`w-2 h-2 rounded-full ${colors.bg} animate-pulse-slow flex-shrink-0`}></div>
-                          <h3 className="text-white font-medium text-sm truncate">{subject.name}</h3>
+                          <h3 className={`font-medium text-sm truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{subject.name}</h3>
                         </div>
                         <div className="text-right ml-2">
                           <p className={`text-xl font-bold ${colors.text}`}>{subject.percent}%</p>
@@ -1451,37 +1451,37 @@ export default function StudentDashboard() {
 
                       <div className="space-y-1.5 mb-2">
                         <div className="flex justify-between text-xs">
-                          <span className="text-gray-400">Attended</span>
+                          <span className={isDark ? 'text-gray-400' : 'text-slate-500'}>Attended</span>
                           <span className={colors.text}>{subject.present}</span>
                         </div>
                         <div className="flex justify-between text-xs">
-                          <span className="text-gray-400">Total</span>
-                          <span className="text-gray-300">{subject.total}</span>
+                          <span className={isDark ? 'text-gray-400' : 'text-slate-500'}>Total</span>
+                          <span className={isDark ? 'text-gray-300' : 'text-slate-700'}>{subject.total}</span>
                         </div>
                         <div className="flex justify-between text-xs">
-                          <span className="text-gray-400">Missed</span>
-                          <span className="text-red-400">{subject.total - subject.present}</span>
+                          <span className={isDark ? 'text-gray-400' : 'text-slate-500'}>Missed</span>
+                          <span className={isDark ? 'text-red-400' : 'text-red-600'}>{subject.total - subject.present}</span>
                         </div>
                       </div>
 
                       {/* Progress Bar */}
-                      <div className="relative w-full bg-[#1A1F3A] h-2 rounded-full overflow-hidden">
+                      <div className={`relative w-full ${isDark ? 'bg-[#1A1F3A]' : 'bg-slate-200'} h-2 rounded-full overflow-hidden`}>
                         <div
                           className={`h-full ${colors.bg} rounded-full transition-all duration-1000`}
                           style={{ width: `${subject.percent}%` }}
                         ></div>
                         {/* 75% marker */}
-                        <div className="absolute top-0 left-[75%] w-0.5 h-full bg-white/50"></div>
+                        <div className={`absolute top-0 left-[75%] w-0.5 h-full ${isDark ? 'bg-white/50' : 'bg-slate-400'}`}></div>
                       </div>
 
                       {/* Status Badge */}
                       <div className="mt-2">
                         {subjectPercent >= 75 ? (
-                          <span className="text-[10px] bg-[#10B981]/20 text-[#10B981] px-2 py-0.5 rounded-full">
+                          <span className={`text-[10px] ${isDark ? 'bg-[#10B981]/20 text-[#10B981]' : 'bg-green-100 text-green-600'} px-2 py-0.5 rounded-full`}>
                             ✓ Above target
                           </span>
                         ) : (
-                          <span className="text-[10px] bg-[#EF4444]/20 text-[#EF4444] px-2 py-0.5 rounded-full">
+                          <span className={`text-[10px] ${isDark ? 'bg-[#EF4444]/20 text-[#EF4444]' : 'bg-red-100 text-red-600'} px-2 py-0.5 rounded-full`}>
                             ⚠ Below 75%
                           </span>
                         )}
@@ -1497,20 +1497,20 @@ export default function StudentDashboard() {
 
       {/* Today's Classes Modal */}
       {showTodayClassesModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn" onClick={() => setShowTodayClassesModal(false)}>
-          <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            
+        <div className={`fixed inset-0 ${T.modalOverlay} backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn`} onClick={() => setShowTodayClassesModal(false)}>
+          <div className={`${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-gradient-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl`} onClick={(e) => e.stopPropagation()}>
+
             {/* Header */}
-            <div className="p-4 border-b border-[#1A1F3A] bg-gradient-to-r from-[#10B981]/10 to-transparent">
+            <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#10B981]/10 to-transparent' : 'border-slate-200 bg-gradient-to-r from-emerald-100/50 to-transparent'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 bg-[#10B981]/20 rounded-lg flex items-center justify-center">
-                    <CheckCircle className="w-4 h-4 text-[#10B981]" />
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isDark ? 'bg-[#10B981]/20' : 'bg-emerald-100'}`}>
+                    <CheckCircle className={`w-4 h-4 ${isDark ? 'text-[#10B981]' : 'text-emerald-600'}`} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-white">Today's Classes</h2>
+                    <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Today's Classes</h2>
                     {mounted && (
-                      <p className="text-xs text-gray-400">
+                      <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
                         {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                       </p>
                     )}
@@ -1518,32 +1518,32 @@ export default function StudentDashboard() {
                 </div>
                 <button
                   onClick={() => setShowTodayClassesModal(false)}
-                  className="w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}
                 >
-                  <X className="w-4 h-4 text-gray-400" />
+                  <X className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-slate-600'}`} />
                 </button>
               </div>
 
               {/* Summary */}
               <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="bg-white/5 backdrop-blur-sm rounded-lg p-3">
-                  <p className="text-xs text-gray-400 mb-1">Total Classes</p>
-                  <p className="text-xl font-bold text-[#10B981]">{todaySubjects.length}</p>
+                <div className={`${isDark ? 'bg-white/5' : 'bg-slate-50'} rounded-lg p-3`}>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'} mb-1`}>Total Classes</p>
+                  <p className={`text-xl font-bold ${isDark ? 'text-[#10B981]' : 'text-emerald-600'}`}>{todaySubjects.length}</p>
                 </div>
-                <div className="bg-white/5 backdrop-blur-sm rounded-lg p-3">
-                  <p className="text-xs text-gray-400 mb-1">Marked Present</p>
-                  <p className="text-xl font-bold text-[#00D9FF]">{markedSubjects.length}</p>
+                <div className={`${isDark ? 'bg-white/5' : 'bg-slate-50'} rounded-lg p-3`}>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'} mb-1`}>Marked Present</p>
+                  <p className={`text-xl font-bold ${isDark ? 'text-[#00D9FF]' : 'text-blue-600'}`}>{markedSubjects.length}</p>
                 </div>
               </div>
             </div>
 
             {/* Classes List with Mark/Undo */}
-            <div className="p-4 overflow-y-auto max-h-[calc(90vh-220px)]">
+            <div className={`p-4 overflow-y-auto max-h-[calc(90vh-220px)] ${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
               {todaySubjects.length === 0 ? (
                 <div className="text-center py-8">
-                  <Clock className="w-10 h-10 text-gray-700 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">No classes scheduled today</p>
-                  <p className="text-gray-600 text-xs mt-1">Enjoy your day off!</p>
+                  <Clock className={`w-10 h-10 ${isDark ? 'text-gray-700' : 'text-slate-400'} mx-auto mb-2`} />
+                  <p className={`${isDark ? 'text-gray-500' : 'text-slate-500'} text-sm`}>No classes scheduled today</p>
+                  <p className={`${isDark ? 'text-gray-600' : 'text-slate-600'} text-xs mt-1`}>Enjoy your day off!</p>
                 </div>
               ) : (
                 <>
@@ -1558,14 +1558,14 @@ export default function StudentDashboard() {
                       return (
                         <div
                           key={subjectId}
-                          className={`bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border ${colors.border} border-l-4 rounded-lg p-3 flex flex-row justify-between items-center gap-2 hover:bg-[#131829] transition-all duration-300 cursor-pointer group`}
+                          className={`${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-white'} border ${isDark ? colors.border : colors.border.replace('bg-', 'border-').replace('text-', 'border-').replace('border-', 'border-').replace('border-', 'border-')} border-l-4 rounded-lg p-3 flex flex-row justify-between items-center gap-2 hover:scale-[1.01] transition-all duration-300 cursor-pointer group`}
                         >
                           <div
                             className="flex items-center gap-2 flex-1 min-w-0"
                             onClick={() => router.push(`/student/subject/${subjectId}`)}
                           >
                             <div className={`w-2 h-2 flex-shrink-0 rounded-full ${colors.bg} ${colors.glow} shadow-lg animate-pulse-slow`}></div>
-                            <span className="text-white font-medium text-sm truncate">{subject?.subjectName}</span>
+                            <span className={`font-medium text-sm truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{subject?.subjectName}</span>
                           </div>
 
                           {marked ? (
@@ -1577,8 +1577,8 @@ export default function StudentDashboard() {
                               disabled={isUndoing}
                               className={`px-3 py-1.5 rounded-lg font-medium transition-all duration-300 flex items-center gap-1.5 text-xs flex-shrink-0 ${
                                 isUndoing
-                                  ? "bg-red-500/20 text-red-400/50 cursor-not-allowed"
-                                  : "bg-red-500/10 text-red-400 border border-red-400/20 hover:bg-red-500/20 hover:scale-105"
+                                  ? `${isDark ? 'bg-red-500/20 text-red-400/50' : 'bg-red-100 text-red-400/50'} cursor-not-allowed`
+                                  : `${isDark ? 'bg-red-500/10 text-red-400 border border-red-400/20 hover:bg-red-500/20 hover:scale-105' : 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 hover:scale-105'}`
                               }`}
                             >
                               {isUndoing ? (
@@ -1599,8 +1599,8 @@ export default function StudentDashboard() {
                               disabled={isMarking}
                               className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 text-sm flex-shrink-0 whitespace-nowrap ${
                                 isMarking
-                                  ? "bg-[#00D9FF]/20 text-[#00D9FF]/50 cursor-not-allowed"
-                                  : "bg-[#00D9FF]/10 text-[#00D9FF] border border-[#00D9FF]/20 hover:bg-[#00D9FF]/20 hover:scale-105"
+                                  ? `${isDark ? 'bg-[#00D9FF]/20 text-[#00D9FF]/50' : 'bg-blue-100 text-blue-500/50'} cursor-not-allowed`
+                                  : `${isDark ? 'bg-[#00D9FF]/10 text-[#00D9FF] border border-[#00D9FF]/20 hover:bg-[#00D9FF]/20 hover:scale-105' : 'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 hover:scale-105'}`
                               }`}
                             >
                               {isMarking ? (
@@ -1628,8 +1628,8 @@ export default function StudentDashboard() {
                       disabled={updating}
                       className={`w-full sm:w-auto px-8 py-4 rounded-xl font-medium shadow-lg transition-all duration-300 flex items-center justify-center gap-2 ${
                         updating
-                          ? "bg-gradient-to-r from-[#10B981]/50 to-[#059669]/50 cursor-not-allowed"
-                          : "bg-gradient-to-r from-[#10B981] to-[#059669] text-white shadow-[#10B981]/30 hover:shadow-[#10B981]/50 hover:scale-105"
+                          ? `${isDark ? "bg-gradient-to-r from-[#10B981]/50 to-[#059669]/50" : "bg-gradient-to-r from-emerald-500/50 to-teal-600/50"} cursor-not-allowed`
+                          : `${isDark ? "bg-gradient-to-r from-[#10B981] to-[#059669] text-white shadow-[#10B981]/30 hover:shadow-[#10B981]/50 hover:scale-105" : "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105"}`
                       }`}
                     >
                       {updating ? (
@@ -1642,7 +1642,7 @@ export default function StudentDashboard() {
                         </>
                       ) : (
                         <>
-                          <TrendingUp className="w-5 h-5" />
+                          <TrendingUp className={`w-5 h-5 ${isDark ? 'text-white' : 'text-white'}`} />
                           Update Attendance
                         </>
                       )}
@@ -1657,52 +1657,52 @@ export default function StudentDashboard() {
 
       {/* Monthly Chart Modal */}
       {showMonthlyChartModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn" onClick={() => setShowMonthlyChartModal(false)}>
-          <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className={`fixed inset-0 ${T.modalOverlay} backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn`} onClick={() => setShowMonthlyChartModal(false)}>
+          <div className={`${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-gradient-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl`} onClick={(e) => e.stopPropagation()}>
             
             {/* Header */}
-            <div className="p-4 border-b border-[#1A1F3A] bg-gradient-to-r from-[#7C3AED]/10 to-transparent">
+            <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#7C3AED]/10 to-transparent' : 'border-slate-200 bg-gradient-to-r from-indigo-100/50 to-transparent'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 bg-[#7C3AED]/20 rounded-lg flex items-center justify-center">
-                    <BarChart3 className="w-4 h-4 text-[#7C3AED]" />
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isDark ? 'bg-[#7C3AED]/20' : 'bg-indigo-100'}`}>
+                    <BarChart3 className={`w-4 h-4 ${isDark ? 'text-[#7C3AED]' : 'text-indigo-600'}`} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-white">Monthly Attendance Overview</h2>
-                    <p className="text-xs text-gray-400">Last 30 days - Week by week</p>
+                    <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Monthly Attendance Overview</h2>
+                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>Last 30 days - Week by week</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowMonthlyChartModal(false)}
-                  className="w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}
                 >
-                  <X className="w-4 h-4 text-gray-400" />
+                  <X className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-slate-600'}`} />
                 </button>
               </div>
 
               {/* Legend */}
               <div className="mt-4 flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-[#10B981] rounded"></div>
-                  <span className="text-xs text-gray-400">≥75%</span>
+                  <div className={`w-3 h-3 ${isDark ? 'bg-[#10B981]' : 'bg-green-600'} rounded`}></div>
+                  <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>≥75%</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-[#F59E0B] rounded"></div>
-                  <span className="text-xs text-gray-400">50-74%</span>
+                  <div className={`w-3 h-3 ${isDark ? 'bg-[#F59E0B]' : 'bg-amber-600'} rounded`}></div>
+                  <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>50-74%</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-[#EF4444] rounded"></div>
-                  <span className="text-xs text-gray-400">&lt;50%</span>
+                  <div className={`w-3 h-3 ${isDark ? 'bg-[#EF4444]' : 'bg-red-600'} rounded`}></div>
+                  <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>&lt;50%</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-[#1A1F3A] border border-[#2A2F4A] rounded"></div>
-                  <span className="text-xs text-gray-400">No classes</span>
+                  <div className={`w-3 h-3 ${isDark ? 'bg-[#1A1F3A] border border-[#2A2F4A]' : 'bg-slate-200 border border-slate-300'} rounded`}></div>
+                  <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>No classes</span>
                 </div>
               </div>
             </div>
 
             {/* Weekly Chart Grid */}
-            <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-220px)]">
+            <div className={`p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-220px)] ${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
               {mounted && (() => {
                 // Generate all 30 days with data
                 const today = new Date();
@@ -1742,20 +1742,20 @@ export default function StudentDashboard() {
                       const actualWeekNumber = weeks.length - weekIndex;
                       
                       return (
-                        <div key={weekIndex} className="bg-gradient-to-r from-[#0A0E27] to-[#0F1629] border border-[#1A1F3A] rounded-xl p-4 sm:p-5">
+                        <div key={weekIndex} className={`${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border border-[#1A1F3A]' : 'bg-white border border-slate-200'} rounded-xl p-4 sm:p-5`}>
                           {/* Week Header */}
                           <div className="flex items-center gap-3 mb-4">
-                            <div className="w-8 h-8 bg-[#7C3AED]/20 rounded-lg flex items-center justify-center">
-                              <span className="text-sm font-bold text-[#7C3AED]">W{actualWeekNumber}</span>
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-[#7C3AED]/20' : 'bg-indigo-100'}`}>
+                              <span className={`text-sm font-bold ${isDark ? 'text-[#7C3AED]' : 'text-indigo-600'}`}>W{actualWeekNumber}</span>
                             </div>
-                            <h3 className="text-base font-medium text-white">
+                            <h3 className={`text-base font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>
                               Week {actualWeekNumber}
                             </h3>
-                            <span className="text-xs text-gray-500">
+                            <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>
                               {week[0].day} - {week[week.length - 1].day}
                             </span>
                             {weekIndex === 0 && (
-                              <span className="ml-auto text-xs bg-[#00D9FF]/20 text-[#00D9FF] px-2 py-1 rounded-full">
+                              <span className={`ml-auto text-xs ${isDark ? 'bg-[#00D9FF]/20 text-[#00D9FF]' : 'bg-blue-100 text-blue-600'} px-2 py-1 rounded-full`}>
                                 Current Week
                               </span>
                             )}
@@ -1773,19 +1773,19 @@ export default function StudentDashboard() {
                                 <div key={dayIndex} className="flex flex-col items-center group">
                                   {/* Bar */}
                                   <div className="w-full h-24 sm:h-32 mb-2 relative">
-                                    <div className="absolute inset-0 bg-[#1A1F3A] rounded-t-lg overflow-hidden">
+                                    <div className={`absolute inset-0 ${isDark ? 'bg-[#1A1F3A]' : 'bg-slate-200'} rounded-t-lg overflow-hidden`}>
                                       {hasClasses ? (
                                         <>
                                           {/* Background (scheduled) */}
                                           <div className="absolute inset-0 bg-gray-700/20"></div>
-                                          
+
                                           {/* Foreground (attended) */}
                                           <div
                                             className={`absolute bottom-0 inset-x-0 rounded-t-lg transition-all duration-500 ${
-                                              percentage >= 75 ? 'bg-gradient-to-t from-[#10B981] to-[#059669]' :
-                                              percentage >= 50 ? 'bg-gradient-to-t from-[#F59E0B] to-[#D97706]' :
-                                              percentage > 0 ? 'bg-gradient-to-t from-[#EF4444] to-[#DC2626]' :
-                                              'bg-gray-700/30'
+                                              percentage >= 75 ? (isDark ? 'bg-gradient-to-t from-[#10B981] to-[#059669]' : 'bg-gradient-to-t from-green-500 to-emerald-600') :
+                                              percentage >= 50 ? (isDark ? 'bg-gradient-to-t from-[#F59E0B] to-[#D97706]' : 'bg-gradient-to-t from-amber-500 to-orange-600') :
+                                              percentage > 0 ? (isDark ? 'bg-gradient-to-t from-[#EF4444] to-[#DC2626]' : 'bg-gradient-to-t from-red-500 to-rose-600') :
+                                              isDark ? 'bg-gray-700/30' : 'bg-slate-300'
                                             } group-hover:shadow-lg`}
                                             style={{ height: `${height}%` }}
                                           ></div>
@@ -1802,7 +1802,7 @@ export default function StudentDashboard() {
                                         // No classes - show empty state
                                         <div className="absolute inset-0 flex items-center justify-center">
                                           <div className="text-center opacity-30">
-                                            <div className="w-1 h-1 bg-gray-600 rounded-full mx-auto"></div>
+                                            <div className={`w-1 h-1 rounded-full mx-auto ${isDark ? 'bg-gray-600' : 'bg-slate-400'}`}></div>
                                           </div>
                                         </div>
                                       )}
@@ -1811,10 +1811,10 @@ export default function StudentDashboard() {
 
                                   {/* Day label */}
                                   <div className="text-center">
-                                    <p className="text-[10px] sm:text-xs font-medium text-gray-400">
+                                    <p className={`text-[10px] sm:text-xs font-medium ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
                                       {day.dayOfWeek}
                                     </p>
-                                    <p className="text-[9px] sm:text-[10px] text-gray-600">
+                                    <p className={`text-[9px] sm:text-[10px] ${isDark ? 'text-gray-600' : 'text-slate-400'}`}>
                                       {day.day.split(' ')[1]}
                                     </p>
                                   </div>
@@ -1824,28 +1824,28 @@ export default function StudentDashboard() {
                           </div>
 
                           {/* Week Summary */}
-                          <div className="mt-4 pt-3 border-t border-[#1A1F3A] grid grid-cols-3 gap-2 text-center">
+                          <div className={`mt-4 pt-3 border-t ${isDark ? 'border-[#1A1F3A]' : 'border-slate-200'} grid grid-cols-3 gap-2 text-center`}>
                             <div>
-                              <p className="text-[10px] text-gray-500">Scheduled</p>
-                              <p className="text-sm font-bold text-gray-300">
+                              <p className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>Scheduled</p>
+                              <p className={`text-sm font-bold ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
                                 {week.reduce((sum, d) => sum + d.scheduled, 0)}
                               </p>
                             </div>
                             <div>
-                              <p className="text-[10px] text-gray-500">Attended</p>
-                              <p className="text-sm font-bold text-[#00D9FF]">
+                              <p className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>Attended</p>
+                              <p className={`text-sm font-bold ${isDark ? 'text-[#00D9FF]' : 'text-blue-600'}`}>
                                 {week.reduce((sum, d) => sum + d.attended, 0)}
                               </p>
                             </div>
                             <div>
-                              <p className="text-[10px] text-gray-500">Rate</p>
+                              <p className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>Rate</p>
                               <p className={`text-sm font-bold ${
                                 (() => {
                                   const totalScheduled = week.reduce((sum, d) => sum + d.scheduled, 0);
                                   const totalAttended = week.reduce((sum, d) => sum + d.attended, 0);
                                   const weekPercent = totalScheduled > 0 ? (totalAttended / totalScheduled) * 100 : 0;
-                                  return weekPercent >= 75 ? 'text-[#10B981]' :
-                                         weekPercent >= 50 ? 'text-[#F59E0B]' : 'text-[#EF4444]';
+                                  return weekPercent >= 75 ? (isDark ? 'text-[#10B981]' : 'text-green-600') :
+                                         weekPercent >= 50 ? (isDark ? 'text-[#F59E0B]' : 'text-amber-600') : (isDark ? 'text-[#EF4444]' : 'text-red-600');
                                 })()
                               }`}>
                                 {(() => {
@@ -1866,25 +1866,25 @@ export default function StudentDashboard() {
 
             {/* Footer Summary */}
             {monthlyData.length > 0 && (
-              <div className="p-6 border-t border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/5 to-transparent">
+              <div className={`p-6 border-t ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/5 to-transparent' : 'border-slate-200 bg-gradient-to-r from-blue-50/50 to-transparent'}`}>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <p className="text-sm text-gray-400 mb-1">Total Scheduled</p>
-                    <p className="text-2xl font-bold text-[#7C3AED]">
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-slate-500'} mb-1`}>Total Scheduled</p>
+                    <p className={`text-2xl font-bold ${isDark ? 'text-[#7C3AED]' : 'text-indigo-600'}`}>
                       {monthlyData.reduce((sum, d) => sum + d.scheduled, 0)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-400 mb-1">Total Attended</p>
-                    <p className="text-2xl font-bold text-[#00D9FF]">
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-slate-500'} mb-1`}>Total Attended</p>
+                    <p className={`text-2xl font-bold ${isDark ? 'text-[#00D9FF]' : 'text-blue-600'}`}>
                       {monthlyData.reduce((sum, d) => sum + d.attended, 0)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-400 mb-1">Overall Rate</p>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-slate-500'} mb-1`}>Overall Rate</p>
                     <p className={`text-2xl font-bold ${
-                      parseFloat(attendancePercent) >= 75 ? 'text-[#10B981]' :
-                      parseFloat(attendancePercent) >= 50 ? 'text-[#F59E0B]' : 'text-[#EF4444]'
+                      parseFloat(attendancePercent) >= 75 ? (isDark ? 'text-[#10B981]' : 'text-green-600') :
+                      parseFloat(attendancePercent) >= 50 ? (isDark ? 'text-[#F59E0B]' : 'text-amber-600') : (isDark ? 'text-[#EF4444]' : 'text-red-600')
                     }`}>
                       {attendancePercent}%
                     </p>
@@ -1898,31 +1898,31 @@ export default function StudentDashboard() {
 
       {/* Subjects Overview Modal */}
       {showSubjectsOverviewModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn" onClick={() => setShowSubjectsOverviewModal(false)}>
-          <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className={`fixed inset-0 ${T.modalOverlay} backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn`} onClick={() => setShowSubjectsOverviewModal(false)}>
+          <div className={`${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-gradient-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl`} onClick={(e) => e.stopPropagation()}>
             {/* Header */}
-            <div className="p-4 border-b border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/10 to-transparent">
+            <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/10 to-transparent' : 'border-slate-200 bg-gradient-to-r from-blue-50/50 to-transparent'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 bg-[#00D9FF]/20 rounded-lg flex items-center justify-center">
-                    <BarChart3 className="w-4 h-4 text-[#00D9FF]" />
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isDark ? 'bg-[#00D9FF]/20' : 'bg-blue-100'}`}>
+                    <BarChart3 className={`w-4 h-4 ${isDark ? 'text-[#00D9FF]' : 'text-blue-600'}`} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-white">Subjects Overview</h2>
-                    <p className="text-xs text-gray-400">Detailed breakdown by subject</p>
+                    <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Subjects Overview</h2>
+                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>Detailed breakdown by subject</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowSubjectsOverviewModal(false)}
-                  className="w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}
                 >
-                  <X className="w-4 h-4 text-gray-400" />
+                  <X className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-slate-600'}`} />
                 </button>
               </div>
             </div>
 
             {/* Subjects Grid */}
-            <div className="p-4 overflow-y-auto max-h-[calc(90vh-140px)]">
+            <div className={`p-4 overflow-y-auto max-h-[calc(90vh-140px)] ${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {subjectStats.map((subject, index) => {
                   const colors = getSubjectColor(index);
@@ -1931,21 +1931,22 @@ export default function StudentDashboard() {
                     <div
                       key={subject.id}
                       onClick={() => router.push(`/student/subject/${subject.id}`)}
-                      className="bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border border-[#1A1F3A] rounded-lg p-3 cursor-pointer hover:border-[#00D9FF]/30 hover:scale-[1.01] transition-all duration-300 group"
+                      className={`${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border border-[#1A1F3A]' : 'bg-white border border-slate-200'} rounded-lg p-3 cursor-pointer hover:scale-[1.01] transition-all duration-300 group`}
+                      style={{ borderColor: isDark ? undefined : `${colors.bg.replace('bg-', '')}30` }}
                     >
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center gap-2 min-w-0 flex-1">
                           <div className={`w-2 h-2 rounded-full ${colors.bg} shadow-lg ${colors.glow} animate-pulse-slow flex-shrink-0`}></div>
-                          <span className="text-white font-medium text-sm truncate">{subject.name}</span>
+                          <span className={`font-medium text-sm truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{subject.name}</span>
                         </div>
                         <span className={`${colors.text} font-bold text-xl ml-2`}>{subject.percent}%</span>
                       </div>
 
-                      <p className="text-gray-500 text-xs mb-2">
+                      <p className={`text-xs mb-2 ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>
                         <span className={colors.text}>{subject.present}</span> / {subject.total} Sessions Attended
                       </p>
 
-                      <div className="w-full bg-[#1A1F3A] h-2 rounded-full overflow-hidden">
+                      <div className={`w-full ${isDark ? 'bg-[#1A1F3A]' : 'bg-slate-200'} h-2 rounded-full overflow-hidden`}>
                         <div
                           className={`h-full ${colors.bg} rounded-full transition-all duration-1000 ease-out`}
                           style={{ width: `${subject.percent}%` }}
@@ -1962,57 +1963,57 @@ export default function StudentDashboard() {
 
       {/* Join Code Change Modal */}
       {showJoinCodeModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn" onClick={() => setShowJoinCodeModal(false)}>
-          <div className="bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-2xl max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            
+        <div className={`fixed inset-0 ${T.modalOverlay} backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn`} onClick={() => setShowJoinCodeModal(false)}>
+          <div className={`${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-gradient-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-md w-full shadow-2xl`} onClick={(e) => e.stopPropagation()}>
+
             {/* Header */}
-            <div className="p-4 border-b border-[#1A1F3A]">
+            <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A]' : 'border-slate-200'}`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 bg-[#00D9FF]/20 rounded-lg flex items-center justify-center">
-                    <Book className="w-4 h-4 text-[#00D9FF]" />
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isDark ? 'bg-[#00D9FF]/20' : 'bg-blue-100'}`}>
+                    <Book className={`w-4 h-4 ${isDark ? 'text-[#00D9FF]' : 'text-blue-600'}`} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-white">Change Class</h2>
-                    <p className="text-xs text-gray-400">Enter new join code</p>
+                    <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Change Class</h2>
+                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>Enter new join code</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowJoinCodeModal(false)}
-                  className="w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors"
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}
                 >
-                  <X className="w-4 h-4 text-gray-400" />
+                  <X className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-slate-600'}`} />
                 </button>
               </div>
 
               {/* Current Class Info */}
-              <div className="bg-[#00D9FF]/10 border border-[#00D9FF]/20 rounded-lg p-3">
-                <p className="text-xs text-gray-400 mb-1">Current Join Code</p>
-                <code className="text-[#00D9FF] font-mono text-base">{joinCode}</code>
+              <div className={`${isDark ? 'bg-[#00D9FF]/10 border border-[#00D9FF]/20' : 'bg-blue-50 border border-blue-200'} rounded-lg p-3`}>
+                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'} mb-1`}>Current Join Code</p>
+                <code className={`${isDark ? 'text-[#00D9FF]' : 'text-blue-600'} font-mono text-base`}>{joinCode}</code>
               </div>
             </div>
 
             {/* Body */}
-            <div className="p-4">
-              <label className="block text-xs text-gray-400 mb-1.5">New Join Code</label>
+            <div className={`p-4 ${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
+              <label className={`block text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'} mb-1.5`}>New Join Code</label>
               <input
                 type="text"
                 value={newJoinCode}
                 onChange={(e) => setNewJoinCode(e.target.value)}
                 placeholder="Enter 6-digit code"
                 maxLength={6}
-                className="w-full bg-transparent border border-[#1A1F3A] rounded-xl px-4 py-3 text-white focus:border-[#00D9FF] focus:outline-none transition-colors font-mono text-lg tracking-wider"
+                className={`w-full bg-transparent border ${isDark ? 'border-[#1A1F3A] text-white focus:border-[#00D9FF]' : 'border-slate-200 text-slate-900 focus:border-blue-500'} rounded-xl px-4 py-3 focus:outline-none transition-colors font-mono text-lg tracking-wider`}
               />
-              <p className="text-xs text-gray-500 mt-2">
+              <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-slate-500'} mt-2`}>
                 ⚠️ Changing class will reset your attendance data
               </p>
             </div>
 
             {/* Footer */}
-            <div className="p-6 border-t border-[#1A1F3A] flex gap-3">
+            <div className={`p-6 border-t ${isDark ? 'border-[#1A1F3A]' : 'border-slate-200'} flex gap-3`}>
               <button
                 onClick={() => setShowJoinCodeModal(false)}
-                className="flex-1 px-4 py-3 rounded-xl border border-[#1A1F3A] text-gray-400 hover:bg-white/5 transition-all duration-300"
+                className={`flex-1 px-4 py-3 rounded-xl border ${isDark ? 'border-[#1A1F3A] text-gray-400 hover:bg-white/5' : 'border-slate-200 text-slate-600 hover:bg-slate-100'} transition-all duration-300`}
               >
                 Cancel
               </button>
@@ -2021,13 +2022,16 @@ export default function StudentDashboard() {
                 disabled={changingClass || newJoinCode.length !== 6}
                 className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
                   changingClass || newJoinCode.length !== 6
-                    ? "bg-[#00D9FF]/20 text-[#00D9FF]/50 cursor-not-allowed"
-                    : "bg-gradient-to-r from-[#00D9FF] to-[#0EA5E9] text-white hover:scale-105"
+                    ? `${isDark ? 'bg-[#00D9FF]/20 text-[#00D9FF]/50' : 'bg-blue-100 text-blue-400/50'} cursor-not-allowed`
+                    : `${isDark ? 'bg-gradient-to-r from-[#00D9FF] to-[#0EA5E9] text-white hover:scale-105' : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:scale-105'}`
                 }`}
               >
                 {changingClass ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                    <div className="relative w-4 h-4">
+                      <div className={`absolute inset-0 border-2 ${isDark ? 'border-white/20' : 'border-white/30'} rounded-full`}></div>
+                      <div className="absolute inset-0 border-2 border-transparent border-t-white rounded-full animate-spin"></div>
+                    </div>
                     Changing...
                   </>
                 ) : (
