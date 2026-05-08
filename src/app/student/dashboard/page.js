@@ -1923,7 +1923,7 @@ export default function StudentDashboard() {
 
             {/* Subjects Grid */}
             <div className={`p-4 overflow-y-auto max-h-[calc(90vh-140px)] ${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {subjectStats.map((subject, index) => {
                   const colors = getSubjectColor(index);
 
@@ -1931,15 +1931,15 @@ export default function StudentDashboard() {
                     <div
                       key={subject.id}
                       onClick={() => router.push(`/student/subject/${subject.id}`)}
-                      className={`${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border border-[#1A1F3A]' : 'bg-white border border-slate-200'} rounded-lg p-3 cursor-pointer hover:scale-[1.01] transition-all duration-300 group`}
+                      className={`${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border border-[#1A1F3A]' : 'bg-white border border-slate-200'} rounded-lg p-2 cursor-pointer hover:scale-[1.01] transition-all duration-300 group`}
                       style={{ borderColor: isDark ? undefined : `${colors.bg.replace('bg-', '')}30` }}
                     >
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <div className={`w-2 h-2 rounded-full ${colors.bg} shadow-lg ${colors.glow} animate-pulse-slow flex-shrink-0`}></div>
-                          <span className={`font-medium text-sm truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{subject.name}</span>
+                          <div className={`w-1.5 h-1.5 rounded-full ${colors.bg} shadow-lg ${colors.glow} animate-pulse-slow flex-shrink-0`}></div>
+                          <span className={`font-medium text-xs truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{subject.name}</span>
                         </div>
-                        <span className={`${colors.text} font-bold text-xl ml-2`}>{subject.percent}%</span>
+                        <span className={`${colors.text} font-bold text-lg ml-2`}>{subject.percent}%</span>
                       </div>
 
                       <p className={`text-xs mb-2 ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>
