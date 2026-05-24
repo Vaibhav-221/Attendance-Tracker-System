@@ -654,7 +654,7 @@ export default function CRDashboard() {
 
               {/* Dropdown Menu */}
               {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-64 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border ${T.border} rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50 animate-fadeIn">
+                <div className={`${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27]' : 'bg-white'} border ${T.border} rounded-xl shadow-2xl ${isDark ? 'shadow-black/50' : 'shadow-gray-400'} overflow-hidden z-50 animate-fadeIn`}>
                   <div className="p-3 border-b ${T.border}">
                     <p className="${T.text} font-medium truncate">{userData?.name}</p>
                     <p className="${T.textMuted} text-xs truncate">{userData?.email}</p>
@@ -1188,7 +1188,7 @@ export default function CRDashboard() {
 
                         <div
                           key={sub.id}
-                          className={`bg-[#0F1629] border ${colors.border} border-l-4 rounded-lg sm:rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 hover:bg-[#131829] transition-all duration-300 hover:scale-[1.02] hover:shadow-lg ${colors.glow}`}
+                          className={`${T.card} border ${colors.border} border-l-4 rounded-lg sm:rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 ${isDark ? 'hover:bg-[#1A1F3A]' : 'hover:bg-[#E2E8F0]'} transition-all duration-300 hover:scale-[1.02] hover:shadow-lg ${colors.glow}`}
                         >
 
                           <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
@@ -1312,7 +1312,7 @@ export default function CRDashboard() {
 
                           <div
                             key={id}
-                            className={`bg-[#0F1629] border ${colors.border} border-l-4 rounded-lg sm:rounded-xl p-3 sm:p-4 relative overflow-hidden hover:bg-[#131829] transition-all duration-300 hover:scale-[1.02] hover:shadow-lg ${colors.glow}`}
+                            className={`${T.card} border ${colors.border} border-l-4 rounded-lg sm:rounded-xl p-3 sm:p-4 relative overflow-hidden ${isDark ? 'hover:bg-[#1A1F3A]' : 'hover:bg-[#E2E8F0]'} transition-all duration-300 hover:scale-[1.02] hover:shadow-lg ${colors.glow}`}
                           >
                             <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-[#7C3AED]/5 rounded-full blur-xl"></div>
                             
