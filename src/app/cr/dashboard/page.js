@@ -16,10 +16,60 @@ import {
   where
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import { useTheme } from "@/lib/theme-context";
+import { Sun, Moon } from "lucide-react";
 
 export default function CRDashboard() {
 
   const router = useRouter();
+  const { isDark, toggleTheme } = useTheme();
+
+  // Theme configuration
+  const T = {
+    page: isDark ? '#0A0E27' : '#F8FAFC',
+    card: isDark ? '#0F1629' : '#FFFFFF',
+    cardAlt: isDark ? '#0F1629' : '#F8FAFC',
+    border: isDark ? '#1A1F3A' : '#E2E8F0',
+    borderHover: isDark ? '#2A2F4A' : '#CBD5E1',
+    text: isDark ? 'text-white' : 'text-slate-900',
+    textMuted: isDark ? 'text-gray-400' : 'text-slate-500',
+    textSubtle: isDark ? 'text-gray-500' : 'text-slate-400',
+    textCodeMuted: isDark ? 'text-gray-600' : 'text-slate-500',
+    inputBg: isDark ? '#1A1F3A' : '#E2E8F0',
+    subtleHighlight: isDark ? 'bg-white/5' : 'bg-slate-50',
+    subtleHighlightHover: isDark ? 'bg-white/10' : 'bg-slate-100',
+    gridLine: isDark ? '#1A1F3A' : '#E2E8F0',
+    weekBg: isDark ? '#0A0E27' : '#F8FAFC',
+    weekBorder: isDark ? '#1A1F3A' : '#E2E8F0',
+    todayBorder: isDark ? '#00D9FF/40' : '#3B82F6/50',
+    todayBg: isDark ? 'rgba(0,217,255,0.05)' : 'rgba(59,130,246,0.05)',
+    todayText: isDark ? '#00D9FF' : '#3B82F6',
+    modalOverlay: isDark ? 'bg-black/60' : 'bg-black/30',
+    sidebarBg: isDark ? '#0F1629' : '#FFFFFF',
+    sidebarBorder: isDark ? '#1A1F3A' : '#E2E8F0',
+    sidebarNav: isDark ? '#1A1F3A' : '#F1F5F9',
+    hamburgerBg: isDark ? '#1A1F3A' : '#FFFFFF',
+    hamburgerBorder: isDark ? '#2A2F4A' : '#E2E8F0',
+    hamburgerText: isDark ? 'text-gray-300' : 'text-slate-700',
+    hamburgerHover: isDark ? '#2A2F4A' : '#F1F5F9',
+    progressBar: isDark ? '#1A1F3A' : '#E2E8F0',
+    targetLine: isDark ? 'border-white/50' : 'border-slate-400',
+    chartGradBg: isDark ? 'bg-[#1A1F3A]' : 'bg-slate-200',
+    emptyBar: isDark ? 'bg-gray-700/20' : 'bg-slate-200',
+    emptyBarLight: isDark ? 'bg-gray-700/30' : 'bg-slate-200',
+    navText: isDark ? '${T.textMuted}' : 'text-slate-400',
+    navTextSmall: isDark ? '${T.textMuted}' : 'text-slate-500',
+    codeBg: isDark ? 'bg-[#00D9FF]/5' : 'bg-slate-100',
+    codeBorder: isDark ? 'bg-[#00D9FF]/5' : 'bg-slate-100',
+    cardShadow: isDark ? 'bg-white/3' : 'bg-slate-100/50',
+    cardShadowHover: isDark ? 'bg-white/5' : 'bg-slate-100',
+    modalBackdrop: isDark ? 'backdrop-blur-sm' : '',
+    tipText: isDark ? 'text-gray-600' : 'text-slate-400',
+    dayEmptyText: isDark ? 'text-gray-600' : 'text-slate-400',
+    noDataText: isDark ? 'text-gray-600' : 'text-slate-400',
+    dayLabel: isDark ? 'text-gray-400' : 'text-slate-500',
+    dayText: isDark ? 'text-gray-600' : 'text-slate-400',
+  };
 
   const [view, setView] = useState("cr");
 
@@ -506,7 +556,7 @@ export default function CRDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0E27] flex items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: T.page }}>
         {/* Animated background */}
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00D9FF]/10 rounded-full blur-[100px] animate-float"></div>
@@ -533,7 +583,7 @@ export default function CRDashboard() {
             <p className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] via-[#7C3AED] to-[#10B981] text-xl font-bold animate-gradient" style={{ backgroundSize: '200% 200%' }}>
               Loading Dashboard
             </p>
-            <p className="text-gray-500 text-sm">Please wait while we fetch your data</p>
+            <p className="${T.textMuted} text-sm">Please wait while we fetch your data</p>
           </div>
 
           {/* Animated dots */}
@@ -560,7 +610,7 @@ export default function CRDashboard() {
 
   return (
 
-    <div className="min-h-screen bg-[#0A0E27] text-gray-200 p-3 sm:p-5 lg:p-8 relative overflow-hidden">
+    <div className={`min-h-screen ${T.text} p-3 sm:p-5 lg:p-8 relative overflow-hidden`} style={{ backgroundColor: T.page }}>
 
       {/* Enhanced Animated Background */}
       <div className="absolute top-[-100px] right-[-100px] w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] bg-[#00D9FF]/5 rounded-full blur-[100px] animate-float"></div>
@@ -574,22 +624,22 @@ export default function CRDashboard() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-9 h-9 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-lg flex items-center justify-center shadow-lg shadow-[#00D9FF]/30 flex-shrink-0 hover:scale-110 hover:rotate-12 transition-transform duration-300">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 ${T.text}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div className="min-w-0">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-white truncate">ATS Dashboard</h1>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold ${T.text} truncate">ATS Dashboard</h1>
                 <p className="text-sm sm:text-base text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#7C3AED] font-medium animate-gradient">
                   {getGreeting()}, {userData?.name || 'User'}!
                 </p>
               </div>
             </div>
-            <p className="text-xs sm:text-sm text-gray-500 pl-0 sm:pl-12 hidden sm:block">Manage class attendance seamlessly</p>
+            <p className="text-xs sm:text-sm ${T.textMuted} pl-0 sm:pl-12 hidden sm:block">Manage class attendance seamlessly</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             <div className="text-right hidden md:block">
-              <p className="text-xs text-gray-500">Class Representative</p>
+              <p className="text-xs ${T.textMuted}">Class Representative</p>
               <p className="text-sm text-gray-300 font-medium">{userData?.name || 'CR User'}</p>
             </div>
             
@@ -597,19 +647,36 @@ export default function CRDashboard() {
             <div className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full flex items-center justify-center text-white font-semibold text-base sm:text-lg border-2 border-[#1A1F3A] shadow-lg shadow-[#00D9FF]/30 hover:scale-110 hover:shadow-[#00D9FF]/60 transition-all duration-300 cursor-pointer"
+                className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full flex items-center justify-center ${T.text} font-semibold text-base sm:text-lg border-2 ${T.border} shadow-lg shadow-[#00D9FF]/30 hover:scale-110 hover:shadow-[#00D9FF]/60 transition-all duration-300 cursor-pointer"
               >
                 {userData?.name?.charAt(0) || 'CR'}
               </button>
 
               {/* Dropdown Menu */}
               {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-64 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50 animate-fadeIn">
-                  <div className="p-3 border-b border-[#1A1F3A]">
-                    <p className="text-white font-medium truncate">{userData?.name}</p>
-                    <p className="text-gray-500 text-xs truncate">{userData?.email}</p>
+                <div className="absolute right-0 mt-2 w-64 bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border ${T.border} rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50 animate-fadeIn">
+                  <div className="p-3 border-b ${T.border}">
+                    <p className="${T.text} font-medium truncate">{userData?.name}</p>
+                    <p className="${T.textMuted} text-xs truncate">{userData?.email}</p>
                   </div>
-                  
+
+                  {/* Theme Toggle */}
+                  <button
+                    onClick={toggleTheme}
+                    aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                    className="w-full px-4 py-3 text-left flex items-center justify-between transition-colors duration-200"
+                  >
+                    <div className="flex items-center gap-2">
+                      {isDark ? <Moon className="w-4 h-4 text-[#6B7280]" /> : <Sun className="w-4 h-4 text-yellow-500" />}
+                      <span className={T.textMuted}>{isDark ? 'Dark' : 'Light'} Mode</span>
+                    </div>
+                    <div className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${isDark ? 'bg-[#2A2F4A]' : 'bg-slate-300'}`}>
+                      <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${isDark ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                    </div>
+                  </button>
+
+                  <div className={`border-t ${T.border} mx-3 my-1`}></div>
+
                   <button
                     onClick={handleLogout}
                     className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-500/10 transition-colors duration-200 flex items-center gap-2"
@@ -629,7 +696,7 @@ export default function CRDashboard() {
         {userData?.classId && (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
             
-            <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#00D9FF]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#00D9FF]/20 group cursor-pointer">
+            <div className="${T.card} border ${T.border} rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#00D9FF]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#00D9FF]/20 group cursor-pointer">
               <div className="absolute top-0 right-0 w-20 h-20 bg-[#00D9FF]/5 rounded-full blur-2xl group-hover:bg-[#00D9FF]/10 transition-all duration-300"></div>
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 relative z-10">
                 <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#00D9FF]/10 rounded-lg flex items-center justify-center group-hover:bg-[#00D9FF]/20 group-hover:scale-110 transition-all duration-300">
@@ -637,12 +704,12 @@ export default function CRDashboard() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
-                <p className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">Total Subjects</p>
+                <p className="text-xs ${T.textMuted} group-hover:text-gray-400 transition-colors">Total Subjects</p>
               </div>
               <p className="text-2xl sm:text-3xl font-semibold text-[#00D9FF] relative z-10 group-hover:scale-110 transition-transform duration-300">{subjects.length}</p>
             </div>
 
-            <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#7C3AED]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#7C3AED]/20 group cursor-pointer">
+            <div className="${T.card} border ${T.border} rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#7C3AED]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#7C3AED]/20 group cursor-pointer">
               <div className="absolute top-0 right-0 w-20 h-20 bg-[#7C3AED]/5 rounded-full blur-2xl group-hover:bg-[#7C3AED]/10 transition-all duration-300"></div>
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 relative z-10">
                 <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#7C3AED]/10 rounded-lg flex items-center justify-center group-hover:bg-[#7C3AED]/20 group-hover:scale-110 transition-all duration-300">
@@ -650,12 +717,12 @@ export default function CRDashboard() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <p className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">Today's Classes</p>
+                <p className="text-xs ${T.textMuted} group-hover:text-gray-400 transition-colors">Today's Classes</p>
               </div>
               <p className="text-2xl sm:text-3xl font-semibold text-[#7C3AED] relative z-10 group-hover:scale-110 transition-transform duration-300">{todaySubjects.length}</p>
             </div>
 
-            <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#10B981]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#10B981]/20 group cursor-pointer col-span-2 lg:col-span-1">
+            <div className="${T.card} border ${T.border} rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#10B981]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#10B981]/20 group cursor-pointer col-span-2 lg:col-span-1">
               <div className="absolute top-0 right-0 w-20 h-20 bg-[#10B981]/5 rounded-full blur-2xl group-hover:bg-[#10B981]/10 transition-all duration-300"></div>
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 relative z-10">
                 <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#10B981]/10 rounded-lg flex items-center justify-center group-hover:bg-[#10B981]/20 group-hover:scale-110 transition-all duration-300">
@@ -663,7 +730,7 @@ export default function CRDashboard() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <p className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">Schedule Status</p>
+                <p className="text-xs ${T.textMuted} group-hover:text-gray-400 transition-colors">Schedule Status</p>
               </div>
               <p className="text-2xl sm:text-3xl font-semibold text-[#10B981] relative z-10 group-hover:scale-110 transition-transform duration-300">
                 {published ? "Published" : "Draft"}
@@ -674,14 +741,14 @@ export default function CRDashboard() {
         )}
 
         {/* Navigation Tabs with Hover Effects */}
-        <div className="flex gap-2 sm:gap-3 mb-6 sm:mb-8 border-b border-[#1A1F3A] overflow-x-auto">
+        <div className="flex gap-2 sm:gap-3 mb-6 sm:mb-8 border-b ${T.border} overflow-x-auto">
 
           <button
             onClick={() => setView("cr")}
             className={`px-4 sm:px-7 py-2.5 sm:py-3 rounded-t-lg font-medium text-xs sm:text-sm transition-all duration-300 whitespace-nowrap ${
               view === "cr"
-                ? "bg-gradient-to-br from-[#00D9FF] to-[#0EA5E9] text-white shadow-lg shadow-[#00D9FF]/30"
-                : "bg-transparent text-gray-500 hover:text-gray-300 hover:bg-[#1A1F3A]/50"
+                ? "bg-gradient-to-br from-[#00D9FF] to-[#0EA5E9] ${T.text} shadow-lg shadow-[#00D9FF]/30"
+                : "bg-transparent ${T.textMuted} hover:text-gray-300 hover:bg-[#1A1F3A]/50"
             }`}
           >
             CR Panel
@@ -691,8 +758,8 @@ export default function CRDashboard() {
             onClick={() => setView("monitor")}
             className={`px-4 sm:px-7 py-2.5 sm:py-3 rounded-t-lg font-medium text-xs sm:text-sm transition-all duration-300 whitespace-nowrap ${
               view === "monitor"
-                ? "bg-gradient-to-br from-[#00D9FF] to-[#0EA5E9] text-white shadow-lg shadow-[#00D9FF]/30"
-                : "bg-transparent text-gray-500 hover:text-gray-300 hover:bg-[#1A1F3A]/50"
+                ? "bg-gradient-to-br from-[#00D9FF] to-[#0EA5E9] ${T.text} shadow-lg shadow-[#00D9FF]/30"
+                : "bg-transparent ${T.textMuted} hover:text-gray-300 hover:bg-[#1A1F3A]/50"
             }`}
           >
             Monitor
@@ -702,8 +769,8 @@ export default function CRDashboard() {
             onClick={() => setView("student")}
             className={`px-4 sm:px-7 py-2.5 sm:py-3 rounded-t-lg font-medium text-xs sm:text-sm transition-all duration-300 whitespace-nowrap ${
               view === "student"
-                ? "bg-gradient-to-br from-[#00D9FF] to-[#0EA5E9] text-white shadow-lg shadow-[#00D9FF]/30"
-                : "bg-transparent text-gray-500 hover:text-gray-300 hover:bg-[#1A1F3A]/50"
+                ? "bg-gradient-to-br from-[#00D9FF] to-[#0EA5E9] ${T.text} shadow-lg shadow-[#00D9FF]/30"
+                : "bg-transparent ${T.textMuted} hover:text-gray-300 hover:bg-[#1A1F3A]/50"
             }`}
           >
             My Attendance
@@ -715,7 +782,7 @@ export default function CRDashboard() {
 
           <iframe
             src="/student/dashboard"
-            className="w-full h-[600px] sm:h-[800px] border border-[#1A1F3A] rounded-xl hover:border-[#00D9FF]/30 transition-all duration-300"
+            className="w-full h-[600px] sm:h-[800px] border ${T.border} rounded-xl hover:border-[#00D9FF]/30 transition-all duration-300"
           />
 
         )}
@@ -728,13 +795,13 @@ export default function CRDashboard() {
               {/* Page Header */}
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg shadow-[#00D9FF]/30">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 ${T.text}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-semibold text-white">Analytics Monitor</h2>
-                  <p className="text-xs sm:text-sm text-gray-500">Track class performance and engagement</p>
+                  <h2 className="text-xl sm:text-2xl font-semibold ${T.text}">Analytics Monitor</h2>
+                  <p className="text-xs sm:text-sm ${T.textMuted}">Track class performance and engagement</p>
                 </div>
               </div>
 
@@ -742,7 +809,7 @@ export default function CRDashboard() {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
 
                 {/* Total Students Card */}
-                <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#00D9FF]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#00D9FF]/20 group">
+                <div className="${T.card} border ${T.border} rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#00D9FF]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#00D9FF]/20 group">
                   <div className="absolute top-0 right-0 w-20 h-20 bg-[#00D9FF]/5 rounded-full blur-2xl group-hover:bg-[#00D9FF]/10 transition-all duration-300"></div>
                   <div className="flex items-center gap-2 sm:gap-3 mb-2 relative z-10">
                     <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#00D9FF]/10 rounded-lg flex items-center justify-center group-hover:bg-[#00D9FF]/20 group-hover:scale-110 transition-all duration-300">
@@ -750,7 +817,7 @@ export default function CRDashboard() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
                     </div>
-                    <p className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">Total Students</p>
+                    <p className="text-xs ${T.textMuted} group-hover:text-gray-400 transition-colors">Total Students</p>
                   </div>
                   {analyticsLoading ? (
                     <div className="h-8 w-16 bg-[#1A1F3A] rounded animate-pulse"></div>
@@ -760,7 +827,7 @@ export default function CRDashboard() {
                 </div>
 
                 {/* Today's Attendance Card */}
-                <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#10B981]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#10B981]/20 group">
+                <div className="${T.card} border ${T.border} rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#10B981]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#10B981]/20 group">
                   <div className="absolute top-0 right-0 w-20 h-20 bg-[#10B981]/5 rounded-full blur-2xl group-hover:bg-[#10B981]/10 transition-all duration-300"></div>
                   <div className="flex items-center gap-2 sm:gap-3 mb-2 relative z-10">
                     <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#10B981]/10 rounded-lg flex items-center justify-center group-hover:bg-[#10B981]/20 group-hover:scale-110 transition-all duration-300">
@@ -768,20 +835,20 @@ export default function CRDashboard() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
-                    <p className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">Today's Attendance</p>
+                    <p className="text-xs ${T.textMuted} group-hover:text-gray-400 transition-colors">Today's Attendance</p>
                   </div>
                   {analyticsLoading ? (
                     <div className="h-8 w-16 bg-[#1A1F3A] rounded animate-pulse"></div>
                   ) : (
                     <p className="text-2xl sm:text-3xl font-semibold text-[#10B981] relative z-10 group-hover:scale-110 transition-transform duration-300">
                       {todayAttendance}
-                      <span className="text-xs sm:text-sm text-gray-500 font-normal ml-1">/ {totalStudents}</span>
+                      <span className="text-xs sm:text-sm ${T.textMuted} font-normal ml-1">/ {totalStudents}</span>
                     </p>
                   )}
                 </div>
 
                 {/* Weekly Avg Card */}
-                <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#F59E0B]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#F59E0B]/20 group col-span-2 lg:col-span-1">
+                <div className="${T.card} border ${T.border} rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden hover:border-[#F59E0B]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#F59E0B]/20 group col-span-2 lg:col-span-1">
                   <div className="absolute top-0 right-0 w-20 h-20 bg-[#F59E0B]/5 rounded-full blur-2xl group-hover:bg-[#F59E0B]/10 transition-all duration-300"></div>
                   <div className="flex items-center gap-2 sm:gap-3 mb-2 relative z-10">
                     <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#F59E0B]/10 rounded-lg flex items-center justify-center group-hover:bg-[#F59E0B]/20 group-hover:scale-110 transition-all duration-300">
@@ -789,7 +856,7 @@ export default function CRDashboard() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
                       </svg>
                     </div>
-                    <p className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">Attendance Rate</p>
+                    <p className="text-xs ${T.textMuted} group-hover:text-gray-400 transition-colors">Attendance Rate</p>
                   </div>
                   {analyticsLoading ? (
                     <div className="h-8 w-20 bg-[#1A1F3A] rounded animate-pulse"></div>
@@ -803,10 +870,10 @@ export default function CRDashboard() {
               </div>
 
               {/* Weekly Attendance Chart */}
-              <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:border-[#00D9FF]/30 hover:shadow-lg hover:shadow-[#00D9FF]/10 transition-all duration-300">
+              <div className="${T.card} border ${T.border} rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:border-[#00D9FF]/30 hover:shadow-lg hover:shadow-[#00D9FF]/10 transition-all duration-300">
                 <div className="flex justify-between items-start mb-4 sm:mb-6">
-                  <h3 className="text-base sm:text-lg font-semibold text-white">Weekly Attendance Overview</h3>
-                  <span className="text-xs sm:text-sm text-gray-500 hidden sm:inline">Last 7 days</span>
+                  <h3 className="text-base sm:text-lg font-semibold ${T.text}">Weekly Attendance Overview</h3>
+                  <span className="text-xs sm:text-sm ${T.textMuted} hidden sm:inline">Last 7 days</span>
                 </div>
 
                 {analyticsLoading ? (
@@ -831,13 +898,13 @@ export default function CRDashboard() {
                               {/* Attended (foreground) */}
                               <div className="absolute bottom-0 w-full bg-gradient-to-t from-[#00D9FF] to-[#7C3AED] rounded-t-lg transition-all duration-300 group-hover:from-[#00D9FF] group-hover:to-[#7C3AED]/80 opacity-80" style={{ height: `${attendedHeight}%`, minHeight: attendedHeight > 0 ? '20px' : '4px' }}>
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                  <span className="text-white text-xs font-medium drop-shadow-md">{data.attended}</span>
+                                  <span className="${T.text} text-xs font-medium drop-shadow-md">{data.attended}</span>
                                 </div>
                               </div>
                             </div>
                             <div className="text-center">
                               <span className="text-xs sm:text-sm text-gray-300 font-medium block group-hover:text-[#00D9FF] transition-colors">{data.day}</span>
-                              <span className="text-[10px] sm:text-xs text-gray-500">{data.date}</span>
+                              <span className="text-[10px] sm:text-xs ${T.textMuted}">{data.date}</span>
                             </div>
                           </div>
                         );
@@ -845,7 +912,7 @@ export default function CRDashboard() {
                     </div>
 
                     {/* Legend */}
-                    <div className="flex justify-center gap-4 sm:gap-6 mt-6 pt-4 border-t border-[#1A1F3A]">
+                    <div className="flex justify-center gap-4 sm:gap-6 mt-6 pt-4 border-t ${T.border}">
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-gradient-to-r from-[#00D9FF] to-[#7C3AED]"></div>
                         <span className="text-xs sm:text-sm text-gray-400">Attended</span>
@@ -863,10 +930,10 @@ export default function CRDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
 
                 {/* Recent Students */}
-                <div className="lg:col-span-2 bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:border-[#00D9FF]/30 hover:shadow-lg hover:shadow-[#00D9FF]/10 transition-all duration-300">
+                <div className="lg:col-span-2 ${T.card} border ${T.border} rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:border-[#00D9FF]/30 hover:shadow-lg hover:shadow-[#00D9FF]/10 transition-all duration-300">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-base sm:text-lg font-semibold text-white">Recent Students</h3>
-                    <span className="text-xs sm:text-sm text-gray-500">Latest 5</span>
+                    <h3 className="text-base sm:text-lg font-semibold ${T.text}">Recent Students</h3>
+                    <span className="text-xs sm:text-sm ${T.textMuted}">Latest 5</span>
                   </div>
 
                   {analyticsLoading ? (
@@ -885,14 +952,14 @@ export default function CRDashboard() {
                     <div className="space-y-2 sm:space-y-3">
                       {recentStudents.map((student, idx) => (
                         <div key={student.id || idx} className="flex items-center gap-3 p-2 sm:p-3 bg-[#1A1F3A] rounded-lg hover:bg-[#252B44] transition-all duration-300">
-                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full flex items-center justify-center ${T.text} font-semibold text-sm flex-shrink-0">
                             {student.name?.charAt(0) || 'S'}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm sm:text-base text-gray-200 font-medium truncate">{student.name || 'Anonymous'}</p>
-                            <p className="text-xs sm:text-sm text-gray-500 truncate">{student.email || 'No email'}</p>
+                            <p className="text-sm sm:text-base ${T.text} font-medium truncate">{student.name || 'Anonymous'}</p>
+                            <p className="text-xs sm:text-sm ${T.textMuted} truncate">{student.email || 'No email'}</p>
                           </div>
-                          <div className="text-xs text-gray-500 flex-shrink-0 hidden sm:block">
+                          <div className="text-xs ${T.textMuted} flex-shrink-0 hidden sm:block">
                             {student.joinedAt ? new Date(student.joinedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}
                           </div>
                         </div>
@@ -903,15 +970,15 @@ export default function CRDashboard() {
                       <svg className="w-12 h-12 text-gray-700 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                       </svg>
-                      <p className="text-gray-500 text-sm">No students yet</p>
+                      <p className="${T.textMuted} text-sm">No students yet</p>
                       <p className="text-gray-600 text-xs mt-1">Share your join code to get started</p>
                     </div>
                   )}
                 </div>
 
                 {/* Quick Stats Card */}
-                <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:border-[#7C3AED]/30 hover:shadow-lg hover:shadow-[#7C3AED]/10 transition-all duration-300">
-                  <h3 className="text-base sm:text-lg font-semibold text-white mb-4">Quick Insights</h3>
+                <div className="${T.card} border ${T.border} rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:border-[#7C3AED]/30 hover:shadow-lg hover:shadow-[#7C3AED]/10 transition-all duration-300">
+                  <h3 className="text-base sm:text-lg font-semibold ${T.text} mb-4">Quick Insights</h3>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-3 bg-[#1A1F3A] rounded-lg">
                       <div className="flex items-center gap-2">
@@ -938,7 +1005,7 @@ export default function CRDashboard() {
                     </div>
 
                     {totalStudents > 0 && (
-                      <div className="mt-4 p-4 bg-gradient-to-br from-[#0A0E27] to-[#1A1F3A] rounded-lg border border-[#1A1F3A]">
+                      <div className="mt-4 p-4 bg-gradient-to-br from-[#0A0E27] to-[#1A1F3A] rounded-lg border ${T.border}">
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-xs text-gray-400">Participation</span>
                           <span className="text-xs font-medium text-[#00D9FF]">
@@ -959,24 +1026,24 @@ export default function CRDashboard() {
               </div>
 
               {/* Additional Analytics Card */}
-              <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:border-[#F59E0B]/30 hover:shadow-lg hover:shadow-[#F59E0B]/10 transition-all duration-300">
-                <h3 className="text-base sm:text-lg font-semibold text-white mb-4">Today's Summary</h3>
+              <div className="${T.card} border ${T.border} rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:border-[#F59E0B]/30 hover:shadow-lg hover:shadow-[#F59E0B]/10 transition-all duration-300">
+                <h3 className="text-base sm:text-lg font-semibold ${T.text} mb-4">Today's Summary</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                   <div className="text-center p-3 bg-[#1A1F3A] rounded-lg">
                     <p className="text-2xl sm:text-3xl font-bold text-[#00D9FF]">{totalStudents}</p>
-                    <p className="text-xs sm:text-sm text-gray-500 mt-1">Enrolled</p>
+                    <p className="text-xs sm:text-sm ${T.textMuted} mt-1">Enrolled</p>
                   </div>
                   <div className="text-center p-3 bg-[#1A1F3A] rounded-lg">
                     <p className="text-2xl sm:text-3xl font-bold text-[#10B981]">{todayAttendance}</p>
-                    <p className="text-xs sm:text-sm text-gray-500 mt-1">Present</p>
+                    <p className="text-xs sm:text-sm ${T.textMuted} mt-1">Present</p>
                   </div>
                   <div className="text-center p-3 bg-[#1A1F3A] rounded-lg">
                     <p className="text-2xl sm:text-3xl font-bold text-[#F59E0B]">{totalStudents - todayAttendance}</p>
-                    <p className="text-xs sm:text-sm text-gray-500 mt-1">Absent</p>
+                    <p className="text-xs sm:text-sm ${T.textMuted} mt-1">Absent</p>
                   </div>
                   <div className="text-center p-3 bg-[#1A1F3A] rounded-lg">
                     <p className="text-2xl sm:text-3xl font-bold text-[#7C3AED]">{subjects.length}</p>
-                    <p className="text-xs sm:text-sm text-gray-500 mt-1">Subjects</p>
+                    <p className="text-xs sm:text-sm ${T.textMuted} mt-1">Subjects</p>
                   </div>
                 </div>
               </div>
@@ -992,22 +1059,22 @@ export default function CRDashboard() {
             {!userData.classId ? (
 
               <div className="max-w-md mx-auto mt-10 sm:mt-20">
-                <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-2xl p-6 sm:p-8 hover:border-[#00D9FF]/30 hover:shadow-xl hover:shadow-[#00D9FF]/10 transition-all duration-300">
+                <div className="${T.card} border ${T.border} rounded-2xl p-6 sm:p-8 hover:border-[#00D9FF]/30 hover:shadow-xl hover:shadow-[#00D9FF]/10 transition-all duration-300">
                   <div className="text-center mb-6">
                     <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#00D9FF]/30 hover:scale-110 hover:rotate-12 transition-all duration-300">
-                      <svg className="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-7 h-7 sm:w-8 sm:h-8 ${T.text}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
                     </div>
-                    <h2 className="text-xl sm:text-2xl font-semibold text-white mb-2">Create Your Class</h2>
-                    <p className="text-sm text-gray-500">Get started by creating your first class</p>
+                    <h2 className="text-xl sm:text-2xl font-semibold ${T.text} mb-2">Create Your Class</h2>
+                    <p className="text-sm ${T.textMuted}">Get started by creating your first class</p>
                   </div>
 
                   <div className="space-y-4">
                     <input
                       type="text"
                       placeholder="Enter class name (e.g., Computer Science A)"
-                      className="w-full border border-[#1A1F3A] bg-[#0A0E27] text-gray-200 p-3 sm:p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00D9FF] focus:border-transparent transition-all text-sm sm:text-base hover:border-[#00D9FF]/30"
+                      className="w-full border ${T.border} bg-[#0A0E27] ${T.text} p-3 sm:p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00D9FF] focus:border-transparent transition-all text-sm sm:text-base hover:border-[#00D9FF]/30"
                       value={className}
                       onChange={(e) => setClassName(e.target.value)}
                     />
@@ -1015,7 +1082,7 @@ export default function CRDashboard() {
                     <button
                       disabled={actionLoading.createClass}
                       onClick={handleCreateClass}
-                      className={`w-full text-white px-6 py-3 sm:py-4 rounded-lg font-medium shadow-lg transition-all text-sm sm:text-base ${
+                      className={`w-full ${T.text} px-6 py-3 sm:py-4 rounded-lg font-medium shadow-lg transition-all text-sm sm:text-base ${
                         actionLoading.createClass
                           ? "bg-gradient-to-br from-[#00D9FF]/50 to-[#0EA5E9]/50 cursor-not-allowed"
                           : "bg-gradient-to-br from-[#00D9FF] to-[#0EA5E9] shadow-[#00D9FF]/30 hover:shadow-[#00D9FF]/50 hover:scale-105"
@@ -1045,15 +1112,15 @@ export default function CRDashboard() {
                   
                   <div className="relative z-10">
                     <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white animate-bounce-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6 ${T.text} animate-bounce-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                       </svg>
-                      <p className="text-sm font-medium text-white">Student Join Code</p>
+                      <p className="text-sm font-medium ${T.text}">Student Join Code</p>
                     </div>
                     <p className="text-xs text-green-100 mb-3 sm:mb-4 opacity-90">Share this code with your students to join the class</p>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-                      <p className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white tracking-[0.3em] font-mono animate-glow">{joinCode}</p>
-                      <button className="bg-white/20 backdrop-blur-sm text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl border border-white/30 font-medium hover:bg-white/30 transition-all flex items-center gap-2 text-sm hover:scale-110 transform">
+                      <p className="text-4xl sm:text-5xl lg:text-6xl font-bold ${T.text} tracking-[0.3em] font-mono animate-glow">{joinCode}</p>
+                      <button className="bg-white/20 backdrop-blur-sm ${T.text} px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl border border-white/30 font-medium hover:bg-white/30 transition-all flex items-center gap-2 text-sm hover:scale-110 transform">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                         </svg>
@@ -1069,7 +1136,7 @@ export default function CRDashboard() {
                   {/* Subjects Section */}
                   <div className="lg:col-span-2">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-5">
-                      <h2 className="text-lg sm:text-xl font-semibold text-white">Semester Subjects</h2>
+                      <h2 className="text-lg sm:text-xl font-semibold ${T.text}">Semester Subjects</h2>
                       <span className="bg-[#00D9FF]/10 text-[#00D9FF] px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium hover:bg-[#00D9FF]/20 transition-all duration-300">
                         {subjects.length} Subjects
                       </span>
@@ -1079,7 +1146,7 @@ export default function CRDashboard() {
                       <input
                         type="text"
                         placeholder="Add new subject..."
-                        className="flex-1 border border-[#1A1F3A] bg-[#0F1629] text-gray-200 p-3 sm:p-4 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00D9FF] transition-all text-sm sm:text-base hover:border-[#00D9FF]/30 focus:scale-[1.02]"
+                        className="flex-1 border ${T.border} ${T.inputBg} ${T.text} p-3 sm:p-4 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00D9FF] transition-all text-sm sm:text-base hover:border-[#00D9FF]/30 focus:scale-[1.02]"
                         value={newSubject}
                         onChange={(e) => setNewSubject(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleAddSubject()}
@@ -1088,7 +1155,7 @@ export default function CRDashboard() {
                       <button
                         disabled={actionLoading.addSubject}
                         onClick={handleAddSubject}
-                        className={`text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl font-medium shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap ${
+                        className={`${T.text} px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl font-medium shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap ${
                           actionLoading.addSubject
                             ? "bg-gradient-to-br from-[#00D9FF]/50 to-[#0EA5E9]/50 cursor-not-allowed"
                             : "bg-gradient-to-br from-[#00D9FF] to-[#0EA5E9] shadow-[#00D9FF]/30 hover:shadow-[#00D9FF]/50 hover:scale-105"
@@ -1127,7 +1194,7 @@ export default function CRDashboard() {
                           <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                             <div className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full ${colors.bg} shadow-lg ${colors.shadow} flex-shrink-0 animate-pulse-slow`}></div>
                             <div className="min-w-0 flex-1">
-                              <span className="text-gray-200 font-medium text-sm sm:text-base block truncate">{sub.subjectName}</span>
+                              <span className="${T.text} font-medium text-sm sm:text-base block truncate">{sub.subjectName}</span>
                             </div>
                           </div>
 
@@ -1182,11 +1249,11 @@ export default function CRDashboard() {
                       )})}
 
                       {subjects.length === 0 && (
-                        <div className="text-center py-12 px-4 bg-[#0F1629] border border-[#1A1F3A] rounded-xl hover:border-[#00D9FF]/30 transition-all duration-300">
+                        <div className="text-center py-12 px-4 ${T.card} border ${T.border} rounded-xl hover:border-[#00D9FF]/30 transition-all duration-300">
                           <svg className="w-12 h-12 text-gray-700 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                           </svg>
-                          <p className="text-gray-500 text-sm">No subjects added yet</p>
+                          <p className="${T.textMuted} text-sm">No subjects added yet</p>
                           <p className="text-gray-600 text-xs mt-1">Add your first subject above</p>
                         </div>
                       )}
@@ -1197,7 +1264,7 @@ export default function CRDashboard() {
                   {/* Today's Schedule Section */}
                   <div className="lg:col-span-1">
                     <div className="flex justify-between items-center mb-4 sm:mb-5">
-                      <h2 className="text-lg sm:text-xl font-semibold text-white">Today's Schedule</h2>
+                      <h2 className="text-lg sm:text-xl font-semibold ${T.text}">Today's Schedule</h2>
                       <span className="bg-[#7C3AED]/10 text-[#7C3AED] px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 hover:bg-[#7C3AED]/20 transition-all duration-300">
                         <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -1208,7 +1275,7 @@ export default function CRDashboard() {
                     </div>
 
                     {/* Weekly Classes Chart with Hover */}
-                    <div className="bg-[#0F1629] border border-[#1A1F3A] rounded-xl sm:rounded-2xl p-4 sm:p-5 mb-4 sm:mb-6 hover:border-[#00D9FF]/30 hover:shadow-lg hover:shadow-[#00D9FF]/10 transition-all duration-300">
+                    <div className="${T.card} border ${T.border} rounded-xl sm:rounded-2xl p-4 sm:p-5 mb-4 sm:mb-6 hover:border-[#00D9FF]/30 hover:shadow-lg hover:shadow-[#00D9FF]/10 transition-all duration-300">
                       <h3 className="text-sm font-medium text-gray-400 mb-4">Last 5 Days Classes</h3>
                       <div className="flex items-end justify-between gap-2 h-32 sm:h-40">
                         {weeklyData.map((data, idx) => (
@@ -1218,13 +1285,13 @@ export default function CRDashboard() {
                                 <>
                                   <div className="absolute inset-0 bg-gradient-to-t from-[#00D9FF] to-[#7C3AED] opacity-80 group-hover:opacity-100 transition-all duration-300"></div>
                                   <div className="absolute inset-0 flex items-center justify-center">
-                                    <span className="text-white text-xs font-medium">{data.classes}</span>
+                                    <span className="${T.text} text-xs font-medium">{data.classes}</span>
                                   </div>
                                 </>
                               )}
                             </div>
                             <div className="text-center">
-                              <span className="text-xs text-gray-500 block group-hover:text-gray-400 transition-colors">{data.day}</span>
+                              <span className="text-xs ${T.textMuted} block group-hover:text-gray-400 transition-colors">{data.day}</span>
                               <span className="text-[10px] text-gray-600">{data.date}</span>
                             </div>
                           </div>
@@ -1252,7 +1319,7 @@ export default function CRDashboard() {
                             <div className="flex justify-between items-center relative z-10 gap-2">
                               <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                                 <div className={`w-2 h-2 rounded-full ${colors.bg} shadow-lg ${colors.shadow} flex-shrink-0 animate-pulse-slow`}></div>
-                                <span className="text-gray-200 font-medium text-sm truncate">{sub?.subjectName}</span>
+                                <span className="${T.text} font-medium text-sm truncate">{sub?.subjectName}</span>
                               </div>
 
                               <button
@@ -1279,11 +1346,11 @@ export default function CRDashboard() {
                       })}
 
                       {todaySubjects.length === 0 && (
-                        <div className="text-center py-8 sm:py-12 px-4 bg-[#0F1629] border border-[#1A1F3A] rounded-xl hover:border-[#00D9FF]/30 transition-all duration-300">
+                        <div className="text-center py-8 sm:py-12 px-4 ${T.card} border ${T.border} rounded-xl hover:border-[#00D9FF]/30 transition-all duration-300">
                           <svg className="w-10 h-10 sm:w-12 sm:h-12 text-gray-700 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                           </svg>
-                          <p className="text-gray-500 text-xs sm:text-sm">No classes scheduled</p>
+                          <p className="${T.textMuted} text-xs sm:text-sm">No classes scheduled</p>
                           <p className="text-gray-600 text-xs mt-1">Add subjects from the list</p>
                         </div>
                       )}
@@ -1294,7 +1361,7 @@ export default function CRDashboard() {
                     <button
                       disabled={actionLoading.publish || published}
                       onClick={publishSchedule}
-                      className={`w-full text-white px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl font-medium shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base relative overflow-hidden ${
+                      className={`w-full ${T.text} px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl font-medium shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base relative overflow-hidden ${
                         actionLoading.publish
                           ? "bg-gradient-to-br from-[#10B981]/50 to-[#059669]/50 cursor-not-allowed"
                           : published

@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(sed -n '1056,1204p' src/app/student/dashboard/page.js)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(npm run *)"
     ]
   }
 }
