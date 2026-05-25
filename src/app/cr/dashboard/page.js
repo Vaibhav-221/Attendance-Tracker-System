@@ -1,6 +1,7 @@
 "use client";
+/* eslint-disable */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { auth, db } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import {
@@ -116,6 +117,32 @@ export default function CRDashboard() {
 
   const [actionLoading, setActionLoading] = useState({});
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const menuRef = useRef(null);
+  const buttonRef = useRef(null);
+
+  useEffect(() => {
+    if (!showUserMenu) return;
+
+    function handleDocClick(e) {
+      const menuEl = menuRef.current;
+      const btnEl = buttonRef.current;
+      if (menuEl && !menuEl.contains(e.target) && btnEl && !btnEl.contains(e.target)) {
+        setShowUserMenu(false);
+      }
+    }
+
+    function handleEsc(e) {
+      if (e.key === 'Escape') setShowUserMenu(false);
+    }
+
+    document.addEventListener('mousedown', handleDocClick);
+    document.addEventListener('keydown', handleEsc);
+
+    return () => {
+      document.removeEventListener('mousedown', handleDocClick);
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, [showUserMenu]);
 
   const [weeklyData, setWeeklyData] = useState([]);
 
@@ -430,10 +457,7 @@ export default function CRDashboard() {
 
       await addDoc(
         collection(db, "classes", user.uid, "subjects"),
-        {
-          subjectName: newSubject.trim(),
-          createdAt: new Date()
-        }
+        { name: newSubject }
       );
 
       setNewSubject("");
@@ -610,7 +634,7 @@ export default function CRDashboard() {
 
           {/* Loading text with gradient */}
           <div className="space-y-2">
-            <p className="text-transparent bg-clip-text bg-gradient-to-r from-[${T.accentBlue}] via-[${T.accentPurple}] to-[${T.accentGreen}] text-xl font-bold animate-gradient" style={{ backgroundSize: '200% 200%' }}>
+            <p className="text-transparent bg-clip-text text-xl font-bold animate-gradient" style={{ backgroundImage: isDark ? 'linear-gradient(90deg, #00D9FF, #7C3AED, #10B981)' : 'linear-gradient(90deg, #3B82F6, #8B5CF6, #059669)', backgroundSize: '200% 200%' }}>
               Loading Dashboard
             </p>
             <p className={`${T.textMuted} text-sm`}>Please wait while we fetch your data</p>
@@ -679,9 +703,9 @@ export default function CRDashboard() {
     <div className={`min-h-screen ${T.text} p-3 sm:p-5 lg:p-8 relative overflow-hidden`} style={{ backgroundColor: T.page }}>
 
       {/* Enhanced Animated Background */}
-      <div className="absolute top-[-100px] right-[-100px] w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] bg-[#00D9FF]/5 rounded-full blur-[100px] animate-float"></div>
-      <div className="absolute bottom-[-150px] left-[-150px] w-[350px] h-[350px] sm:w-[500px] sm:h-[500px] bg-[#7C3AED]/5 rounded-full blur-[120px] animate-float-delayed"></div>
-      <div className="absolute top-1/2 left-1/2 w-[200px] h-[200px] sm:w-[300px] sm:h-[300px] bg-[#10B981]/5 rounded-full blur-[100px] animate-pulse-slow"></div>
+      <div className="absolute -top-25 -right-25 w-75 h-75 sm:w-100 sm:h-100 bg-[#00D9FF]/5 rounded-full blur-[100px] animate-float"></div>
+      <div className="absolute -bottom-37.5 -left-37.5 w-87.5 h-87.5 sm:w-125 sm:h-125 bg-[#7C3AED]/5 rounded-full blur-[120px] animate-float-delayed"></div>
+      <div className="absolute top-1/2 left-1/2 w-50 h-50 sm:w-75 sm:h-75 bg-[#10B981]/5 rounded-full blur-[100px] animate-pulse-slow"></div>
 
       <div className="max-w-7xl mx-auto relative z-10">
 
@@ -689,21 +713,21 @@ export default function CRDashboard() {
         <div className="flex justify-between items-start gap-3 mb-8 sm:mb-12">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-9 h-9 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-lg flex items-center justify-center shadow-lg shadow-[#00D9FF]/30 flex-shrink-0 hover:scale-110 hover:rotate-12 transition-transform duration-300">
+              <div className="w-9 h-9 bg-linear-to-br from-[#00D9FF] to-[#7C3AED] rounded-lg flex items-center justify-center shadow-lg shadow-[#00D9FF]/30 shrink-0 hover:scale-110 hover:rotate-12 transition-transform duration-300">
                 <svg className={`w-5 h-5 ${T.text}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div className="min-w-0">
                 <h1 className={`text-xl sm:text-2xl lg:text-3xl font-semibold ${T.text} truncate`}>ATS Dashboard</h1>
-                <p className="text-sm sm:text-base text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#7C3AED] font-medium animate-gradient">
+                <p className="text-sm sm:text-base text-transparent bg-clip-text bg-linear-to-r from-[#00D9FF] to-[#7C3AED] font-medium animate-gradient">
                   {getGreeting()}, {userData?.name || 'User'}!
                 </p>
               </div>
             </div>
             <p className={`text-xs sm:text-sm ${T.textMuted} pl-0 sm:pl-12 hidden sm:block`}>Manage class attendance seamlessly</p>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             <div className="text-right hidden md:block">
               <p className={`text-xs ${T.textMuted}`}>Class Representative</p>
               <p className="text-sm text-gray-300 font-medium">{userData?.name || 'CR User'}</p>
@@ -712,16 +736,21 @@ export default function CRDashboard() {
             {/* User Menu */}
             <div className="relative">
               <button
+                ref={buttonRef}
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full flex items-center justify-center ${T.text} font-semibold text-base sm:text-lg border-2 shadow-lg shadow-[#00D9FF]/30 hover:scale-110 hover:shadow-[#00D9FF]/60 transition-all duration-300 cursor-pointer`}
+                className={`w-10 h-10 sm:w-12 sm:h-12 bg-linear-to-br from-[#00D9FF] to-[#7C3AED] rounded-full flex items-center justify-center ${T.text} font-semibold text-base sm:text-lg border-2 shadow-lg shadow-[#00D9FF]/30 hover:scale-110 hover:shadow-[#00D9FF]/60 transition-all duration-300 cursor-pointer`}
                 style={{ borderColor: T.border }}
               >
                 {userData?.name?.charAt(0) || 'CR'}
               </button>
 
-              {/* Dropdown Menu */}
+              {/* Overlay (blur + close on click) */}
               {showUserMenu && (
-                <div className={`${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27]' : 'bg-white'} border rounded-xl shadow-2xl ${isDark ? 'shadow-black/50' : 'shadow-gray-400'} overflow-hidden z-50 animate-fadeIn`} style={{ borderColor: T.border }}>
+                <div>
+                  <div className="fixed inset-0 backdrop-blur-sm bg-black/20 z-40" onClick={() => setShowUserMenu(false)} aria-hidden="true"></div>
+
+                  {/* Dropdown Menu (absolute, does not affect layout) */}
+                  <div ref={menuRef} className={`${isDark ? 'bg-linear-to-br from-[#0F1629] to-[#0A0E27]' : 'bg-white'} absolute right-0 mt-2 w-64 border rounded-xl shadow-2xl ${isDark ? 'shadow-black/50' : 'shadow-gray-400'} overflow-hidden z-50 animate-fadeIn`} style={{ borderColor: T.border }}>
                   <div className="p-3 border-b" style={{ borderColor: T.border }}>
                     <p className={`${T.text} font-medium truncate`}>{userData?.name}</p>
                     <p className={`${T.textMuted} text-xs truncate`}>{userData?.email}</p>
@@ -753,6 +782,7 @@ export default function CRDashboard() {
                     </svg>
                     <span>Logout</span>
                   </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -814,7 +844,7 @@ export default function CRDashboard() {
             onClick={() => setView("cr")}
             className={`px-4 sm:px-7 py-2.5 sm:py-3 rounded-t-lg font-medium text-xs sm:text-sm transition-all duration-300 whitespace-nowrap ${
               view === "cr"
-                ? `bg-gradient-to-br from-[#00D9FF] to-[#0EA5E9] ${T.text} shadow-lg shadow-[#00D9FF]/30`
+                ? `bg-linear-to-br from-[#00D9FF] to-[#0EA5E9] ${T.text} shadow-lg shadow-[#00D9FF]/30`
                 : `bg-transparent ${T.textMuted} hover:text-gray-300 hover:bg-[#1A1F3A]/50`
             }`}
           >
@@ -825,7 +855,7 @@ export default function CRDashboard() {
             onClick={() => setView("monitor")}
             className={`px-4 sm:px-7 py-2.5 sm:py-3 rounded-t-lg font-medium text-xs sm:text-sm transition-all duration-300 whitespace-nowrap ${
               view === "monitor"
-                ? `bg-gradient-to-br from-[#00D9FF] to-[#0EA5E9] ${T.text} shadow-lg shadow-[#00D9FF]/30`
+                ? `bg-linear-to-br from-[#00D9FF] to-[#0EA5E9] ${T.text} shadow-lg shadow-[#00D9FF]/30`
                 : `bg-transparent ${T.textMuted} hover:text-gray-300 hover:bg-[#1A1F3A]/50`
             }`}
           >
@@ -836,7 +866,7 @@ export default function CRDashboard() {
             onClick={() => setView("student")}
             className={`px-4 sm:px-7 py-2.5 sm:py-3 rounded-t-lg font-medium text-xs sm:text-sm transition-all duration-300 whitespace-nowrap ${
               view === "student"
-                ? `bg-gradient-to-br from-[#00D9FF] to-[#0EA5E9] ${T.text} shadow-lg shadow-[#00D9FF]/30`
+                ? `bg-linear-to-br from-[#00D9FF] to-[#0EA5E9] ${T.text} shadow-lg shadow-[#00D9FF]/30`
                 : `bg-transparent ${T.textMuted} hover:text-gray-300 hover:bg-[#1A1F3A]/50`
             }`}
           >
@@ -849,7 +879,7 @@ export default function CRDashboard() {
 
           <iframe
             src="/student/dashboard"
-            className="w-full h-[600px] sm:h-[800px] border rounded-xl hover:border-[#00D9FF]/30 transition-all duration-300"
+            className="w-full h-150 sm:h-200 border rounded-xl hover:border-[#00D9FF]/30 transition-all duration-300"
             style={{ borderColor: T.border }}
           />
 
@@ -862,7 +892,7 @@ export default function CRDashboard() {
 
               {/* Page Header */}
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg shadow-[#00D9FF]/30">
+                <div className="w-10 h-10 bg-linear-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg shadow-[#00D9FF]/30">
                   <svg className={`w-6 h-6 ${T.text}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
@@ -958,20 +988,20 @@ export default function CRDashboard() {
                           <div key={idx} className="flex-1 flex flex-col items-center gap-2 sm:gap-3 group">
                             <div className="w-full flex flex-col gap-1 relative" style={{ height: '200px' }}>
                               {/* Scheduled (background) */}
-                              <div className="absolute bottom-0 w-full bg-[#1A1F3A] rounded-t-lg transition-all duration-300 group-hover:bg-[#252B44]" style={{ height: `${scheduledHeight}%`, minHeight: scheduledHeight > 0 ? '20px' : '4px' }}>
+                              <div className="absolute bottom-0 w-full rounded-t-lg transition-all duration-300 group-hover:bg-[#252B44]" style={{ height: `${scheduledHeight}%`, minHeight: scheduledHeight > 0 ? '20px' : '4px', backgroundColor: '#1A1F3A' }}>
                                 {data.scheduled > 0 && (
-                                  <div className="absolute inset-0 bg-gradient-to-t from-[${T.accentBlue}/20] to-transparent rounded-t-lg"></div>
+                                  <div className="absolute inset-0 rounded-t-lg" style={{ background: isDark ? 'linear-gradient(to top, rgba(0,217,255,0.20), transparent)' : 'linear-gradient(to top, rgba(59,130,246,0.20), transparent)' }}></div>
                                 )}
                               </div>
                               {/* Attended (foreground) */}
-                              <div className="absolute bottom-0 w-full bg-gradient-to-t from-[${T.accentBlue}] to-[${T.accentPurple}] rounded-t-lg transition-all duration-300 group-hover:from-[${T.accentBlue}] group-hover:to-[${T.accentPurple}/80] opacity-80" style={{ height: `${attendedHeight}%`, minHeight: attendedHeight > 0 ? '20px' : '4px' }}>
+                              <div className="absolute bottom-0 w-full rounded-t-lg transition-all duration-300 opacity-80" style={{ height: `${attendedHeight}%`, minHeight: attendedHeight > 0 ? '20px' : '4px', background: isDark ? 'linear-gradient(to top, #00D9FF, #7C3AED)' : 'linear-gradient(to top, #3B82F6, #8B5CF6)' }}>
                                 <div className="absolute inset-0 flex items-center justify-center">
                                   <span className={`${T.text} text-xs font-medium drop-shadow-md`}>{data.attended}</span>
                                 </div>
                               </div>
                             </div>
                             <div className="text-center">
-                              <span className="text-xs sm:text-sm text-gray-300 font-medium block group-hover:text-[${T.accentBlue}] transition-colors">{data.day}</span>
+                              <span className="text-xs sm:text-sm font-medium block transition-colors" style={{ color: isDark ? '#00D9FF' : '#3B82F6' }}>{data.day}</span>
                               <span className={`text-[10px] sm:text-xs ${T.textMuted}`}>{data.date}</span>
                             </div>
                           </div>
@@ -982,7 +1012,7 @@ export default function CRDashboard() {
                     {/* Legend */}
                     <div className="flex justify-center gap-4 sm:gap-6 mt-6 pt-4 border-t" style={{ borderColor: T.border }}>
                       <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-gradient-to-r from-[${T.accentBlue}] to-[${T.accentPurple}]"></div>
+                        <div className="w-3 h-3 rounded-full" style={{ background: isDark ? 'linear-gradient(90deg, #00D9FF, #7C3AED)' : 'linear-gradient(90deg, #3B82F6, #8B5CF6)' }}></div>
                         <span className="text-xs sm:text-sm text-gray-400">Attended</span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -1020,14 +1050,14 @@ export default function CRDashboard() {
                     <div className="space-y-2 sm:space-y-3">
                       {recentStudents.map((student, idx) => (
                         <div key={student.id || idx} className="flex items-center gap-3 p-2 sm:p-3 bg-[#1A1F3A] rounded-lg hover:bg-[#252B44] transition-all duration-300">
-                          <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[${T.accentBlue}] to-[${T.accentPurple}] rounded-full flex items-center justify-center ${T.text} font-semibold text-sm flex-shrink-0`}>
+                          <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${T.text} font-semibold text-sm shrink-0`} style={{ background: isDark ? 'linear-gradient(135deg, #00D9FF, #7C3AED)' : 'linear-gradient(135deg, #3B82F6, #8B5CF6)' }}>
                             {student.name?.charAt(0) || 'S'}
                           </div>
                           <div className="min-w-0 flex-1">
                             <p className={`text-sm sm:text-base ${T.text} font-medium truncate`}>{student.name || 'Anonymous'}</p>
                             <p className={`text-xs sm:text-sm ${T.textMuted} truncate`}>{student.email || 'No email'}</p>
                           </div>
-                          <div className={`text-xs ${T.textMuted} flex-shrink-0 hidden sm:block`}>
+                          <div className={`text-xs ${T.textMuted} shrink-0 hidden sm:block`}>
                             {student.joinedAt ? new Date(student.joinedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}
                           </div>
                         </div>
@@ -1073,7 +1103,7 @@ export default function CRDashboard() {
                     </div>
 
                     {totalStudents > 0 && (
-                      <div className="mt-4 p-4 bg-gradient-to-br from-[#0A0E27] to-[#1A1F3A] rounded-lg border" style={{ borderColor: T.border }}>
+                      <div className="mt-4 p-4 bg-linear-to-br from-[#0A0E27] to-[#1A1F3A] rounded-lg border" style={{ borderColor: T.border }}>
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-xs text-gray-400">Participation</span>
                           <span className="text-xs font-medium text-[#00D9FF]">
@@ -1082,7 +1112,7 @@ export default function CRDashboard() {
                         </div>
                         <div className="w-full bg-[#0A0E27] rounded-full h-2 overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-[#00D9FF] to-[#7C3AED] rounded-full transition-all duration-1000"
+                            className="h-full bg-linear-to-r from-[#00D9FF] to-[#7C3AED] rounded-full transition-all duration-1000"
                             style={{ width: `${Math.min((todayAttendance / totalStudents) * 100, 100)}%` }}
                           ></div>
                         </div>
@@ -1129,7 +1159,7 @@ export default function CRDashboard() {
               <div className="max-w-md mx-auto mt-10 sm:mt-20">
                 <div className="border rounded-2xl p-6 sm:p-8 transition-all duration-300 hover:shadow-xl" style={cardStyle}>
                   <div className="text-center mb-6">
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#00D9FF]/30 hover:scale-110 hover:rotate-12 transition-all duration-300">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-linear-to-br from-[#00D9FF] to-[#7C3AED] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#00D9FF]/30 hover:scale-110 hover:rotate-12 transition-all duration-300">
                       <svg className={`w-7 h-7 sm:w-8 sm:h-8 ${T.text}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
@@ -1153,8 +1183,8 @@ export default function CRDashboard() {
                       onClick={handleCreateClass}
                       className={`w-full ${T.text} px-6 py-3 sm:py-4 rounded-lg font-medium shadow-lg transition-all text-sm sm:text-base ${
                         actionLoading.createClass
-                          ? "bg-gradient-to-br from-[#00D9FF]/50 to-[#0EA5E9]/50 cursor-not-allowed"
-                          : "bg-gradient-to-br from-[#00D9FF] to-[#0EA5E9] shadow-[#00D9FF]/30 hover:shadow-[#00D9FF]/50 hover:scale-105"
+                          ? "bg-linear-to-br from-[#00D9FF]/50 to-[#0EA5E9]/50 cursor-not-allowed"
+                          : "bg-linear-to-br from-[#00D9FF] to-[#0EA5E9] shadow-[#00D9FF]/30 hover:shadow-[#00D9FF]/50 hover:scale-105"
                       }`}
                     >
                       {actionLoading.createClass ? (
@@ -1175,9 +1205,9 @@ export default function CRDashboard() {
               <>
 
                 {/* Join Code Card with Enhanced Animation */}
-                <div className="bg-gradient-to-br from-[#10B981] to-[#059669] rounded-xl sm:rounded-2xl p-5 sm:p-8 mb-6 sm:mb-8 relative overflow-hidden shadow-xl shadow-[#10B981]/20 animate-pulse-subtle hover:shadow-[#10B981]/40 transition-all duration-300 hover:scale-[1.02]">
-                  <div className="absolute top-[-50px] right-[-50px] w-[150px] h-[150px] sm:w-[200px] sm:h-[200px] bg-white/10 rounded-full animate-blob"></div>
-                  <div className="absolute bottom-[-30px] left-[-30px] w-[100px] h-[100px] sm:w-[150px] sm:h-[150px] bg-white/5 rounded-full animate-blob animation-delay-2000"></div>
+                <div className="bg-linear-to-br from-[#10B981] to-[#059669] rounded-xl sm:rounded-2xl p-5 sm:p-8 mb-6 sm:mb-8 relative overflow-hidden shadow-xl shadow-[#10B981]/20 animate-pulse-subtle hover:shadow-[#10B981]/40 transition-all duration-300 hover:scale-[1.02]">
+                  <div className="absolute -top-12.5 -right-12.5 w-37.5 h-37.5 sm:w-50 sm:h-50 bg-white/10 rounded-full animate-blob"></div>
+                  <div className="absolute -bottom-7.5 -left-7.5 w-25 h-25 sm:w-37.5 sm:h-37.5 bg-white/5 rounded-full animate-blob animation-delay-2000"></div>
                   
                   <div className="relative z-10">
                     <div className="flex items-center gap-2 sm:gap-3 mb-2">
@@ -1227,8 +1257,8 @@ export default function CRDashboard() {
                         onClick={handleAddSubject}
                         className={`${T.text} px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl font-medium shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap ${
                           actionLoading.addSubject
-                            ? "bg-gradient-to-br from-[#00D9FF]/50 to-[#0EA5E9]/50 cursor-not-allowed"
-                            : "bg-gradient-to-br from-[#00D9FF] to-[#0EA5E9] shadow-[#00D9FF]/30 hover:shadow-[#00D9FF]/50 hover:scale-105"
+                            ? "bg-linear-to-br from-[#00D9FF]/50 to-[#0EA5E9]/50 cursor-not-allowed"
+                            : "bg-linear-to-br from-[#00D9FF] to-[#0EA5E9] shadow-[#00D9FF]/30 hover:shadow-[#00D9FF]/50 hover:scale-105"
                         }`}
                       >
                         {actionLoading.addSubject ? (
@@ -1247,7 +1277,7 @@ export default function CRDashboard() {
                       </button>
                     </div>
 
-                    <div className="space-y-3 max-h-[500px] sm:max-h-[600px] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar">
+                    <div className="space-y-3 max-h-125 sm:max-h-150 overflow-y-auto pr-1 sm:pr-2 custom-scrollbar">
 
                       {subjects.map((sub, index) => {
                         const colors = getSubjectColor(index);
@@ -1269,7 +1299,7 @@ export default function CRDashboard() {
                         >
 
                           <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                            <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex-shrink-0 animate-pulse-slow" style={{ backgroundColor: colors.accent, boxShadow: colors.dotShadow }}></div>
+                            <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0 animate-pulse-slow" style={{ backgroundColor: colors.accent, boxShadow: colors.dotShadow }}></div>
                             <div className="min-w-0 flex-1">
                               <span className={`${T.text} font-medium text-sm sm:text-base block truncate`}>{sub.subjectName}</span>
                             </div>
@@ -1280,17 +1310,16 @@ export default function CRDashboard() {
                             <button
                               disabled={isAdding || todaySubjects.includes(sub.id)}
                               onClick={() => handleAddToToday(sub.id)}
-                              className={`flex-1 sm:flex-none px-3 sm:px-5 py-2 rounded-lg border text-xs sm:text-sm font-medium transition-all duration-300 ${
-                                isAdding
-                                  ? "bg-[${T.accentPurple}/20] text-[${T.accentPurple}/50] border-[${T.accentPurple}/20] cursor-not-allowed"
-                                  : todaySubjects.includes(sub.id)
-                                  ? "bg-[${T.accentPurple}/10] text-[${T.accentPurple}/50] border-[${T.accentPurple}/20] cursor-not-allowed"
-                                  : "bg-[${T.accentPurple}/10] text-[${T.accentPurple}] border-[${T.accentPurple}/20] hover:bg-[${T.accentPurple}/20] hover:scale-105"
-                              }`}
+                              className={`flex-1 sm:flex-none px-3 sm:px-5 py-2 rounded-lg border text-xs sm:text-sm font-medium transition-all duration-300 ${isAdding || todaySubjects.includes(sub.id) ? 'cursor-not-allowed opacity-80' : 'hover:scale-105'}`}
+                              style={{
+                                backgroundColor: isAdding || todaySubjects.includes(sub.id) ? (isDark ? 'rgba(124,58,237,0.12)' : 'rgba(139,92,246,0.1)') : (isDark ? 'rgba(124,58,237,0.1)' : 'rgba(139,92,246,0.1)'),
+                                color: isAdding || todaySubjects.includes(sub.id) ? (isDark ? 'rgba(167,139,250,0.9)' : 'rgba(168,85,247,0.95)') : (isDark ? '#EDE9FE' : '#6D28D9'),
+                                borderColor: isDark ? 'rgba(124,58,237,0.2)' : 'rgba(139,92,246,0.2)'
+                              }}
                             >
                               {isAdding ? (
                                 <span className="flex items-center justify-center gap-2">
-                                  <div className="w-3 h-3 border-2 border-[${T.accentPurple}] border-t-transparent rounded-full animate-spin"></div>
+                                  <div className="w-3 h-3 border-2 rounded-full animate-spin" style={{ borderColor: isDark ? '#7C3AED' : '#8B5CF6', borderTopColor: 'transparent' }}></div>
                                   <span className="hidden sm:inline">Adding...</span>
                                 </span>
                               ) : todaySubjects.includes(sub.id) ? (
@@ -1342,7 +1371,7 @@ export default function CRDashboard() {
                   <div className="lg:col-span-1">
                     <div className="flex justify-between items-center mb-4 sm:mb-5">
                       <h2 className={`text-lg sm:text-xl font-semibold ${T.text}`}>Today&apos;s Schedule</h2>
-                      <span className="bg-[${T.accentPurple}/10] text-[${T.accentPurple}] px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 hover:bg-[${T.accentPurple}/20] transition-all duration-300">
+                      <span className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all duration-300" style={{ backgroundColor: isDark ? 'rgba(124,58,237,0.12)' : 'rgba(139,92,246,0.1)', color: isDark ? '#D8B4FE' : '#7C3AED' }}>
                         <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
@@ -1357,10 +1386,10 @@ export default function CRDashboard() {
                       <div className="flex items-end justify-between gap-2 h-32 sm:h-40">
                         {weeklyData.map((data, idx) => (
                           <div key={idx} className="flex-1 flex flex-col items-center gap-2 group">
-                            <div className="w-full bg-[#1A1F3A] rounded-t-lg relative overflow-hidden transition-all duration-300 group-hover:bg-[#252B44]" style={{ height: `${maxClasses > 0 ? (data.classes / maxClasses) * 100 : 0}%`, minHeight: data.classes > 0 ? '30px' : '8px' }}>
+                            <div className="w-full rounded-t-lg relative overflow-hidden transition-all duration-300 group-hover:bg-[#252B44]" style={{ height: `${maxClasses > 0 ? (data.classes / maxClasses) * 100 : 0}%`, minHeight: data.classes > 0 ? '30px' : '8px', backgroundColor: '#1A1F3A' }}>
                               {data.classes > 0 && (
                                 <>
-                                  <div className="absolute inset-0 bg-gradient-to-t from-[${T.accentBlue}] to-[${T.accentPurple}] opacity-80 group-hover:opacity-100 transition-all duration-300"></div>
+                                  <div className="absolute inset-0 opacity-80 group-hover:opacity-100 transition-all duration-300" style={{ background: isDark ? 'linear-gradient(to top, #00D9FF, #7C3AED)' : 'linear-gradient(to top, #3B82F6, #8B5CF6)' }}></div>
                                   <div className="absolute inset-0 flex items-center justify-center">
                                     <span className={`${T.text} text-xs font-medium`}>{data.classes}</span>
                                   </div>
@@ -1402,14 +1431,14 @@ export default function CRDashboard() {
                             
                             <div className="flex justify-between items-center relative z-10 gap-2">
                               <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                                <div className="w-2 h-2 rounded-full flex-shrink-0 animate-pulse-slow" style={{ backgroundColor: colors.accent, boxShadow: colors.dotShadow }}></div>
+                                <div className="w-2 h-2 rounded-full shrink-0 animate-pulse-slow" style={{ backgroundColor: colors.accent, boxShadow: colors.dotShadow }}></div>
                                 <span className={`${T.text} font-medium text-sm truncate`}>{sub?.subjectName}</span>
                               </div>
 
                               <button
                                 disabled={isRemoving}
                                 onClick={() => handleRemoveFromToday(id)}
-                                className={`px-2 sm:px-3 py-1.5 rounded-lg border text-xs transition-all duration-300 flex-shrink-0 ${
+                                className={`px-2 sm:px-3 py-1.5 rounded-lg border text-xs transition-all duration-300 shrink-0 ${
                                   isRemoving
                                     ? "bg-red-500/10 text-red-400/50 border-red-400/20 cursor-not-allowed"
                                     : "bg-transparent text-red-400 border-red-400/20 hover:bg-red-500/10 hover:scale-105"
@@ -1447,10 +1476,10 @@ export default function CRDashboard() {
                       onClick={publishSchedule}
                       className={`w-full ${T.text} px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl font-medium shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base relative overflow-hidden ${
                         actionLoading.publish
-                          ? "bg-gradient-to-br from-[#10B981]/50 to-[#059669]/50 cursor-not-allowed"
+                          ? "bg-linear-to-br from-[#10B981]/50 to-[#059669]/50 cursor-not-allowed"
                           : published
-                          ? "bg-gradient-to-br from-[#10B981]/50 to-[#059669]/50 cursor-not-allowed"
-                          : "bg-gradient-to-br from-[#10B981] to-[#059669] shadow-[#10B981]/30 hover:shadow-[#10B981]/50 hover:scale-105"
+                          ? "bg-linear-to-br from-[#10B981]/50 to-[#059669]/50 cursor-not-allowed"
+                          : "bg-linear-to-br from-[#10B981] to-[#059669] shadow-[#10B981]/30 hover:shadow-[#10B981]/50 hover:scale-105"
                       }`}
                     >
                       {actionLoading.publish ? (
