@@ -73,10 +73,10 @@ export default function CRLogin() {
     <div className="min-h-screen flex items-center justify-center bg-[#0F0F0F] text-white p-6 relative overflow-hidden">
 
       {/* Large Purple Gradient Circle - Top Left (Fixed positioning as in Figma) */}
-      <div className="fixed top-[-200px] sm:top-[-250px] left-[-100px] sm:left-[-150px] w-[350px] h-[350px] sm:w-[600px] sm:h-[600px] bg-gradient-to-br from-[#530061] to-[#0D0A30] rounded-full opacity-80"></div>
+      <div className="fixed top-[-200px] sm:top-[-250px] left-[-100px] sm:left-[-150px] w-[350px] h-[350px] sm:w-[600px] sm:h-[600px] bg-linear-to-br from-[#530061] to-[#0D0A30] rounded-full opacity-80"></div>
 
       {/* Smaller Purple Gradient Glow - Bottom Right (subtle) */}
-      <div className="fixed bottom-[-50px] right-[-50px] w-[200px] h-[200px] sm:w-[300px] sm:h-[300px] bg-gradient-to-tl from-[#530061]/40 to-[#0D0A30]/20 rounded-full opacity-60 blur-3xl"></div>
+      <div className="fixed bottom-[-50px] right-[-50px] w-[200px] h-[200px] sm:w-[300px] sm:h-[300px] bg-linear-to-tl from-[#530061]/40 to-[#0D0A30]/20 rounded-full opacity-60 blur-3xl"></div>
 
       <div className="w-full max-w-[420px] relative z-10">
 
@@ -84,7 +84,7 @@ export default function CRLogin() {
         <div className="bg-white/5 backdrop-blur-xl p-8 sm:p-10 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden">
 
           {/* Inner subtle glow */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-3xl pointer-events-none"></div>
+          <div className="absolute inset-0 bg-linear-to-br from-white/5 to-transparent rounded-3xl pointer-events-none"></div>
 
           <div className="relative z-10">
             {/* Title */}
@@ -154,8 +154,8 @@ export default function CRLogin() {
               disabled={loading}
               className={`w-full py-3.5 rounded-xl font-medium transition-all duration-300 mb-4 ${
                 loading
-                  ? "bg-gradient-to-r from-[#6366F1]/50 to-[#7C3AED]/50 cursor-not-allowed"
-                  : "bg-gradient-to-r from-[#6366F1] to-[#7C3AED] hover:shadow-lg hover:shadow-[#7C3AED]/50 hover:scale-[1.02]"
+                  ? "bg-linear-to-r from-[#6366F1]/50 to-[#7C3AED]/50 cursor-not-allowed"
+                  : "bg-linear-to-r from-[#6366F1] to-[#7C3AED] hover:shadow-lg hover:shadow-[#7C3AED]/50 hover:scale-[1.02]"
               }`}
             >
               {loading ? (

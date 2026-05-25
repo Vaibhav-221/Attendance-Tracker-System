@@ -29,7 +29,7 @@ export default function SubjectPage() {
     successColor: isDark ? '#10B981' : '#059669',
     warningColor: isDark ? '#F59E0B' : '#D97706',
     dangerColor: isDark ? '#EF4444' : '#DC2626',
-    cardBg: isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27]' : 'bg-gradient-to-br from-white to-slate-50',
+    cardBg: isDark ? 'bg-linear-to-br from-[#0F1629] to-[#0A0E27]' : 'bg-linear-to-br from-white to-slate-50',
     modalOverlay: isDark ? 'bg-black/60' : 'bg-black/30',
   };
 
@@ -218,7 +218,7 @@ export default function SubjectPage() {
             <div className="absolute inset-0 border-4 border-transparent border-t-[#00D9FF] rounded-full animate-spin"></div>
             <div className="absolute inset-2 border-4 border-transparent border-t-[#7C3AED] rounded-full animate-spin-slow"></div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-3 h-3 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full animate-pulse"></div>
+              <div className="w-3 h-3 bg-linear-to-br from-[#00D9FF] to-[#7C3AED] rounded-full animate-pulse"></div>
             </div>
           </div>
           <p className={`text-lg font-medium animate-pulse ${T.textMuted}`}>Loading subject details...</p>
@@ -256,7 +256,7 @@ export default function SubjectPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${isDark ? 'from-[#00D9FF] to-[#7C3AED]' : 'from-blue-500 to-indigo-600'} rounded-xl flex items-center justify-center shadow-lg ${isDark ? 'shadow-[#00D9FF]/30' : 'shadow-blue-500/30'}`}>
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-linear-to-br ${isDark ? 'from-[#00D9FF] to-[#7C3AED]' : 'from-blue-500 to-indigo-600'} rounded-xl flex items-center justify-center shadow-lg ${isDark ? 'shadow-[#00D9FF]/30' : 'shadow-blue-500/30'}`}>
               <Book className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             <div className="min-w-0">
@@ -269,7 +269,7 @@ export default function SubjectPage() {
         </div>
 
         {/* Main Stats Card - Compact Version */}
-        <div className={`bg-gradient-to-br ${attendanceStatus.bgGradient} border ${attendanceStatus.borderColor} rounded-xl p-4 mb-4 relative overflow-hidden`}>
+        <div className={`bg-linear-to-br ${attendanceStatus.bgGradient} border ${attendanceStatus.borderColor} rounded-xl p-4 mb-4 relative overflow-hidden`}>
           
           {/* Animated background orbs */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl animate-float"></div>
@@ -370,7 +370,7 @@ export default function SubjectPage() {
                 return (
                   <div
                     key={index}
-                    className={`flex items-center justify-between gap-2 sm:gap-3 ${isDark ? 'bg-gradient-to-r from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'} border rounded-lg p-2 sm:p-3 transition-all duration-300 hover:scale-[1.01] ${
+                    className={`flex items-center justify-between gap-2 sm:gap-3 ${isDark ? 'bg-linear-to-r from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'} border rounded-lg p-2 sm:p-3 transition-all duration-300 hover:scale-[1.01] ${
                       item.present
                         ? `border-[${T.successColor}]/30 hover:border-[${T.successColor}]/50`
                         : `border-[${T.dangerColor}]/30 hover:border-[${T.dangerColor}]/50`
@@ -379,7 +379,7 @@ export default function SubjectPage() {
                     
                     {/* Date and Icon */}
                     <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                      <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center shrink-0 ${
                         item.present ? (isDark ? 'bg-[#10B981]/20' : 'bg-green-500/20') : (isDark ? 'bg-[#EF4444]/20' : 'bg-red-500/20')
                       }`}>
                         {item.present ? (
@@ -395,7 +395,7 @@ export default function SubjectPage() {
                     </div>
 
                     {/* Status Badge */}
-                    <div className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium flex-shrink-0 ${
+                    <div className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium shrink-0 ${
                       item.present
                         ? `${isDark ? 'bg-[#10B981]/20' : 'bg-green-500/20'} text-[${T.successColor}]`
                         : `${isDark ? 'bg-[#EF4444]/20' : 'bg-red-500/20'} text-[${T.dangerColor}]`

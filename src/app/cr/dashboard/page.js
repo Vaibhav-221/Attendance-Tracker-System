@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable */
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { auth, db } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import {
@@ -284,8 +284,10 @@ export default function CRDashboard() {
         });
       }
 
+      const scheduleMap = Object.fromEntries(snapshot.docs.map(doc => [doc.id, doc]));
+
       const weekData = dates.map(dateInfo => {
-        const scheduleDoc = snapshot.docs.find(doc => doc.id === dateInfo.dateStr);
+        const scheduleDoc = scheduleMap[dateInfo.dateStr];
         const classCount = scheduleDoc?.data()?.subjects?.length || 0;
 
         return {
@@ -696,7 +698,8 @@ export default function CRDashboard() {
     return subjectColors[safeIndex];
   };
 
-  const maxClasses = Math.max(...weeklyData.map(d => d.classes), 1);
+  const maxClasses = useMemo(() => Math.max(...weeklyData.map(d => d.classes), 1), [weeklyData]);
+  const weeklyMaxScheduled = useMemo(() => Math.max(...weeklyAttendance.map(d => Math.max(d.scheduled, d.attended)), 1), [weeklyAttendance]);
 
   return (
 
@@ -980,7 +983,7 @@ export default function CRDashboard() {
                   <div className="h-64 sm:h-72">
                     <div className="flex items-end justify-between gap-2 sm:gap-4 h-full">
                       {weeklyAttendance.map((data, idx) => {
-                        const maxVal = Math.max(...weeklyAttendance.map(d => Math.max(d.scheduled, d.attended)), 1);
+                        const maxVal = weeklyMaxScheduled;
                         const scheduledHeight = (data.scheduled / maxVal) * 100;
                         const attendedHeight = (data.attended / maxVal) * 100;
 

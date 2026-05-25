@@ -65,8 +65,8 @@ export default function JoinClass() {
     <div className="min-h-screen bg-[#0F0F0F] flex items-center justify-center p-4 relative overflow-hidden">
       
       {/* Animated Background Gradient Circles */}
-      <div className="fixed top-[-200px] sm:top-[-300px] left-[-100px] sm:left-[-200px] w-[350px] sm:w-[600px] h-[350px] sm:h-[600px] rounded-full bg-gradient-to-br from-[#00D9FF] to-[#0A4D5C] opacity-20 blur-[100px] sm:blur-[150px] animate-float"></div>
-      <div className="fixed bottom-[-200px] sm:bottom-[-300px] right-[-100px] sm:right-[-200px] w-[350px] sm:w-[600px] h-[350px] sm:h-[600px] rounded-full bg-gradient-to-br from-[#00D9FF] to-[#0A4D5C] opacity-15 blur-[100px] sm:blur-[150px] animate-float-delayed"></div>
+      <div className="fixed top-[-200px] sm:top-[-300px] left-[-100px] sm:left-[-200px] w-[350px] sm:w-[600px] h-[350px] sm:h-[600px] rounded-full bg-linear-to-br from-[#00D9FF] to-[#0A4D5C] opacity-20 blur-[100px] sm:blur-[150px] animate-float"></div>
+      <div className="fixed bottom-[-200px] sm:bottom-[-300px] right-[-100px] sm:right-[-200px] w-[350px] sm:w-[600px] h-[350px] sm:h-[600px] rounded-full bg-linear-to-br from-[#00D9FF] to-[#0A4D5C] opacity-15 blur-[100px] sm:blur-[150px] animate-float-delayed"></div>
 
       {/* Main Container */}
       <div className="w-full max-w-md relative z-10">
@@ -76,7 +76,7 @@ export default function JoinClass() {
           
           {/* Logo/Icon */}
           <div className="flex justify-center mb-8">
-            <div className="w-20 h-20 bg-gradient-to-br from-[#00D9FF] to-[#0EA5E9] rounded-2xl flex items-center justify-center shadow-lg shadow-[#00D9FF]/50 hover:scale-110 transition-all duration-300">
+            <div className="w-20 h-20 bg-linear-to-br from-[#00D9FF] to-[#0EA5E9] rounded-2xl flex items-center justify-center shadow-lg shadow-[#00D9FF]/50 hover:scale-110 transition-all duration-300">
               <Users className="w-10 h-10 text-white" />
             </div>
           </div>
@@ -92,7 +92,7 @@ export default function JoinClass() {
           {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 animate-fadeIn">
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
               <p className="text-red-400 text-sm">{error}</p>
             </div>
           )}
@@ -123,8 +123,8 @@ export default function JoinClass() {
             disabled={loading || !joinCode.trim()}
             className={`w-full py-4 rounded-xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-2 ${
               loading || !joinCode.trim()
-                ? "bg-gradient-to-r from-[#00D9FF]/50 to-[#0EA5E9]/50 cursor-not-allowed"
-                : "bg-gradient-to-r from-[#00D9FF] to-[#0EA5E9] hover:scale-105 hover:shadow-lg hover:shadow-[#00D9FF]/50"
+                ? "bg-linear-to-r from-[#00D9FF]/50 to-[#0EA5E9]/50 cursor-not-allowed"
+                : "bg-linear-to-r from-[#00D9FF] to-[#0EA5E9] hover:scale-105 hover:shadow-lg hover:shadow-[#00D9FF]/50"
             }`}
           >
             {loading ? (
@@ -156,7 +156,7 @@ export default function JoinClass() {
         <div className="mt-8 text-center">
           <p className="text-gray-600 text-sm">
             Powered by{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#7C3AED] font-bold">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#00D9FF] to-[#7C3AED] font-bold">
               ATS
             </span>
           </p>

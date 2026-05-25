@@ -362,24 +362,22 @@ export default function StudentDashboard() {
         .sort()
         .slice(-7); // Last 7 days
 
-      // Batch fetch all schedule and attendance documents in parallel
-      const schedulePromises = sortedDates.map(date =>
-        getDoc(doc(db, "classes", classId, "dailySchedule", date))
+      // Build a schedule map from the initial snapshot, avoiding extra getDoc calls
+      const scheduleMap = Object.fromEntries(
+        scheduleSnapshot.docs.map(doc => [doc.id, doc])
       );
+
       const attendancePromises = sortedDates.map(date =>
         getDoc(doc(db, "classes", classId, "attendance", date, "students", studentId))
       );
 
-      const [scheduleDocs, attendanceDocs] = await Promise.all([
-        Promise.all(schedulePromises),
-        Promise.all(attendancePromises)
-      ]);
+      const attendanceDocs = await Promise.all(attendancePromises);
 
       const weeklyStats = [];
 
       for (let i = 0; i < sortedDates.length; i++) {
         const date = sortedDates[i];
-        const scheduleDoc = scheduleDocs[i];
+        const scheduleDoc = scheduleMap[date];
         const attendanceDoc = attendanceDocs[i];
 
         const scheduled = scheduleDoc.data()?.subjects || [];
@@ -414,24 +412,22 @@ export default function StudentDashboard() {
         .sort()
         .slice(-30); // Last 30 days
 
-      // Batch fetch all schedule and attendance documents in parallel
-      const schedulePromises = sortedDates.map(date =>
-        getDoc(doc(db, "classes", classId, "dailySchedule", date))
+      // Build a schedule map from the initial snapshot, avoiding extra getDoc calls
+      const scheduleMap = Object.fromEntries(
+        scheduleSnapshot.docs.map(doc => [doc.id, doc])
       );
+
       const attendancePromises = sortedDates.map(date =>
         getDoc(doc(db, "classes", classId, "attendance", date, "students", studentId))
       );
 
-      const [scheduleDocs, attendanceDocs] = await Promise.all([
-        Promise.all(schedulePromises),
-        Promise.all(attendancePromises)
-      ]);
+      const attendanceDocs = await Promise.all(attendancePromises);
 
       const monthlyStats = [];
 
       for (let i = 0; i < sortedDates.length; i++) {
         const date = sortedDates[i];
-        const scheduleDoc = scheduleDocs[i];
+        const scheduleDoc = scheduleMap[date];
         const attendanceDoc = attendanceDocs[i];
 
         const scheduled = scheduleDoc.data()?.subjects || [];
@@ -679,7 +675,17 @@ export default function StudentDashboard() {
 
   const getSubjectColor = (index) => subjectColors[index % subjectColors.length];
   const attendanceStatus = getAttendanceStatus(parseFloat(attendancePercent));
-  const maxClasses = Math.max(...weeklyData.map(d => d.classes), 1);
+
+  const subjectById = useMemo(() => {
+    return Object.fromEntries(allSubjects.map(subject => [subject.id, subject]));
+  }, [allSubjects]);
+
+  const maxClasses = useMemo(() => Math.max(...weeklyData.map(d => d.classes), 1), [weeklyData]);
+
+  const safeBunkSummary = useMemo(() => ({
+    safeCount: safeBunkData.filter(s => s.status === 'safe').reduce((sum, s) => sum + s.canBunk, 0),
+    dangerCount: safeBunkData.filter(s => s.status === 'danger').reduce((sum, s) => sum + s.needToAttend, 0),
+  }), [safeBunkData]);
 
   // Calculate weekly attendance trend from monthly data
   const weeklyTrend = useMemo(() => {
@@ -715,14 +721,14 @@ export default function StudentDashboard() {
           <div className="relative w-24 h-24 mx-auto mb-8">
             <div className="absolute inset-0 border-4 border-transparent border-t-[#00D9FF] border-r-[#7C3AED] rounded-full animate-spin" style={{ animationDuration: '1.5s' }}></div>
             <div className="absolute inset-2 border-4 border-transparent border-b-[#10B981] border-l-[#F59E0B] rounded-full animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }}></div>
-            <div className="absolute inset-4 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full animate-pulse opacity-80"></div>
+            <div className="absolute inset-4 bg-linear-to-br from-[#00D9FF] to-[#7C3AED] rounded-full animate-pulse opacity-80"></div>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className={`w-4 h-4 rounded-full shadow-lg shadow-[#00D9FF]/50 animate-bounce-slow ${isDark ? 'bg-white' : 'bg-slate-900'}`}></div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <p className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] via-[#7C3AED] to-[#10B981] text-xl font-bold animate-gradient" style={{ backgroundSize: '200% 200%' }}>
+            <p className="text-transparent bg-clip-text bg-linear-to-r from-[#00D9FF] via-[#7C3AED] to-[#10B981] text-xl font-bold animate-gradient" style={{ backgroundSize: '200% 200%' }}>
               Loading Your Dashboard
             </p>
             <p className={`text-sm ${T.textSubtle}`}>Fetching your attendance data...</p>
@@ -743,9 +749,9 @@ export default function StudentDashboard() {
     <div className={`min-h-screen p-3 sm:p-5 lg:p-8 relative overflow-hidden`} style={{ backgroundColor: T.page, color: isDark ? 'rgb(226,232,240)' : 'rgb(51, 65, 85)' }}>
 
       {/* Animated Background */}
-      <div className="absolute top-[-100px] right-[-100px] w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] bg-[#00D9FF]/5 rounded-full blur-[100px] animate-float"></div>
-      <div className="absolute bottom-[-150px] left-[-150px] w-[350px] h-[350px] sm:w-[500px] sm:h-[500px] bg-[#7C3AED]/5 rounded-full blur-[120px] animate-float-delayed"></div>
-      <div className="absolute top-1/2 left-1/2 w-[200px] h-[200px] sm:w-[300px] sm:h-[300px] bg-[#10B981]/5 rounded-full blur-[100px] animate-pulse-slow"></div>
+      <div className="absolute -top-25 -right-25 w-75 h-75 sm:w-100 sm:h-100 bg-[#00D9FF]/5 rounded-full blur-[100px] animate-float"></div>
+      <div className="absolute -bottom-37.5 -left-37.5 w-87.5 h-87.5 sm:w-125 sm:h-125 bg-[#7C3AED]/5 rounded-full blur-[120px] animate-float-delayed"></div>
+      <div className="absolute top-1/2 left-1/2 w-50 h-50 sm:w-75 sm:h-75 bg-[#10B981]/5 rounded-full blur-[100px] animate-pulse-slow"></div>
 
       {/* Backdrop */}
       <div
@@ -757,7 +763,7 @@ export default function StudentDashboard() {
 
       {/* Sidebar */}
       <nav
-        className={`fixed inset-y-0 left-0 w-80 max-w-full z-50 flex flex-col transform transition-transform duration-300 ${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border-r border-[#1A1F3A]' : 'bg-white border-r border-slate-200'} ${
+        className={`fixed inset-y-0 left-0 w-80 max-w-full z-50 flex flex-col transform transition-transform duration-300 ${isDark ? 'bg-linear-to-br from-[#0F1629] to-[#0A0E27] border-r border-[#1A1F3A]' : 'bg-white border-r border-slate-200'} ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } ${!sidebarOpen ? 'pointer-events-none' : ''}`}
         aria-label="Main navigation"
@@ -766,7 +772,7 @@ export default function StudentDashboard() {
         {/* Sidebar Header with Close Button */}
         <div className={`p-3 border-b ${isDark ? 'border-[#1A1F3A]' : 'border-slate-200'} flex items-center justify-between`}>
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 bg-linear-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center shrink-0">
               <User className="w-4 h-4 text-white" />
             </div>
             <div className="min-w-0">
@@ -777,7 +783,7 @@ export default function StudentDashboard() {
           <button
             onClick={() => setSidebarOpen(false)}
             aria-label="Close sidebar"
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0 ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}
           >
             <X className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-slate-600'}`} />
           </button>
@@ -887,7 +893,7 @@ export default function StudentDashboard() {
               setShowJoinCodeModal(true);
               setSidebarOpen(false);
             }}
-            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg ${isDark ? 'bg-gradient-to-r from-[#00D9FF]/10 to-[#7C3AED]/10 text-[#00D9FF] hover:from-[#00D9FF]/20 hover:to-[#7C3AED]/20 border border-[#00D9FF]/10 hover:border-[#00D9FF]/30' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'} transition-all duration-200`}
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg ${isDark ? 'bg-linear-to-r from-[#00D9FF]/10 to-[#7C3AED]/10 text-[#00D9FF] hover:from-[#00D9FF]/20 hover:to-[#7C3AED]/20 border border-[#00D9FF]/10 hover:border-[#00D9FF]/30' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'} transition-all duration-200`}
           >
             <Book className={`w-4 h-4 ${isDark ? 'text-[#00D9FF]' : 'text-blue-600'}`} />
             <span className="text-sm font-medium">Change Class</span>
@@ -899,7 +905,7 @@ export default function StudentDashboard() {
               handleLogout();
               setSidebarOpen(false);
             }}
-            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg ${isDark ? 'bg-gradient-to-r from-red-500/10 to-red-600/10 text-red-400 hover:from-red-500/20 hover:to-red-600/20 border border-red-500/10 hover:border-red-400/30' : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'} transition-all duration-200`}
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg ${isDark ? 'bg-linear-to-r from-red-500/10 to-red-600/10 text-red-400 hover:from-red-500/20 hover:to-red-600/20 border border-red-500/10 hover:border-red-400/30' : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'} transition-all duration-200`}
           >
             <LogOut className={`w-4 h-4 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
             <span className="text-sm font-medium">Logout</span>
@@ -912,13 +918,13 @@ export default function StudentDashboard() {
         {/* Header */}
         <div className="flex flex-row justify-between items-center gap-3 mb-8 sm:mb-12">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg shadow-[#00D9FF]/30 hover:scale-110 hover:rotate-12 transition-all duration-300 flex-shrink-0">
+            <div className="w-10 h-10 bg-linear-to-br from-[#00D9FF] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg shadow-[#00D9FF]/30 hover:scale-110 hover:rotate-12 transition-all duration-300 shrink-0">
               <User className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0 flex-1">
               <h1 className={`text-xl sm:text-2xl md:text-3xl font-semibold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>Student Dashboard</h1>
               {mounted && (
-                <p className={`text-xs sm:text-sm font-medium truncate ${isDark ? 'text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#7C3AED]' : 'text-slate-600'}`}>
+                <p className={`text-xs sm:text-sm font-medium truncate ${isDark ? 'text-transparent bg-clip-text bg-linear-to-r from-[#00D9FF] to-[#7C3AED]' : 'text-slate-600'}`}>
                   {getGreeting()}, {userData?.name}!
                 </p>
               )}
@@ -926,12 +932,12 @@ export default function StudentDashboard() {
           </div>
 
           {/* Hamburger Menu Button */}
-          <div className="relative flex-shrink-0">
+          <div className="relative shrink-0">
             <button
               ref={menuButtonRef}
               onClick={() => setSidebarOpen(!sidebarOpen)}
               aria-label={sidebarOpen ? "Close menu" : "Open menu"}
-              className={`w-10 h-10 sm:w-12 sm:h-12 ${isDark ? 'bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] border-none' : 'bg-gradient-to-br from-blue-600 to-indigo-700 border border-blue-500/30'} rounded-full flex items-center justify-center text-white shadow-lg ${isDark ? 'shadow-[#00D9FF]/30' : 'shadow-blue-600/30'} hover:scale-110 transition-all duration-200`}
+              className={`w-10 h-10 sm:w-12 sm:h-12 ${isDark ? 'bg-linear-to-br from-[#00D9FF] to-[#7C3AED] border-none' : 'bg-linear-to-br from-blue-600 to-indigo-700 border border-blue-500/30'} rounded-full flex items-center justify-center text-white shadow-lg ${isDark ? 'shadow-[#00D9FF]/30' : 'shadow-blue-600/30'} hover:scale-110 transition-all duration-200`}
             >
               {sidebarOpen ? (
                 <X className="w-5 h-5" />
@@ -948,7 +954,7 @@ export default function StudentDashboard() {
           {/* Overall Attendance Card - ENHANCED */}
           <div
             onClick={() => setShowSubjectAttendanceModal(true)}
-            className={`col-span-2 sm:col-span-2 lg:col-span-6 ${isDark ? 'bg-gradient-to-br from-blue-900/60 to-indigo-900/60 border border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/50'} rounded-xl p-4 relative overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group cursor-pointer`}
+            className={`col-span-2 sm:col-span-2 lg:col-span-6 ${isDark ? 'bg-linear-to-br from-blue-900/60 to-indigo-900/60 border border-blue-500/30' : 'bg-linear-to-br from-blue-50 to-indigo-50 border border-blue-200/50'} rounded-xl p-4 relative overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group cursor-pointer`}
           >
 
             <div className="relative z-10">
@@ -986,7 +992,7 @@ export default function StudentDashboard() {
           </div>
 
           {/* Weekly Trend Card - Cartesian Line Chart */}
-          <div className={`col-span-2 sm:col-span-2 lg:col-span-6 ${isDark ? 'bg-gradient-to-br from-blue-900/60 to-indigo-900/60 border border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/50'} rounded-xl p-4 relative overflow-hidden`}>
+          <div className={`col-span-2 sm:col-span-2 lg:col-span-6 ${isDark ? 'bg-linear-to-br from-blue-900/60 to-indigo-900/60 border border-blue-500/30' : 'bg-linear-to-br from-blue-50 to-indigo-50 border border-blue-200/50'} rounded-xl p-4 relative overflow-hidden`}>
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp className={`w-4 h-4 ${isDark ? 'text-[#00D9FF]' : 'text-blue-600'}`} />
               <h3 className={`text-xs font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>Weekly Attendance Trend</h3>
@@ -1098,7 +1104,7 @@ export default function StudentDashboard() {
           {/* Safe Bunk Card */}
           <div
             onClick={calculateSafeBunk}
-            className={`lg:col-span-6 ${isDark ? 'bg-gradient-to-br from-amber-900/60 to-orange-900/60 border border-amber-500/30 hover:border-amber-500/50' : 'bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-300/50 hover:border-amber-400'} rounded-xl p-4 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] group cursor-pointer`}
+            className={`lg:col-span-6 ${isDark ? 'bg-linear-to-br from-amber-900/60 to-orange-900/60 border border-amber-500/30 hover:border-amber-500/50' : 'bg-linear-to-br from-amber-50 to-orange-50 border border-amber-300/50 hover:border-amber-400'} rounded-xl p-4 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] group cursor-pointer`}
           >
             <div className={`absolute top-0 right-0 w-16 h-16 ${isDark ? 'bg-amber-500/10' : 'bg-amber-500/15'} rounded-full blur-xl group-hover:bg-amber-500/20 transition-all duration-300`}></div>
             <div className="relative z-10">
@@ -1111,7 +1117,7 @@ export default function StudentDashboard() {
                 </div>
               </div>
               <p className={`text-2xl font-bold ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
-                {safeBunkData.filter(s => s.status === 'safe').reduce((sum, s) => sum + s.canBunk, 0)}
+                {safeBunkSummary.safeCount}
               </p>
               <p className={`text-[10px] ${isDark ? 'text-amber-300/70' : 'text-amber-700'} mt-1`}>classes you can skip</p>
             </div>
@@ -1123,7 +1129,7 @@ export default function StudentDashboard() {
               const el = document.getElementById('mark-attendance-section');
               if (el) el.scrollIntoView({ behavior: 'smooth' });
             }}
-            className={`lg:col-span-6 ${isDark ? 'bg-gradient-to-br from-emerald-900/60 to-teal-900/60 border border-emerald-500/30 hover:border-emerald-500/50' : 'bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-300/50 hover:border-emerald-400'} rounded-xl p-4 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] group cursor-pointer`}
+            className={`lg:col-span-6 ${isDark ? 'bg-linear-to-br from-emerald-900/60 to-teal-900/60 border border-emerald-500/30 hover:border-emerald-500/50' : 'bg-linear-to-br from-emerald-50 to-teal-50 border border-emerald-300/50 hover:border-emerald-400'} rounded-xl p-4 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] group cursor-pointer`}
           >
             <div className={`absolute top-0 right-0 w-16 h-16 ${isDark ? 'bg-emerald-500/10' : 'bg-emerald-500/15'} rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all duration-300`}></div>
             <div className="relative z-10">
@@ -1157,7 +1163,7 @@ export default function StudentDashboard() {
           </div>
 
           {todaySubjects.length === 0 ? (
-            <div className={`${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-white border border-slate-200'} rounded-xl p-8 text-center`}>
+            <div className={`${isDark ? 'bg-linear-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-white border border-slate-200'} rounded-xl p-8 text-center`}>
               <Clock className={`w-12 h-12 ${isDark ? 'text-gray-700' : 'text-slate-400'} mx-auto mb-3`} />
               <p className={`${isDark ? 'text-gray-500' : 'text-slate-500'}`}>No classes scheduled today</p>
               <p className={`${isDark ? 'text-gray-600' : 'text-slate-600'} text-sm mt-1`}>Enjoy your day off!</p>
@@ -1166,7 +1172,7 @@ export default function StudentDashboard() {
             <>
               <div className="space-y-2 mb-4">
                 {todaySubjects.map((subjectId, index) => {
-                  const subject = allSubjects.find(s => s.id === subjectId);
+                  const subject = subjectById[subjectId];
                   const marked = markedSubjects.includes(subjectId);
                   const colors = getSubjectColor(index);
                   const isMarking = marking[subjectId];
@@ -1175,13 +1181,13 @@ export default function StudentDashboard() {
                   return (
                     <div
                       key={subjectId}
-                      className={`${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'} border-l-4 ${colors.border} rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3 hover:scale-[1.01] transition-all duration-300`}
+                      className={`${isDark ? 'bg-linear-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'} border-l-4 ${colors.border} rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3 hover:scale-[1.01] transition-all duration-300`}
                     >
                       <div
                         className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 cursor-pointer"
                         onClick={() => router.push(`/student/subject/${subjectId}`)}
                       >
-                        <div className={`w-2 h-2 rounded-full ${colors.bg} ${colors.glow} shadow-lg animate-pulse-slow flex-shrink-0`}></div>
+                        <div className={`w-2 h-2 rounded-full ${colors.bg} ${colors.glow} shadow-lg animate-pulse-slow shrink-0`}></div>
                         <span className={`font-medium text-sm truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{subject?.subjectName}</span>
                       </div>
 
@@ -1240,8 +1246,8 @@ export default function StudentDashboard() {
                   disabled={updating}
                   className={`w-full px-6 py-3 rounded-xl font-medium shadow-lg transition-all duration-300 flex items-center justify-center gap-2 ${
                     updating
-                      ? "bg-gradient-to-r from-[#10B981]/50 to-[#059669]/50 cursor-not-allowed"
-                      : "bg-gradient-to-r from-[#10B981] to-[#059669] text-white shadow-[#10B981]/30 hover:shadow-[#10B981]/50"
+                      ? "bg-linear-to-r from-[#10B981]/50 to-[#059669]/50 cursor-not-allowed"
+                      : "bg-linear-to-r from-[#10B981] to-[#059669] text-white shadow-[#10B981]/30 hover:shadow-[#10B981]/50"
                   }`}
                 >
                   {updating ? (
@@ -1269,10 +1275,10 @@ export default function StudentDashboard() {
       {/* Safe Bunk Modal */}
       {showSafeBunkModal && (
         <div className={`fixed inset-0 ${T.modalOverlay} backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn`} onClick={() => setShowSafeBunkModal(false)}>
-          <div className={`${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-gradient-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl`} onClick={(e) => e.stopPropagation()}>
+          <div className={`${isDark ? 'bg-linear-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-linear-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl`} onClick={(e) => e.stopPropagation()}>
 
             {/* Header */}
-            <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#F59E0B]/10 to-transparent' : 'border-slate-200 bg-gradient-to-r from-amber-100/50 to-transparent'}`}>
+            <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A] bg-linear-to-r from-[#F59E0B]/10 to-transparent' : 'border-slate-200 bg-linear-to-r from-amber-100/50 to-transparent'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isDark ? 'bg-[#F59E0B]/20' : 'bg-amber-100'}`}>
@@ -1296,14 +1302,14 @@ export default function StudentDashboard() {
                 <div className={`${isDark ? 'bg-[#10B981]/10 border border-[#10B981]/20' : 'bg-green-50 border border-green-200'} rounded-lg p-3`}>
                   <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'} mb-1`}>Total Safe Bunks</p>
                   <p className={`text-xl font-bold ${isDark ? 'text-[#10B981]' : 'text-green-600'}`}>
-                    {safeBunkData.filter(s => s.status === 'safe').reduce((sum, s) => sum + s.canBunk, 0)}
+                    {safeBunkSummary.safeCount}
                   </p>
                   <p className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-slate-500'} mt-1`}>Classes you can skip</p>
                 </div>
                 <div className={`${isDark ? 'bg-[#EF4444]/10 border border-[#EF4444]/20' : 'bg-red-50 border border-red-200'} rounded-lg p-3`}>
                   <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'} mb-1`}>Need to Attend</p>
                   <p className={`text-xl font-bold ${isDark ? 'text-[#EF4444]' : 'text-red-600'}`}>
-                    {safeBunkData.filter(s => s.status === 'danger').reduce((sum, s) => sum + s.needToAttend, 0)}
+                    {safeBunkSummary.dangerCount}
                   </p>
                   <p className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-slate-500'} mt-1`}>To reach 75%</p>
                 </div>
@@ -1311,7 +1317,7 @@ export default function StudentDashboard() {
             </div>
 
             {/* Subject List */}
-            <div className={`p-4 overflow-y-auto max-h-[calc(90vh-240px)] ${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
+            <div className={`p-4 overflow-y-auto max-h-[calc(90vh-240px)] ${isDark ? 'bg-linear-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
               <div className="space-y-2">
                 {safeBunkData.map((subject, index) => {
                   const colors = getSubjectColor(index);
@@ -1320,7 +1326,7 @@ export default function StudentDashboard() {
                   return (
                     <div
                       key={subject.id}
-                      className={`${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-white'} border ${isDark ? colors.border : colors.border.replace('bg-', 'border-').replace('text-', 'border-').replace('border-', 'border-').replace('border-', 'border-')} border-l-4 rounded-lg p-3 hover:scale-[1.01] transition-all duration-300`}
+                      className={`${isDark ? 'bg-linear-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-white'} border ${isDark ? colors.border : colors.border.replace('bg-', 'border-').replace('text-', 'border-').replace('border-', 'border-').replace('border-', 'border-')} border-l-4 rounded-lg p-3 hover:scale-[1.01] transition-all duration-300`}
                     >
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex-1">
@@ -1370,7 +1376,7 @@ export default function StudentDashboard() {
             </div>
 
             {/* Footer */}
-            <div className={`p-4 border-t ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/5 to-transparent' : 'border-slate-200 bg-gradient-to-r from-blue-50/50 to-transparent'}`}>
+            <div className={`p-4 border-t ${isDark ? 'border-[#1A1F3A] bg-linear-to-r from-[#00D9FF]/5 to-transparent' : 'border-slate-200 bg-linear-to-r from-blue-50/50 to-transparent'}`}>
               <p className={`text-xs text-center ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
                 💡 <span className={isDark ? 'text-[#00D9FF]' : 'text-blue-600'}>Tip:</span> This calculation assumes you attend all remaining classes for subjects below 75%
               </p>
@@ -1382,10 +1388,10 @@ export default function StudentDashboard() {
       {/* Subject-wise Attendance Modal */}
       {showSubjectAttendanceModal && (
         <div className={`fixed inset-0 ${T.modalOverlay} backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn`} onClick={() => setShowSubjectAttendanceModal(false)}>
-          <div className={`${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-gradient-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl`} onClick={(e) => e.stopPropagation()}>
+          <div className={`${isDark ? 'bg-linear-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-linear-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl`} onClick={(e) => e.stopPropagation()}>
 
             {/* Header */}
-            <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/10 to-transparent' : 'border-slate-200 bg-gradient-to-r from-blue-50/50 to-transparent'}`}>
+            <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A] bg-linear-to-r from-[#00D9FF]/10 to-transparent' : 'border-slate-200 bg-linear-to-r from-blue-50/50 to-transparent'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
@@ -1428,7 +1434,7 @@ export default function StudentDashboard() {
             </div>
 
             {/* Subject List */}
-            <div className={`p-4 overflow-y-auto max-h-[calc(90vh-190px)] ${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
+            <div className={`p-4 overflow-y-auto max-h-[calc(90vh-190px)] ${isDark ? 'bg-linear-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {subjectStats.map((subject, index) => {
                   const colors = getSubjectColor(index);
@@ -1437,11 +1443,11 @@ export default function StudentDashboard() {
                   return (
                     <div
                       key={subject.id}
-                      className={`${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-white'} border ${isDark ? colors.border : colors.border.replace('bg-', 'border-').replace('text-', 'border-').replace('border-', 'border-').replace('border-', 'border-')} rounded-lg p-3 hover:scale-[1.01] transition-all duration-300`}
+                      className={`${isDark ? 'bg-linear-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-white'} border ${isDark ? colors.border : colors.border.replace('bg-', 'border-').replace('text-', 'border-').replace('border-', 'border-').replace('border-', 'border-')} rounded-lg p-3 hover:scale-[1.01] transition-all duration-300`}
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                          <div className={`w-2 h-2 rounded-full ${colors.bg} animate-pulse-slow flex-shrink-0`}></div>
+                          <div className={`w-2 h-2 rounded-full ${colors.bg} animate-pulse-slow shrink-0`}></div>
                           <h3 className={`font-medium text-sm truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{subject.name}</h3>
                         </div>
                         <div className="text-right ml-2">
@@ -1498,10 +1504,10 @@ export default function StudentDashboard() {
       {/* Today's Classes Modal */}
       {showTodayClassesModal && (
         <div className={`fixed inset-0 ${T.modalOverlay} backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn`} onClick={() => setShowTodayClassesModal(false)}>
-          <div className={`${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-gradient-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl`} onClick={(e) => e.stopPropagation()}>
+          <div className={`${isDark ? 'bg-linear-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-linear-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl`} onClick={(e) => e.stopPropagation()}>
 
             {/* Header */}
-            <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#10B981]/10 to-transparent' : 'border-slate-200 bg-gradient-to-r from-emerald-100/50 to-transparent'}`}>
+            <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A] bg-linear-to-r from-[#10B981]/10 to-transparent' : 'border-slate-200 bg-linear-to-r from-emerald-100/50 to-transparent'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isDark ? 'bg-[#10B981]/20' : 'bg-emerald-100'}`}>
@@ -1538,7 +1544,7 @@ export default function StudentDashboard() {
             </div>
 
             {/* Classes List with Mark/Undo */}
-            <div className={`p-4 overflow-y-auto max-h-[calc(90vh-220px)] ${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
+            <div className={`p-4 overflow-y-auto max-h-[calc(90vh-220px)] ${isDark ? 'bg-linear-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
               {todaySubjects.length === 0 ? (
                 <div className="text-center py-8">
                   <Clock className={`w-10 h-10 ${isDark ? 'text-gray-700' : 'text-slate-400'} mx-auto mb-2`} />
@@ -1549,7 +1555,7 @@ export default function StudentDashboard() {
                 <>
                   <div className="space-y-2 mb-4">
                     {todaySubjects.map((subjectId, index) => {
-                      const subject = allSubjects.find(s => s.id === subjectId);
+                      const subject = subjectById[subjectId];
                       const marked = markedSubjects.includes(subjectId);
                       const colors = getSubjectColor(index);
                       const isMarking = marking[subjectId];
@@ -1558,13 +1564,13 @@ export default function StudentDashboard() {
                       return (
                         <div
                           key={subjectId}
-                          className={`${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-white'} border ${isDark ? colors.border : colors.border.replace('bg-', 'border-').replace('text-', 'border-').replace('border-', 'border-').replace('border-', 'border-')} border-l-4 rounded-lg p-3 flex flex-row justify-between items-center gap-2 hover:scale-[1.01] transition-all duration-300 cursor-pointer group`}
+                          className={`${isDark ? 'bg-linear-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-white'} border ${isDark ? colors.border : colors.border.replace('bg-', 'border-').replace('text-', 'border-').replace('border-', 'border-').replace('border-', 'border-')} border-l-4 rounded-lg p-3 flex flex-row justify-between items-center gap-2 hover:scale-[1.01] transition-all duration-300 cursor-pointer group`}
                         >
                           <div
                             className="flex items-center gap-2 flex-1 min-w-0"
                             onClick={() => router.push(`/student/subject/${subjectId}`)}
                           >
-                            <div className={`w-2 h-2 flex-shrink-0 rounded-full ${colors.bg} ${colors.glow} shadow-lg animate-pulse-slow`}></div>
+                            <div className={`w-2 h-2 shrink-0 rounded-full ${colors.bg} ${colors.glow} shadow-lg animate-pulse-slow`}></div>
                             <span className={`font-medium text-sm truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{subject?.subjectName}</span>
                           </div>
 
@@ -1575,7 +1581,7 @@ export default function StudentDashboard() {
                                 handleUndoAttendance(subjectId, e);
                               }}
                               disabled={isUndoing}
-                              className={`px-3 py-1.5 rounded-lg font-medium transition-all duration-300 flex items-center gap-1.5 text-xs flex-shrink-0 ${
+                              className={`px-3 py-1.5 rounded-lg font-medium transition-all duration-300 flex items-center gap-1.5 text-xs shrink-0 ${
                                 isUndoing
                                   ? `${isDark ? 'bg-red-500/20 text-red-400/50' : 'bg-red-100 text-red-400/50'} cursor-not-allowed`
                                   : `${isDark ? 'bg-red-500/10 text-red-400 border border-red-400/20 hover:bg-red-500/20 hover:scale-105' : 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 hover:scale-105'}`
@@ -1597,7 +1603,7 @@ export default function StudentDashboard() {
                                 handleMarkAttendance(subjectId, e);
                               }}
                               disabled={isMarking}
-                              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 text-sm flex-shrink-0 whitespace-nowrap ${
+                              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 text-sm shrink-0 whitespace-nowrap ${
                                 isMarking
                                   ? `${isDark ? 'bg-[#00D9FF]/20 text-[#00D9FF]/50' : 'bg-blue-100 text-blue-500/50'} cursor-not-allowed`
                                   : `${isDark ? 'bg-[#00D9FF]/10 text-[#00D9FF] border border-[#00D9FF]/20 hover:bg-[#00D9FF]/20 hover:scale-105' : 'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 hover:scale-105'}`
@@ -1628,8 +1634,8 @@ export default function StudentDashboard() {
                       disabled={updating}
                       className={`w-full sm:w-auto px-8 py-4 rounded-xl font-medium shadow-lg transition-all duration-300 flex items-center justify-center gap-2 ${
                         updating
-                          ? `${isDark ? "bg-gradient-to-r from-[#10B981]/50 to-[#059669]/50" : "bg-gradient-to-r from-emerald-500/50 to-teal-600/50"} cursor-not-allowed`
-                          : `${isDark ? "bg-gradient-to-r from-[#10B981] to-[#059669] text-white shadow-[#10B981]/30 hover:shadow-[#10B981]/50 hover:scale-105" : "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105"}`
+                          ? `${isDark ? "bg-linear-to-r from-[#10B981]/50 to-[#059669]/50" : "bg-linear-to-r from-emerald-500/50 to-teal-600/50"} cursor-not-allowed`
+                          : `${isDark ? "bg-linear-to-r from-[#10B981] to-[#059669] text-white shadow-[#10B981]/30 hover:shadow-[#10B981]/50 hover:scale-105" : "bg-linear-to-r from-emerald-500 to-teal-600 text-white shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105"}`
                       }`}
                     >
                       {updating ? (
@@ -1658,10 +1664,10 @@ export default function StudentDashboard() {
       {/* Monthly Chart Modal */}
       {showMonthlyChartModal && (
         <div className={`fixed inset-0 ${T.modalOverlay} backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn`} onClick={() => setShowMonthlyChartModal(false)}>
-          <div className={`${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-gradient-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl`} onClick={(e) => e.stopPropagation()}>
+          <div className={`${isDark ? 'bg-linear-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-linear-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl`} onClick={(e) => e.stopPropagation()}>
             
             {/* Header */}
-            <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#7C3AED]/10 to-transparent' : 'border-slate-200 bg-gradient-to-r from-indigo-100/50 to-transparent'}`}>
+            <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A] bg-linear-to-r from-[#7C3AED]/10 to-transparent' : 'border-slate-200 bg-linear-to-r from-indigo-100/50 to-transparent'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isDark ? 'bg-[#7C3AED]/20' : 'bg-indigo-100'}`}>
@@ -1702,7 +1708,7 @@ export default function StudentDashboard() {
             </div>
 
             {/* Weekly Chart Grid */}
-            <div className={`p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-220px)] ${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
+            <div className={`p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-220px)] ${isDark ? 'bg-linear-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
               {mounted && (() => {
                 // Generate all 30 days with data
                 const today = new Date();
@@ -1742,7 +1748,7 @@ export default function StudentDashboard() {
                       const actualWeekNumber = weeks.length - weekIndex;
                       
                       return (
-                        <div key={weekIndex} className={`${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border border-[#1A1F3A]' : 'bg-white border border-slate-200'} rounded-xl p-4 sm:p-5`}>
+                        <div key={weekIndex} className={`${isDark ? 'bg-linear-to-br from-[#0A0E27] to-[#0F1629] border border-[#1A1F3A]' : 'bg-white border border-slate-200'} rounded-xl p-4 sm:p-5`}>
                           {/* Week Header */}
                           <div className="flex items-center gap-3 mb-4">
                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-[#7C3AED]/20' : 'bg-indigo-100'}`}>
@@ -1782,9 +1788,9 @@ export default function StudentDashboard() {
                                           {/* Foreground (attended) */}
                                           <div
                                             className={`absolute bottom-0 inset-x-0 rounded-t-lg transition-all duration-500 ${
-                                              percentage >= 75 ? (isDark ? 'bg-gradient-to-t from-[#10B981] to-[#059669]' : 'bg-gradient-to-t from-green-500 to-emerald-600') :
-                                              percentage >= 50 ? (isDark ? 'bg-gradient-to-t from-[#F59E0B] to-[#D97706]' : 'bg-gradient-to-t from-amber-500 to-orange-600') :
-                                              percentage > 0 ? (isDark ? 'bg-gradient-to-t from-[#EF4444] to-[#DC2626]' : 'bg-gradient-to-t from-red-500 to-rose-600') :
+                                              percentage >= 75 ? (isDark ? 'bg-linear-to-t from-[#10B981] to-[#059669]' : 'bg-linear-to-t from-green-500 to-emerald-600') :
+                                              percentage >= 50 ? (isDark ? 'bg-linear-to-t from-[#F59E0B] to-[#D97706]' : 'bg-linear-to-t from-amber-500 to-orange-600') :
+                                              percentage > 0 ? (isDark ? 'bg-linear-to-t from-[#EF4444] to-[#DC2626]' : 'bg-linear-to-t from-red-500 to-rose-600') :
                                               isDark ? 'bg-gray-700/30' : 'bg-slate-300'
                                             } group-hover:shadow-lg`}
                                             style={{ height: `${height}%` }}
@@ -1866,7 +1872,7 @@ export default function StudentDashboard() {
 
             {/* Footer Summary */}
             {monthlyData.length > 0 && (
-              <div className={`p-6 border-t ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/5 to-transparent' : 'border-slate-200 bg-gradient-to-r from-blue-50/50 to-transparent'}`}>
+              <div className={`p-6 border-t ${isDark ? 'border-[#1A1F3A] bg-linear-to-r from-[#00D9FF]/5 to-transparent' : 'border-slate-200 bg-linear-to-r from-blue-50/50 to-transparent'}`}>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-slate-500'} mb-1`}>Total Scheduled</p>
@@ -1899,9 +1905,9 @@ export default function StudentDashboard() {
       {/* Subjects Overview Modal */}
       {showSubjectsOverviewModal && (
         <div className={`fixed inset-0 ${T.modalOverlay} backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn`} onClick={() => setShowSubjectsOverviewModal(false)}>
-          <div className={`${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-gradient-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl`} onClick={(e) => e.stopPropagation()}>
+          <div className={`${isDark ? 'bg-linear-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-linear-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl`} onClick={(e) => e.stopPropagation()}>
             {/* Header */}
-            <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A] bg-gradient-to-r from-[#00D9FF]/10 to-transparent' : 'border-slate-200 bg-gradient-to-r from-blue-50/50 to-transparent'}`}>
+            <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A] bg-linear-to-r from-[#00D9FF]/10 to-transparent' : 'border-slate-200 bg-linear-to-r from-blue-50/50 to-transparent'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isDark ? 'bg-[#00D9FF]/20' : 'bg-blue-100'}`}>
@@ -1922,7 +1928,7 @@ export default function StudentDashboard() {
             </div>
 
             {/* Subjects Grid */}
-            <div className={`p-4 overflow-y-auto max-h-[calc(90vh-140px)] ${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
+            <div className={`p-4 overflow-y-auto max-h-[calc(90vh-140px)] ${isDark ? 'bg-linear-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {subjectStats.map((subject, index) => {
                   const colors = getSubjectColor(index);
@@ -1931,12 +1937,12 @@ export default function StudentDashboard() {
                     <div
                       key={subject.id}
                       onClick={() => router.push(`/student/subject/${subject.id}`)}
-                      className={`${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629] border border-[#1A1F3A]' : 'bg-white border border-slate-200'} rounded-lg p-2 cursor-pointer hover:scale-[1.01] transition-all duration-300 group`}
+                      className={`${isDark ? 'bg-linear-to-br from-[#0A0E27] to-[#0F1629] border border-[#1A1F3A]' : 'bg-white border border-slate-200'} rounded-lg p-2 cursor-pointer hover:scale-[1.01] transition-all duration-300 group`}
                       style={{ borderColor: isDark ? undefined : `${colors.bg.replace('bg-', '')}30` }}
                     >
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <div className={`w-1.5 h-1.5 rounded-full ${colors.bg} shadow-lg ${colors.glow} animate-pulse-slow flex-shrink-0`}></div>
+                          <div className={`w-1.5 h-1.5 rounded-full ${colors.bg} shadow-lg ${colors.glow} animate-pulse-slow shrink-0`}></div>
                           <span className={`font-medium text-xs truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{subject.name}</span>
                         </div>
                         <span className={`${colors.text} font-bold text-lg ml-2`}>{subject.percent}%</span>
@@ -1964,7 +1970,7 @@ export default function StudentDashboard() {
       {/* Join Code Change Modal */}
       {showJoinCodeModal && (
         <div className={`fixed inset-0 ${T.modalOverlay} backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn`} onClick={() => setShowJoinCodeModal(false)}>
-          <div className={`${isDark ? 'bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-gradient-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-md w-full shadow-2xl`} onClick={(e) => e.stopPropagation()}>
+          <div className={`${isDark ? 'bg-linear-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A]' : 'bg-linear-to-br from-white to-slate-50 border border-slate-200'} rounded-2xl max-w-md w-full shadow-2xl`} onClick={(e) => e.stopPropagation()}>
 
             {/* Header */}
             <div className={`p-4 border-b ${isDark ? 'border-[#1A1F3A]' : 'border-slate-200'}`}>
@@ -1994,7 +2000,7 @@ export default function StudentDashboard() {
             </div>
 
             {/* Body */}
-            <div className={`p-4 ${isDark ? 'bg-gradient-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
+            <div className={`p-4 ${isDark ? 'bg-linear-to-br from-[#0A0E27] to-[#0F1629]' : 'bg-slate-50'}`}>
               <label className={`block text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'} mb-1.5`}>New Join Code</label>
               <input
                 type="text"
@@ -2023,7 +2029,7 @@ export default function StudentDashboard() {
                 className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
                   changingClass || newJoinCode.length !== 6
                     ? `${isDark ? 'bg-[#00D9FF]/20 text-[#00D9FF]/50' : 'bg-blue-100 text-blue-400/50'} cursor-not-allowed`
-                    : `${isDark ? 'bg-gradient-to-r from-[#00D9FF] to-[#0EA5E9] text-white hover:scale-105' : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:scale-105'}`
+                    : `${isDark ? 'bg-linear-to-r from-[#00D9FF] to-[#0EA5E9] text-white hover:scale-105' : 'bg-linear-to-r from-blue-500 to-blue-600 text-white hover:scale-105'}`
                 }`}
               >
                 {changingClass ? (
@@ -2182,3 +2188,4 @@ export default function StudentDashboard() {
   );
 
 }
+

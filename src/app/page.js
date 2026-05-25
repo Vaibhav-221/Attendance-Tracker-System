@@ -24,11 +24,11 @@ export default function Home() {
       </div>
 
       {/* Multiple Animated Gradient Orbs */}
-      <div className="absolute top-[-200px] left-[-200px] w-[500px] h-[500px] bg-gradient-to-br from-[#00D9FF]/20 to-[#0EA5E9]/20 rounded-full blur-[120px] animate-float"></div>
-      <div className="absolute top-[-100px] right-[-150px] w-[400px] h-[400px] bg-gradient-to-br from-[#7C3AED]/20 to-[#9D7FED]/20 rounded-full blur-[100px] animate-float-delayed"></div>
-      <div className="absolute bottom-[-150px] left-[10%] w-[450px] h-[450px] bg-gradient-to-br from-[#10B981]/15 to-[#059669]/15 rounded-full blur-[110px] animate-float-slow"></div>
-      <div className="absolute bottom-[-100px] right-[-100px] w-[380px] h-[380px] bg-gradient-to-br from-[#F59E0B]/15 to-[#D97706]/15 rounded-full blur-[100px] animate-float"></div>
-      <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-gradient-to-br from-[#EC4899]/10 to-[#DB2777]/10 rounded-full blur-[90px] animate-pulse-slow"></div>
+      <div className="absolute top-[-200px] left-[-200px] w-[500px] h-[500px] bg-linear-to-br from-[#00D9FF]/20 to-[#0EA5E9]/20 rounded-full blur-[120px] animate-float"></div>
+      <div className="absolute top-[-100px] right-[-150px] w-[400px] h-[400px] bg-linear-to-br from-[#7C3AED]/20 to-[#9D7FED]/20 rounded-full blur-[100px] animate-float-delayed"></div>
+      <div className="absolute bottom-[-150px] left-[10%] w-[450px] h-[450px] bg-linear-to-br from-[#10B981]/15 to-[#059669]/15 rounded-full blur-[110px] animate-float-slow"></div>
+      <div className="absolute bottom-[-100px] right-[-100px] w-[380px] h-[380px] bg-linear-to-br from-[#F59E0B]/15 to-[#D97706]/15 rounded-full blur-[100px] animate-float"></div>
+      <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-linear-to-br from-[#EC4899]/10 to-[#DB2777]/10 rounded-full blur-[90px] animate-pulse-slow"></div>
 
       {/* Floating Particles - Client side only */}
       {mounted && (
@@ -36,7 +36,7 @@ export default function Home() {
           {[...Array(20)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-1 h-1 bg-gradient-to-br from-[#00D9FF] to-[#7C3AED] rounded-full opacity-40"
+              className="absolute w-1 h-1 bg-linear-to-br from-[#00D9FF] to-[#7C3AED] rounded-full opacity-40"
               style={{
                 left: `${(i * 7 + 13) % 100}%`,
                 top: `${(i * 11 + 17) % 100}%`,
@@ -58,7 +58,7 @@ export default function Home() {
         {/* Hero Title with Advanced Animations */}
         <div className="text-center mb-3">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 tracking-wide animate-fadeInUp">
-            <span className="inline-block animate-shimmer bg-gradient-to-r from-white via-[#00D9FF] to-white bg-[length:200%_100%] text-transparent bg-clip-text">
+            <span className="inline-block animate-shimmer bg-linear-to-r from-white via-[#00D9FF] to-white bg-[length:200%_100%] text-transparent bg-clip-text">
               Attendance Sarthi
             </span>
           </h1>
@@ -92,10 +92,10 @@ export default function Home() {
             <div className="group cursor-pointer relative animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
               
               {/* Outer glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-[#7C3AED] to-[#9D7FED] rounded-2xl blur-xl opacity-0 group-hover:opacity-30 transition-all duration-500"></div>
+              <div className="absolute inset-0 bg-linear-to-r from-[#7C3AED] to-[#9D7FED] rounded-2xl blur-xl opacity-0 group-hover:opacity-30 transition-all duration-500"></div>
               
               {/* Main card */}
-              <div className="relative bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] p-8 rounded-2xl shadow-2xl transition-all duration-500 hover:scale-[1.03] hover:border-[#7C3AED]/50 hover:shadow-[#7C3AED]/30 overflow-hidden">
+              <div className="relative bg-linear-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] p-8 rounded-2xl shadow-2xl transition-all duration-500 hover:scale-[1.03] hover:border-[#7C3AED]/50 hover:shadow-[#7C3AED]/30 overflow-hidden">
 
                 {/* Animated Background Elements */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#7C3AED]/5 rounded-full blur-2xl group-hover:bg-[#7C3AED]/15 transition-all duration-500 animate-float"></div>
@@ -103,25 +103,25 @@ export default function Home() {
                 
                 {/* Scanning line effect */}
                 <div className="absolute inset-0 overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#7C3AED]/10 to-transparent h-full animate-scan"></div>
+                  <div className="absolute inset-0 bg-linear-to-b from-transparent via-[#7C3AED]/10 to-transparent h-full animate-scan"></div>
                 </div>
 
                 {/* Mobile pulsing effect - always visible on mobile */}
-                <div className="md:hidden absolute inset-0 bg-gradient-to-br from-[#7C3AED]/5 to-transparent animate-pulse-mobile pointer-events-none"></div>
+                <div className="md:hidden absolute inset-0 bg-linear-to-br from-[#7C3AED]/5 to-transparent animate-pulse-mobile pointer-events-none"></div>
 
                 <div className="relative z-10">
                   {/* Icon with ZOOM ONLY (no rotation) */}
                   <div className="flex justify-center mb-6">
                     <div className="relative">
                       <div className="absolute inset-0 bg-[#7C3AED] rounded-2xl blur-lg opacity-40 group-hover:opacity-70 transition-all duration-500 animate-pulse-slow"></div>
-                      <div className="relative bg-gradient-to-br from-[#7C3AED]/20 to-[#9D7FED]/20 p-6 rounded-2xl border border-[#7C3AED]/30 group-hover:scale-125 transition-all duration-500 backdrop-blur-sm">
+                      <div className="relative bg-linear-to-br from-[#7C3AED]/20 to-[#9D7FED]/20 p-6 rounded-2xl border border-[#7C3AED]/30 group-hover:scale-125 transition-all duration-500 backdrop-blur-sm">
                         <Users className="w-10 h-10 text-[#7C3AED] group-hover:text-[#9D7FED] transition-colors duration-500 drop-shadow-lg" />
                       </div>
                     </div>
                   </div>
 
                   {/* Title with gradient animation */}
-                  <h2 className="text-2xl sm:text-3xl text-center font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-[#7C3AED] group-hover:via-[#9D7FED] group-hover:to-[#7C3AED] transition-all duration-500">
+                  <h2 className="text-2xl sm:text-3xl text-center font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-linear-to-r group-hover:from-[#7C3AED] group-hover:via-[#9D7FED] group-hover:to-[#7C3AED] transition-all duration-500">
                     Class Representative
                   </h2>
 
@@ -131,7 +131,7 @@ export default function Home() {
 
                   {/* Animated CTA */}
                   <div className="flex justify-center mt-6 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
-                    <div className="bg-gradient-to-r from-[#7C3AED] to-[#9D7FED] px-6 py-2.5 rounded-full flex items-center gap-2 shadow-lg shadow-[#7C3AED]/30">
+                    <div className="bg-linear-to-r from-[#7C3AED] to-[#9D7FED] px-6 py-2.5 rounded-full flex items-center gap-2 shadow-lg shadow-[#7C3AED]/30">
                       <span className="text-white text-sm font-medium">Get Started</span>
                       <svg className="w-4 h-4 text-white animate-bounce-horizontal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -149,10 +149,10 @@ export default function Home() {
             <div className="group cursor-pointer relative animate-fadeInUp" style={{ animationDelay: '0.5s' }}>
               
               {/* Outer glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-[#00D9FF] to-[#0EA5E9] rounded-2xl blur-xl opacity-0 group-hover:opacity-30 transition-all duration-500"></div>
+              <div className="absolute inset-0 bg-linear-to-r from-[#00D9FF] to-[#0EA5E9] rounded-2xl blur-xl opacity-0 group-hover:opacity-30 transition-all duration-500"></div>
               
               {/* Main card */}
-              <div className="relative bg-gradient-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] p-8 rounded-2xl shadow-2xl transition-all duration-500 hover:scale-[1.03] hover:border-[#00D9FF]/50 hover:shadow-[#00D9FF]/30 overflow-hidden">
+              <div className="relative bg-linear-to-br from-[#0F1629] to-[#0A0E27] border border-[#1A1F3A] p-8 rounded-2xl shadow-2xl transition-all duration-500 hover:scale-[1.03] hover:border-[#00D9FF]/50 hover:shadow-[#00D9FF]/30 overflow-hidden">
 
                 {/* Animated Background Elements */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#00D9FF]/5 rounded-full blur-2xl group-hover:bg-[#00D9FF]/15 transition-all duration-500 animate-float"></div>
@@ -160,25 +160,25 @@ export default function Home() {
                 
                 {/* Scanning line effect */}
                 <div className="absolute inset-0 overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#00D9FF]/10 to-transparent h-full animate-scan"></div>
+                  <div className="absolute inset-0 bg-linear-to-b from-transparent via-[#00D9FF]/10 to-transparent h-full animate-scan"></div>
                 </div>
 
                 {/* Mobile pulsing effect - always visible on mobile */}
-                <div className="md:hidden absolute inset-0 bg-gradient-to-br from-[#00D9FF]/5 to-transparent animate-pulse-mobile pointer-events-none"></div>
+                <div className="md:hidden absolute inset-0 bg-linear-to-br from-[#00D9FF]/5 to-transparent animate-pulse-mobile pointer-events-none"></div>
 
                 <div className="relative z-10">
                   {/* Icon with ZOOM ONLY (no rotation) */}
                   <div className="flex justify-center mb-6">
                     <div className="relative">
                       <div className="absolute inset-0 bg-[#00D9FF] rounded-2xl blur-lg opacity-40 group-hover:opacity-70 transition-all duration-500 animate-pulse-slow"></div>
-                      <div className="relative bg-gradient-to-br from-[#00D9FF]/20 to-[#0EA5E9]/20 p-6 rounded-2xl border border-[#00D9FF]/30 group-hover:scale-125 transition-all duration-500 backdrop-blur-sm">
+                      <div className="relative bg-linear-to-br from-[#00D9FF]/20 to-[#0EA5E9]/20 p-6 rounded-2xl border border-[#00D9FF]/30 group-hover:scale-125 transition-all duration-500 backdrop-blur-sm">
                         <User className="w-10 h-10 text-[#00D9FF] group-hover:text-[#33E1FF] transition-colors duration-500 drop-shadow-lg" />
                       </div>
                     </div>
                   </div>
 
                   {/* Title with gradient animation */}
-                  <h2 className="text-2xl sm:text-3xl text-center font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-[#00D9FF] group-hover:via-[#33E1FF] group-hover:to-[#00D9FF] transition-all duration-500">
+                  <h2 className="text-2xl sm:text-3xl text-center font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-linear-to-r group-hover:from-[#00D9FF] group-hover:via-[#33E1FF] group-hover:to-[#00D9FF] transition-all duration-500">
                     Student
                   </h2>
 
@@ -188,7 +188,7 @@ export default function Home() {
 
                   {/* Animated CTA */}
                   <div className="flex justify-center mt-6 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
-                    <div className="bg-gradient-to-r from-[#00D9FF] to-[#0EA5E9] px-6 py-2.5 rounded-full flex items-center gap-2 shadow-lg shadow-[#00D9FF]/30">
+                    <div className="bg-linear-to-r from-[#00D9FF] to-[#0EA5E9] px-6 py-2.5 rounded-full flex items-center gap-2 shadow-lg shadow-[#00D9FF]/30">
                       <span className="text-white text-sm font-medium">Get Started</span>
                       <svg className="w-4 h-4 text-white animate-bounce-horizontal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -207,7 +207,7 @@ export default function Home() {
         <div className="text-center animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
           <p className="text-gray-600 text-xs sm:text-sm">
             Powered by{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] via-[#7C3AED] to-[#EC4899] font-bold animate-gradient-flow">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#00D9FF] via-[#7C3AED] to-[#EC4899] font-bold animate-gradient-flow">
               ATS
             </span>
           </p>
