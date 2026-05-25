@@ -153,6 +153,9 @@ export default function CRDashboard() {
   const [recentStudents, setRecentStudents] = useState([]);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
+  const maxClasses = useMemo(() => Math.max(...weeklyData.map(d => d.classes), 1), [weeklyData]);
+  const weeklyMaxScheduled = useMemo(() => Math.max(...weeklyAttendance.map(d => Math.max(d.scheduled, d.attended)), 1), [weeklyAttendance]);
+
   const today = new Date().toISOString().split("T")[0];
 
   const setLoadingState = (key, value) => {
@@ -698,8 +701,6 @@ export default function CRDashboard() {
     return subjectColors[safeIndex];
   };
 
-  const maxClasses = useMemo(() => Math.max(...weeklyData.map(d => d.classes), 1), [weeklyData]);
-  const weeklyMaxScheduled = useMemo(() => Math.max(...weeklyAttendance.map(d => Math.max(d.scheduled, d.attended)), 1), [weeklyAttendance]);
 
   return (
 
@@ -716,13 +717,11 @@ export default function CRDashboard() {
         <div className="flex justify-between items-start gap-3 mb-8 sm:mb-12">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-9 h-9 bg-linear-to-br from-[#00D9FF] to-[#7C3AED] rounded-lg flex items-center justify-center shadow-lg shadow-[#00D9FF]/30 shrink-0 hover:scale-110 hover:rotate-12 transition-transform duration-300">
-                <svg className={`w-5 h-5 ${T.text}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+              <div className="w-9 h-9 bg-linear-to-br from-[#00D9FF] to-[#7C3AED] rounded-lg flex items-center justify-center shadow-lg shadow-[#00D9FF]/30 shrink-0 hover:scale-105 active:scale-99 transition-transform duration-200">
+                <img src="/Croppedlogo.jpeg" alt="Attendance Sarthi Logo" className={`w-full h-full object-contain rounded box-border ${!isDark ? 'border border-gray-800' : ''}`} />
               </div>
               <div className="min-w-0">
-                <h1 className={`text-xl sm:text-2xl lg:text-3xl font-semibold ${T.text} truncate`}>ATS Dashboard</h1>
+                <h1 className={`text-xl sm:text-2xl lg:text-3xl font-semibold ${T.text} truncate`}>Attendance Sarthi</h1>
                 <p className="text-sm sm:text-base text-transparent bg-clip-text bg-linear-to-r from-[#00D9FF] to-[#7C3AED] font-medium animate-gradient">
                   {getGreeting()}, {userData?.name || 'User'}!
                 </p>
@@ -796,43 +795,43 @@ export default function CRDashboard() {
         {userData?.classId && (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
             
-            <div className="border rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-xl group cursor-pointer" style={cardStyle}>
+            <div className="border rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-transform duration-150 hover:scale-101 hover:shadow-xl group cursor-pointer" style={cardStyle}>
               <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl transition-all duration-300 group-hover:opacity-90" style={{ backgroundColor: accentTints.blue }}></div>
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 relative z-10">
-                <div className={isDark ? 'w-8 h-8 sm:w-9 sm:h-9 bg-[#00D9FF]/10 rounded-lg flex items-center justify-center hover:bg-[#00D9FF]/20 group-hover:scale-110 transition-all duration-300' : 'w-8 h-8 sm:w-9 sm:h-9 bg-[#3B82F6]/10 rounded-lg flex items-center justify-center hover:bg-[#3B82F6]/20 group-hover:scale-110 transition-all duration-300'}>
+                <div className={isDark ? 'w-8 h-8 sm:w-9 sm:h-9 bg-[#00D9FF]/10 rounded-lg flex items-center justify-center hover:bg-[#00D9FF]/20  transition-all duration-300' : 'w-8 h-8 sm:w-9 sm:h-9 bg-[#3B82F6]/10 rounded-lg flex items-center justify-center hover:bg-[#3B82F6]/20  transition-all duration-300'}>
                   <svg className={isDark ? 'w-4 h-4 sm:w-5 sm:h-5 text-[#00D9FF]' : 'w-4 h-4 sm:w-5 sm:h-5 text-[#3B82F6]'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
                 <p className={`text-xs ${T.textMuted} group-hover:text-gray-400 transition-colors`}>Total Subjects</p>
               </div>
-              <p className={isDark ? 'text-2xl sm:text-3xl font-semibold text-[#00D9FF] relative z-10 group-hover:scale-110 transition-transform duration-300' : 'text-2xl sm:text-3xl font-semibold text-[#3B82F6] relative z-10 group-hover:scale-110 transition-transform duration-300'}>{subjects.length}</p>
+              <p className={isDark ? 'text-2xl sm:text-3xl font-semibold text-[#00D9FF] relative z-10  transition-transform duration-300' : 'text-2xl sm:text-3xl font-semibold text-[#3B82F6] relative z-10  transition-transform duration-300'}>{subjects.length}</p>
             </div>
 
-            <div className="border rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-xl group cursor-pointer" style={cardStyle}>
+            <div className="border rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-transform duration-150 hover:scale-101 hover:shadow-xl group cursor-pointer" style={cardStyle}>
               <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl transition-all duration-300 group-hover:opacity-90" style={{ backgroundColor: accentTints.purple }}></div>
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 relative z-10">
-                <div className={isDark ? 'w-8 h-8 sm:w-9 sm:h-9 bg-[#7C3AED]/10 rounded-lg flex items-center justify-center hover:bg-[#7C3AED]/20 group-hover:scale-110 transition-all duration-300' : 'w-8 h-8 sm:w-9 sm:h-9 bg-[#8B5CF6]/10 rounded-lg flex items-center justify-center hover:bg-[#8B5CF6]/20 group-hover:scale-110 transition-all duration-300'}>
+                <div className={isDark ? 'w-8 h-8 sm:w-9 sm:h-9 bg-[#7C3AED]/10 rounded-lg flex items-center justify-center hover:bg-[#7C3AED]/20  transition-all duration-300' : 'w-8 h-8 sm:w-9 sm:h-9 bg-[#8B5CF6]/10 rounded-lg flex items-center justify-center hover:bg-[#8B5CF6]/20  transition-all duration-300'}>
                   <svg className={isDark ? 'w-4 h-4 sm:w-5 sm:h-5 text-[#7C3AED]' : 'w-4 h-4 sm:w-5 sm:h-5 text-[#8B5CF6]'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
                 <p className={`text-xs ${T.textMuted} group-hover:text-gray-400 transition-colors`}>Today&apos;s Classes</p>
               </div>
-              <p className={isDark ? 'text-2xl sm:text-3xl font-semibold text-[#7C3AED] relative z-10 group-hover:scale-110 transition-transform duration-300' : 'text-2xl sm:text-3xl font-semibold text-[#8B5CF6] relative z-10 group-hover:scale-110 transition-transform duration-300'}>{todaySubjects.length}</p>
+              <p className={isDark ? 'text-2xl sm:text-3xl font-semibold text-[#7C3AED] relative z-10  transition-transform duration-300' : 'text-2xl sm:text-3xl font-semibold text-[#8B5CF6] relative z-10  transition-transform duration-300'}>{todaySubjects.length}</p>
             </div>
 
-            <div className="border rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-xl group cursor-pointer col-span-2 lg:col-span-1" style={cardStyle}>
+            <div className="border rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-transform duration-150 hover:scale-101 hover:shadow-xl group cursor-pointer col-span-2 lg:col-span-1" style={cardStyle}>
               <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl transition-all duration-300 group-hover:opacity-90" style={{ backgroundColor: accentTints.green }}></div>
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 relative z-10">
-                <div className={isDark ? 'w-8 h-8 sm:w-9 sm:h-9 bg-[#10B981]/10 rounded-lg flex items-center justify-center hover:bg-[#10B981]/20 group-hover:scale-110 transition-all duration-300' : 'w-8 h-8 sm:w-9 sm:h-9 bg-[#059669]/10 rounded-lg flex items-center justify-center hover:bg-[#059669]/20 group-hover:scale-110 transition-all duration-300'}>
+                <div className={isDark ? 'w-8 h-8 sm:w-9 sm:h-9 bg-[#10B981]/10 rounded-lg flex items-center justify-center hover:bg-[#10B981]/20  transition-all duration-300' : 'w-8 h-8 sm:w-9 sm:h-9 bg-[#059669]/10 rounded-lg flex items-center justify-center hover:bg-[#059669]/20  transition-all duration-300'}>
                   <svg className={isDark ? 'w-4 h-4 sm:w-5 sm:h-5 text-[#10B981]' : 'w-4 h-4 sm:w-5 sm:h-5 text-[#059669]'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <p className={`text-xs ${T.textMuted} group-hover:text-gray-400 transition-colors`}>Schedule Status</p>
               </div>
-              <p className={isDark ? 'text-2xl sm:text-3xl font-semibold text-[#10B981] relative z-10 group-hover:scale-110 transition-transform duration-300' : 'text-2xl sm:text-3xl font-semibold text-[#059669] relative z-10 group-hover:scale-110 transition-transform duration-300'}>
+              <p className={isDark ? 'text-2xl sm:text-3xl font-semibold text-[#10B981] relative z-10  transition-transform duration-300' : 'text-2xl sm:text-3xl font-semibold text-[#059669] relative z-10  transition-transform duration-300'}>
                 {published ? "Published" : "Draft"}
               </p>
             </div>
@@ -910,10 +909,10 @@ export default function CRDashboard() {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
 
                 {/* Total Students Card */}
-                <div className="border rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-xl group" style={cardStyle}>
+                <div className="border rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-transform duration-150 hover:scale-101 hover:shadow-xl group" style={cardStyle}>
                   <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl transition-all duration-300 group-hover:opacity-90" style={{ backgroundColor: accentTints.blue }}></div>
                   <div className="flex items-center gap-2 sm:gap-3 mb-2 relative z-10">
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#00D9FF]/10 rounded-lg flex items-center justify-center group-hover:bg-[#00D9FF]/20 group-hover:scale-110 transition-all duration-300">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#00D9FF]/10 rounded-lg flex items-center justify-center group-hover:bg-[#00D9FF]/20  transition-all duration-300">
                       <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#00D9FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
@@ -923,15 +922,15 @@ export default function CRDashboard() {
                   {analyticsLoading ? (
                     <div className="h-8 w-16 bg-[#1A1F3A] rounded animate-pulse"></div>
                   ) : (
-                    <p className="text-2xl sm:text-3xl font-semibold text-[#00D9FF] relative z-10 group-hover:scale-110 transition-transform duration-300">{totalStudents}</p>
+                    <p className="text-2xl sm:text-3xl font-semibold text-[#00D9FF] relative z-10  transition-transform duration-300">{totalStudents}</p>
                   )}
                 </div>
 
                 {/* Today's Attendance Card */}
-                <div className="border rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-xl group" style={cardStyle}>
+                <div className="border rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-transform duration-150 hover:scale-101 hover:shadow-xl group" style={cardStyle}>
                   <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl transition-all duration-300 group-hover:opacity-90" style={{ backgroundColor: accentTints.green }}></div>
                   <div className="flex items-center gap-2 sm:gap-3 mb-2 relative z-10">
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#10B981]/10 rounded-lg flex items-center justify-center group-hover:bg-[#10B981]/20 group-hover:scale-110 transition-all duration-300">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#10B981]/10 rounded-lg flex items-center justify-center group-hover:bg-[#10B981]/20  transition-all duration-300">
                       <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -941,7 +940,7 @@ export default function CRDashboard() {
                   {analyticsLoading ? (
                     <div className="h-8 w-16 bg-[#1A1F3A] rounded animate-pulse"></div>
                   ) : (
-                    <p className="text-2xl sm:text-3xl font-semibold text-[#10B981] relative z-10 group-hover:scale-110 transition-transform duration-300">
+                    <p className="text-2xl sm:text-3xl font-semibold text-[#10B981] relative z-10  transition-transform duration-300">
                       {todayAttendance}
                       <span className={`text-xs sm:text-sm ${T.textMuted} font-normal ml-1`}>/ {totalStudents}</span>
                     </p>
@@ -949,10 +948,10 @@ export default function CRDashboard() {
                 </div>
 
                 {/* Weekly Avg Card */}
-                <div className="border rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-xl group col-span-2 lg:col-span-1" style={cardStyle}>
+                <div className="border rounded-xl sm:rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-transform duration-150 hover:scale-101 hover:shadow-xl group col-span-2 lg:col-span-1" style={cardStyle}>
                   <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl transition-all duration-300 group-hover:opacity-90" style={{ backgroundColor: accentTints.orange }}></div>
                   <div className="flex items-center gap-2 sm:gap-3 mb-2 relative z-10">
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#F59E0B]/10 rounded-lg flex items-center justify-center group-hover:bg-[#F59E0B]/20 group-hover:scale-110 transition-all duration-300">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#F59E0B]/10 rounded-lg flex items-center justify-center group-hover:bg-[#F59E0B]/20  transition-all duration-300">
                       <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
                       </svg>
@@ -962,7 +961,7 @@ export default function CRDashboard() {
                   {analyticsLoading ? (
                     <div className="h-8 w-20 bg-[#1A1F3A] rounded animate-pulse"></div>
                   ) : (
-                    <p className="text-2xl sm:text-3xl font-semibold text-[#F59E0B] relative z-10 group-hover:scale-110 transition-transform duration-300">
+                    <p className="text-2xl sm:text-3xl font-semibold text-[#F59E0B] relative z-10  transition-transform duration-300">
                       {totalStudents > 0 ? Math.round((todayAttendance / totalStudents) * 100) : 0}%
                     </p>
                   )}
