@@ -14,6 +14,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Calendar, TrendingUp, Book, CheckCircle, Clock, Award, BarChart3, User, LogOut, Menu, X, Sun, Moon } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
+import SkeletonLoader from "@/components/SkeletonLoader";
 
 export default function StudentDashboard() {
 
@@ -709,39 +710,7 @@ export default function StudentDashboard() {
   }, [monthlyData, mounted]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: T.page }}>
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00D9FF]/10 rounded-full blur-[100px] animate-float"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#7C3AED]/10 rounded-full blur-[100px] animate-float-delayed"></div>
-        </div>
-
-        <div className="text-center relative z-10">
-          {/* Modern Multi-Ring Loader */}
-          <div className="relative w-24 h-24 mx-auto mb-8">
-            <div className="absolute inset-0 border-4 border-transparent border-t-[#00D9FF] border-r-[#7C3AED] rounded-full animate-spin" style={{ animationDuration: '1.5s' }}></div>
-            <div className="absolute inset-2 border-4 border-transparent border-b-[#10B981] border-l-[#F59E0B] rounded-full animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }}></div>
-            <div className="absolute inset-4 bg-linear-to-br from-[#00D9FF] to-[#7C3AED] rounded-full animate-pulse opacity-80"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className={`w-4 h-4 rounded-full shadow-lg shadow-[#00D9FF]/50 animate-bounce-slow ${isDark ? 'bg-white' : 'bg-slate-900'}`}></div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-transparent bg-clip-text bg-linear-to-r from-[#00D9FF] via-[#7C3AED] to-[#10B981] text-xl font-bold animate-gradient" style={{ backgroundSize: '200% 200%' }}>
-              Loading Your Dashboard
-            </p>
-            <p className={`text-sm ${T.textSubtle}`}>Fetching your attendance data...</p>
-          </div>
-
-          <div className="flex justify-center gap-2 mt-6">
-            <div className="w-2 h-2 bg-[#00D9FF] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-            <div className="w-2 h-2 bg-[#7C3AED] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-            <div className="w-2 h-2 bg-[#10B981] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <SkeletonLoader isDark={isDark} />;
   }
 
   return (

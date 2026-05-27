@@ -188,3 +188,24 @@ body {
 .animate-fadeIn {
   animation: fadeIn 0.8s ease-out;
 }
+
+/* Skeleton Loader Shimmer Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton-shimmer {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.15) 20%,
+    rgba(255, 255, 255, 0) 40%
+  );
+  background-size: 1000px 100%;
+}
