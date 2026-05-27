@@ -11,6 +11,7 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { Book, TrendingUp, CheckCircle, XCircle, Calendar, Award, ArrowLeft, BarChart3 } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
+import SkeletonLoader from "@/components/SkeletonLoader";
 
 export default function SubjectPage() {
 
@@ -205,26 +206,7 @@ export default function SubjectPage() {
   }, [subjectId, router]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: T.page }}>
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00D9FF]/10 rounded-full blur-[100px] animate-float"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#7C3AED]/10 rounded-full blur-[100px] animate-float-delayed"></div>
-        </div>
-
-        <div className="text-center relative z-10">
-          <div className="relative w-24 h-24 mx-auto mb-6">
-            <div className="absolute inset-0 border-4 border-[#00D9FF]/20 rounded-full"></div>
-            <div className="absolute inset-0 border-4 border-transparent border-t-[#00D9FF] rounded-full animate-spin"></div>
-            <div className="absolute inset-2 border-4 border-transparent border-t-[#7C3AED] rounded-full animate-spin-slow"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-3 h-3 bg-linear-to-br from-[#00D9FF] to-[#7C3AED] rounded-full animate-pulse"></div>
-            </div>
-          </div>
-          <p className={`text-lg font-medium animate-pulse ${T.textMuted}`}>Loading subject details...</p>
-        </div>
-      </div>
-    );
+    return <SkeletonLoader isDark={isDark} />;
   }
 
   const attendanceStatus = getAttendanceStatus(parseFloat(percent));

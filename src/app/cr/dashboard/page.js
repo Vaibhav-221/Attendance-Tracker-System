@@ -19,6 +19,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/lib/theme-context";
 import { Sun, Moon } from "lucide-react";
+import SkeletonLoader from "@/components/SkeletonLoader";
 
 export default function CRDashboard() {
 
@@ -614,46 +615,7 @@ export default function CRDashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: T.page }}>
-        {/* Animated background */}
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[100px] animate-float" style={{ backgroundColor: isDark ? 'rgba(0,217,255,0.12)' : 'rgba(59,130,246,0.12)' }}></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-[100px] animate-float-delayed" style={{ backgroundColor: isDark ? 'rgba(124,58,237,0.12)' : 'rgba(139,92,246,0.12)' }}></div>
-        </div>
-
-        <div className="text-center relative z-10">
-          {/* Modern Multi-Layer Loader */}
-          <div className="relative w-24 h-24 mx-auto mb-8">
-            {/* Outer spinning ring */}
-            <div className="absolute inset-0 border-4 border-transparent rounded-full animate-spin" style={{ borderTopColor: isDark ? '#00D9FF' : '#3B82F6', borderRightColor: isDark ? '#7C3AED' : '#8B5CF6', animationDuration: '1.5s' }}></div>
-            {/* Middle spinning ring */}
-            <div className="absolute inset-2 border-4 border-transparent rounded-full animate-spin" style={{ borderBottomColor: isDark ? '#10B981' : '#059669', borderLeftColor: isDark ? '#F59E0B' : '#D97706', animationDuration: '2s', animationDirection: 'reverse' }}></div>
-            {/* Inner pulse circle */}
-            <div className="absolute inset-4 rounded-full animate-pulse opacity-80" style={{ background: isDark ? 'linear-gradient(135deg, #00D9FF, #7C3AED)' : 'linear-gradient(135deg, #3B82F6, #8B5CF6)' }}></div>
-            {/* Center dot */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-4 h-4 bg-white rounded-full shadow-lg animate-bounce-slow" style={{ boxShadow: `0 0 16px ${isDark ? 'rgba(0,217,255,0.5)' : 'rgba(59,130,246,0.35)'}` }}></div>
-            </div>
-          </div>
-
-          {/* Loading text with gradient */}
-          <div className="space-y-2">
-            <p className="text-transparent bg-clip-text text-xl font-bold animate-gradient" style={{ backgroundImage: isDark ? 'linear-gradient(90deg, #00D9FF, #7C3AED, #10B981)' : 'linear-gradient(90deg, #3B82F6, #8B5CF6, #059669)', backgroundSize: '200% 200%' }}>
-              Loading Dashboard
-            </p>
-            <p className={`${T.textMuted} text-sm`}>Please wait while we fetch your data</p>
-          </div>
-
-          {/* Animated dots */}
-          <div className="flex justify-center gap-2 mt-6">
-            <div className="w-2 h-2 rounded-full animate-bounce" style={{ animationDelay: '0ms', backgroundColor: isDark ? '#00D9FF' : '#3B82F6' }}></div>
-            <div className="w-2 h-2 rounded-full animate-bounce" style={{ animationDelay: '150ms', backgroundColor: isDark ? '#7C3AED' : '#8B5CF6' }}></div>
-            <div className="w-2 h-2 rounded-full animate-bounce" style={{ animationDelay: '300ms', backgroundColor: isDark ? '#10B981' : '#059669' }}></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <SkeletonLoader isDark={isDark} />;
   }
 
   const subjectColors = [

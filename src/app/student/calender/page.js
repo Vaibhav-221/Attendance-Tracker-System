@@ -11,6 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Calendar, CheckCircle, XCircle, BookOpen, TrendingUp, X, Clock, ArrowLeft } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
+import SkeletonLoader from "@/components/SkeletonLoader";
 
 export default function AttendanceCalendar() {
   const { isDark } = useTheme();
@@ -192,22 +193,7 @@ export default function AttendanceCalendar() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: T.page }}>
-        <div className="absolute inset-0">
-          <div className={`absolute top-1/4 left-1/4 w-96 h-96 bg-[${isDark ? '#00D9FF' : '#3B82F6'}]/10 rounded-full blur-[100px] animate-float`}></div>
-          <div className={`absolute bottom-1/4 right-1/4 w-96 h-96 bg-[${isDark ? '#7C3AED' : '#8B5CF6'}]/10 rounded-full blur-[100px] animate-float-delayed`}></div>
-        </div>
-        <div className="text-center relative z-10">
-          <div className="relative w-20 h-20 mx-auto mb-5">
-            <div className={`absolute inset-0 border-4 border-[${isDark ? '#00D9FF' : '#3B82F6'}]/20 rounded-full`}></div>
-            <div className="absolute inset-0 border-4 border-transparent border-t-[#00D9FF] rounded-full animate-spin"></div>
-            <div className="absolute inset-2 border-4 border-transparent border-t-[#7C3AED] rounded-full animate-spin-slow"></div>
-          </div>
-          <p className={`text-base font-medium animate-pulse ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>Loading calendar...</p>
-        </div>
-      </div>
-    );
+    return <SkeletonLoader isDark={isDark} />;
   }
 
   return (
