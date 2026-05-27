@@ -139,6 +139,24 @@ export default function StudentDashboard() {
     };
   };
 
+  // Dynamic card background class for Overall Attendance based on percent
+  const overallCardClass = (() => {
+    const pct = parseFloat(attendancePercent) || 0;
+    if (pct >= 75) {
+      return isDark
+        ? 'bg-linear-to-br from-emerald-900/65 to-emerald-800/40 border border-emerald-500/30'
+        : 'bg-linear-to-br from-emerald-50 to-emerald-100 border border-emerald-200/50';
+    }
+    if (pct >= 50) {
+      return isDark
+        ? 'bg-linear-to-br from-amber-900/60 to-amber-800/35 border border-amber-500/25'
+        : 'bg-linear-to-br from-amber-50 to-amber-100 border border-amber-200/50';
+    }
+    return isDark
+      ? 'bg-linear-to-br from-red-900/60 to-red-800/35 border border-red-500/25'
+      : 'bg-linear-to-br from-red-50 to-red-100 border border-red-200/50';
+  })();
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -923,18 +941,18 @@ export default function StudentDashboard() {
           {/* Overall Attendance Card - ENHANCED */}
           <div
             onClick={() => setShowSubjectAttendanceModal(true)}
-            className={`col-span-2 sm:col-span-2 lg:col-span-6 ${isDark ? 'bg-linear-to-br from-blue-900/60 to-indigo-900/60 border border-blue-500/30' : 'bg-linear-to-br from-blue-50 to-indigo-50 border border-blue-200/50'} rounded-xl p-4 relative overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group cursor-pointer`}
+            className={`col-span-2 sm:col-span-2 lg:col-span-6 ${overallCardClass} rounded-xl p-4 relative overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group cursor-pointer`}
           >
 
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className={`w-8 h-8 ${isDark ? 'bg-blue-500/20 border border-blue-500/30' : 'bg-white border border-blue-200'} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform backdrop-blur-sm`}>
-                    <Award className={`w-4 h-4 ${isDark ? 'text-[#00D9FF]' : 'text-blue-600'}`} />
+                  <div className={`w-8 h-8 ${isDark ? 'bg-emerald-500/12 border border-emerald-500/20' : 'bg-white border border-emerald-200'} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform backdrop-blur-sm`}>
+                    <Award className={`w-4 h-4 ${isDark ? 'text-[#10B981]' : 'text-emerald-600'}`} />
                   </div>
                   <div>
-                    <p className={`text-xs ${isDark ? 'text-blue-300' : 'text-blue-700'}`}>Overall</p>
-                    <p className={`text-[10px] ${isDark ? 'text-blue-400/70' : 'text-blue-600'}`}>{attendanceStatus.status}</p>
+                    <p className={`text-xs ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>Overall</p>
+                    <p className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>{attendanceStatus.status}</p>
                   </div>
                 </div>
                 <span className="text-xl">{attendanceStatus.icon}</span>
@@ -956,7 +974,7 @@ export default function StudentDashboard() {
                   style={{ width: `${attendancePercent}%` }}
                 ></div>
               </div>
-              <p className={`text-[10px] ${isDark ? 'text-blue-400/60' : 'text-blue-500'} text-center`}>Target: 75% | Click for details</p>
+              <p className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-slate-500'} text-center`}>Target: 75% | Click for details</p>
             </div>
           </div>
 
